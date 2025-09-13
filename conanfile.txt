@@ -1,0 +1,5 @@
+[requires]
+glog/0.7.1
+
+[generators]
+CMakeDeps
