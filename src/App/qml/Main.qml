@@ -46,8 +46,21 @@ ApplicationWindow {
                     id: mapDrag
                     dragThreshold: 0
                     grabPermissions: PointerHandler.CanTakeOverFromAnything
-                    xAxis.onActiveValueChanged: (dx) => map.pan(-dx, 0)
-                    yAxis.onActiveValueChanged: (dy) => map.pan(0, -dy)
+                    xAxis.onActiveValueChanged: (dx) => target.pan(-dx, 0)
+                    yAxis.onActiveValueChanged: (dy) => target.pan(0, -dy)
+                }
+
+                PinchHandler {
+                    target: null
+                    onScaleChanged: (delta) => {
+                        map.zoomLevel += Math.log2(delta)
+                        map.alignCoordinateToPoint(map.startCentroid, pinch.centroid.position)
+                    }
+                    onRotationChanged: (delta) => {
+                        map.bearing -= delta
+                        map.alignCoordinateToPoint(map.startCentroid, pinch.centroid.position)
+                    }
+                    grabPermissions: PointerHandler.TakeOverForbidden
                 }
 
                 // "you are here" marker (optional)
