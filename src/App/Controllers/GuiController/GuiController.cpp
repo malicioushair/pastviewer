@@ -1,9 +1,12 @@
 #include "GuiController.h"
 
 #include <QFileInfo>
+#include <QLocationPermission>
 #include <QQmlContext>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QtGui/qguiapplication.h>
+#include <exception>
 
 #include "glog/logging.h"
 
@@ -34,6 +37,25 @@ GuiController::GuiController(QObject * parent)
 	{
 		LOG(ERROR) << "Failed to load QML";
 		throw std::runtime_error("Failed to load QML");
+	}
+
+	QLocationPermission permission;
+	permission.setAccuracy(QLocationPermission::Precise);
+	switch (qApp->checkPermission(permission))
+	{
+		case Qt::PermissionStatus::Undetermined:
+			qApp->requestPermission(permission, this, [] {
+				LOG(INFO) << "QLocationPermission granted";
+			});
+			break;
+		case Qt::PermissionStatus::Denied:
+			LOG(WARNING) << "QLocationPermission denied!";
+			break;
+		case Qt::PermissionStatus::Granted:
+			LOG(INFO) << "QLocationPermission has already been granted";
+		default:
+			assert(false && "We should never get to this branch!");
+			throw std::runtime_error("Unknown QLocationPermission status");
 	}
 }
 

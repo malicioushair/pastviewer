@@ -1,6 +1,5 @@
 #include <QDir>
 #include <QGuiApplication>
-#include <QLocationPermission>
 #include <QQmlApplicationEngine>
 #include <QStandardPaths>
 
@@ -35,12 +34,5 @@ int main(int argc, char * argv[])
 
 	QGuiApplication app(argc, argv);
 	TorrentPlayer::GuiController guiController;
-
-	QLocationPermission perm;
-	perm.setAccuracy(QLocationPermission::Precise);
-	qApp->requestPermission(perm, [](const QPermission & p) {
-		qDebug() << "location perm:" << int(p.status());
-	});
-
 	return QGuiApplication::exec();
 }

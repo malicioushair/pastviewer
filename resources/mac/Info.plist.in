@@ -39,7 +39,7 @@
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
 
-	<key>NSLocationWhenInUseUsageDescription</key>
+	<key>NSLocationUsageDescription</key>
 	<string>This app shows your position on the map.</string>
 </dict>
 </plist>
