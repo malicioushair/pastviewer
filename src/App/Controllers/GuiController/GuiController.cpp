@@ -7,8 +7,11 @@
 #include <QStandardPaths>
 #include <QtGui/qguiapplication.h>
 #include <exception>
+#include <memory>
 
 #include "glog/logging.h"
+
+#include "PastViewModelController.h"
 
 constexpr auto PATH = "PATH";
 
@@ -16,20 +19,17 @@ using namespace TorrentPlayer;
 
 struct GuiController::Impl
 {
-	Impl()
-	{
-	}
-
 	QQmlApplicationEngine engine;
 	QSettings settings;
+	std::unique_ptr<PastVuModelController> pastVuModelController { std::make_unique<PastVuModelController>() };
 };
 
 GuiController::GuiController(QObject * parent)
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>())
 {
-	QQmlApplicationEngine engine;
 	m_impl->engine.rootContext()->setContextProperty("guiController", this);
+	m_impl->engine.rootContext()->setContextProperty("pastVuModelController", m_impl->pastVuModelController.get());
 	m_impl->engine.addImportPath("qrc:/qt/qml");
 	m_impl->engine.loadFromModule("PastViewer", "Main");
 
@@ -53,6 +53,7 @@ GuiController::GuiController(QObject * parent)
 			break;
 		case Qt::PermissionStatus::Granted:
 			LOG(INFO) << "QLocationPermission has already been granted";
+			break;
 		default:
 			assert(false && "We should never get to this branch!");
 			throw std::runtime_error("Unknown QLocationPermission status");

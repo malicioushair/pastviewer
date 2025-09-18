@@ -5,12 +5,11 @@ import QtLocation
 import QtPositioning
 
 ApplicationWindow {
-    width: 900; height: 600; visible: true
-    title: "Past Viewer"
+    width: 900
+    height: 600
+    visible: true
 
-    // follow the user only until we get the first good fix (you can toggle back to true)
-    property bool followMe: true
-    property bool firstFixDone: false
+    title: "Past Viewer"
 
     ColumnLayout {
         anchors.fill: parent
@@ -28,6 +27,9 @@ ApplicationWindow {
 
             Map {
                 id: map
+
+                property geoCoordinate startCentroid
+
                 anchors.fill: parent
                 plugin: Plugin { name: "osm" }
 
@@ -35,10 +37,31 @@ ApplicationWindow {
                 center: positionSource.position.coordinate
                 zoomLevel: 13
 
-                // Wheel/trackpad zoom
-                WheelHandler {
-                    property: "zoomLevel"
-                    rotationScale: 1/120
+                MapItemView {
+                    id: mapItemViewID
+
+                    model: pastVuModelController.GetModel()
+                    delegate: delegateID
+                }
+
+                Component {
+                    id: delegateID
+
+                    MapQuickItem {
+                        coordinate: model.coordinate
+                        sourceItem: Rectangle {
+                            id: b
+                            width: 40; height: 40; radius: 20
+                            color: "#2b6cb0"; opacity: 0.9
+                            border.width: 2; border.color: "white"
+                            Text {
+                                anchors.centerIn: parent
+                                color: "white"
+                                font.bold: true
+                                text: model.title
+                            }
+                        }
+                    }
                 }
 
                 // Drag to pan (continuous)
@@ -51,14 +74,18 @@ ApplicationWindow {
                 }
 
                 PinchHandler {
+                    id: pinchHandlerID
                     target: null
+                    onActiveChanged: if (active) {
+                        map.startCentroid = map.toCoordinate(pinchHandlerID.centroid.position, false)
+                    }
                     onScaleChanged: (delta) => {
                         map.zoomLevel += Math.log2(delta)
-                        map.alignCoordinateToPoint(map.startCentroid, pinch.centroid.position)
+                        map.alignCoordinateToPoint(map.startCentroid, pinchHandlerID.centroid.position)
                     }
                     onRotationChanged: (delta) => {
                         map.bearing -= delta
-                        map.alignCoordinateToPoint(map.startCentroid, pinch.centroid.position)
+                        map.alignCoordinateToPoint(map.startCentroid, pinchHandlerID.centroid.position)
                     }
                     grabPermissions: PointerHandler.TakeOverForbidden
                 }
@@ -74,7 +101,10 @@ ApplicationWindow {
         }
 
         Text {
-            text: `position: ${positionSource.position.coordinate.isValid}\n lat/lon ${positionSource.position.coordinate.latitude}/${positionSource.position.coordinate.longitude}`
+            text: `position: ${positionSource.position.coordinate.isValid}\n
+            lat/lon ${positionSource.position.coordinate.latitude}/${positionSource.position.coordinate.longitude}\n
+            number of photos nearby: ${pastVuModelController.GetModel().rowCount()}
+            `
         }
     }
 }
