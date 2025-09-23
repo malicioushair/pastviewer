@@ -8,7 +8,7 @@ class PastVuModel
 	: public QAbstractListModel
 {
 public:
-	PastVuModel(QObject * parent = nullptr);
+	explicit PastVuModel(QObject * parent = nullptr);
 	~PastVuModel();
 
 	int rowCount(const QModelIndex & parent = QModelIndex()) const override;

@@ -4,6 +4,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QNetworkReply>
+#include <stdexcept>
 
 #include "glog/logging.h"
 
@@ -11,6 +12,12 @@ namespace {
 
 int BearingFromDirection(const QString & direction)
 {
+	if (direction.isEmpty())
+	{
+		LOG(WARNING) << "Direction cannot be empty";
+		return 1;
+	}
+
 	static constexpr std::array<std::pair<std::string_view, int>, 8> povDirectionToBearing {
 		{
          { "n", 0 },
@@ -28,7 +35,8 @@ int BearingFromDirection(const QString & direction)
 		return item.first == direction;
 	});
 	if (it == povDirectionToBearing.cend())
-		assert(false && "Unknown direction!");
+		throw std::runtime_error("Unknown direction: " + direction.toStdString());
+
 	return it->second;
 }
 
@@ -73,7 +81,6 @@ PastVuModel::PastVuModel(QObject * parent)
 	if (source)
 	{
 		connect(source, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
-			LOG(INFO) << "Position updated:" << info.coordinate().toString().toStdString();
 			const auto currentCoordinates = info.coordinate();
 			const auto lat = currentCoordinates.latitude();
 			const auto lon = currentCoordinates.longitude();
@@ -125,6 +132,10 @@ PastVuModel::PastVuModel(QObject * parent)
 					BearingFromDirection(jsonObj.value("dir").toString()),
 					jsonObj.value("year").toInt()
                 });
+
+				if (const auto item = m_impl->items.back(); item.bearing == 1)
+					LOG(WARNING) << "Incorrect bearing for item: " << item.title.toStdString();
+
 				endResetModel();
 				LOG(INFO) << m_impl->items.back().title.toStdString();
 			}
