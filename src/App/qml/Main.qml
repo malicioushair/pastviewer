@@ -25,6 +25,20 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            Compass {
+                id: compassID
+
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    margins: 12
+                }
+
+                width: 48
+                height: 48
+                z: 999   // above the map
+            }
+
             Map {
                 id: map
 
@@ -33,7 +47,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 plugin: Plugin { name: "osm" }
 
-                // Start somewhere sensible until GPS is valid:
+                // @todo Start somewhere sensible until GPS is valid:
                 center: positionSource.position.coordinate
                 zoomLevel: 13
 
@@ -48,25 +62,23 @@ ApplicationWindow {
                     id: delegateID
 
                     MapQuickItem {
-                        coordinate: model.coordinate
-                        sourceItem: Rectangle {
-                            id: b
-                            width: 40; height: 40; radius: 20
-                            color: "#2b6cb0"; opacity: 0.9
-                            border.width: 2; border.color: "white"
-                            Text {
-                                anchors.centerIn: parent
-                                color: "white"
-                                font.bold: true
-                                text: model.title
-                            }
+                        coordinate: model.Coordinate
+                        anchorPoint: Qt.point(povDirectionID.width / 2, povDirectionID.height)
+
+                        sourceItem: PovDirection {
+                            id: povDirectionID
+
+                            size: 20
+                            bearing: model.Bearing - compassID.bearing
+                            mapBearing: map.bearing
                         }
                     }
                 }
 
                 // Drag to pan (continuous)
                 DragHandler {
-                    id: mapDrag
+                    id: mapDragID
+
                     dragThreshold: 0
                     grabPermissions: PointerHandler.CanTakeOverFromAnything
                     xAxis.onActiveValueChanged: (dx) => target.pan(-dx, 0)
@@ -75,6 +87,7 @@ ApplicationWindow {
 
                 PinchHandler {
                     id: pinchHandlerID
+
                     target: null
                     onActiveChanged: if (active) {
                         map.startCentroid = map.toCoordinate(pinchHandlerID.centroid.position, false)
@@ -92,10 +105,17 @@ ApplicationWindow {
 
                 // "you are here" marker (optional)
                 MapQuickItem {
-                    anchorPoint: Qt.point(dot.width/2, dot.height/2)
+                    anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
                     coordinate: positionSource.position.coordinate
                     visible: coordinate.isValid
-                    sourceItem: Rectangle { id: dot; width: 14; height: 14; radius: 7; color: "#3dafff" }
+                    sourceItem: Rectangle {
+                        id: dotID
+
+                        width: 14
+                        height: 14
+                        radius: 7
+                        color: "#3dafff"
+                    }
                 }
             }
         }

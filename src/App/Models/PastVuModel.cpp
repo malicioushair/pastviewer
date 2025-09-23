@@ -1,23 +1,36 @@
 #include "PastVuModel.h"
 
-#include <QGeoCoordinate>
 #include <QGeoPositionInfoSource>
 #include <QJsonArray>
-#include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonParseError>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QNetworkrequest>
-#include <QObject>
-#include <QtCore/qabstractitemmodel.h>
-#include <QtCore/qvariant.h>
-#include <QtPositioning/qgeopositioninfo.h>
-#include <QtPositioning/qgeopositioninfosource.h>
-#include <QtQml/qqmlengine.h>
-#include <memory>
 
 #include "glog/logging.h"
+
+namespace {
+
+int BearingFromDirection(const QString & direction)
+{
+	static constexpr std::array<std::pair<std::string_view, int>, 8> povDirectionToBearing {
+		{
+         { "n", 0 },
+         { "ne", 45 },
+         { "e", 90 },
+         { "se", 135 },
+         { "s", 180 },
+         { "sw", 225 },
+         { "w", 270 },
+         { "nw", 315 },
+		 }
+	};
+
+	const auto it = std::ranges::find_if(povDirectionToBearing, [&](decltype(povDirectionToBearing)::const_reference item) {
+		return item.first == direction;
+	});
+	if (it == povDirectionToBearing.cend())
+		assert(false && "Unknown direction!");
+	return it->second;
+}
 
 struct Item
 {
@@ -25,16 +38,21 @@ struct Item
 	QGeoCoordinate coord;
 	QString file;
 	QString title;
+	int bearing = 0;
 	int year = 0;
 };
+
+using Items = std::vector<Item>;
 
 enum Roles
 {
 	Coordinate = Qt::UserRole + 1,
 	Title,
+	File,
+	Bearing,
 };
 
-using Items = std::vector<Item>;
+}
 
 struct PastVuModel::Impl
 {
@@ -55,7 +73,7 @@ PastVuModel::PastVuModel(QObject * parent)
 	if (source)
 	{
 		connect(source, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
-			qDebug() << "Position updated:" << info.coordinate();
+			LOG(INFO) << "Position updated:" << info.coordinate().toString().toStdString();
 			const auto currentCoordinates = info.coordinate();
 			const auto lat = currentCoordinates.latitude();
 			const auto lon = currentCoordinates.longitude();
@@ -64,7 +82,7 @@ PastVuModel::PastVuModel(QObject * parent)
 			m_impl->networkManager->get(request);
 		});
 		source->startUpdates(); // Start receiving position updates
-		qDebug() << "Position updates started.";
+		LOG(INFO) << "Position updates started.";
 	}
 	else
 	{
@@ -81,7 +99,7 @@ PastVuModel::PastVuModel(QObject * parent)
 		{
 			LOG(INFO) << "Reply received";
 			const auto response = reply->readAll();
-			qDebug() << "Response:" << response;
+			LOG(INFO) << "Response:" << response.toStdString();
 
 			QJsonParseError parserError;
 			const auto jsonDoc = QJsonDocument::fromJson(response, &parserError);
@@ -96,6 +114,7 @@ PastVuModel::PastVuModel(QObject * parent)
 			{
 				const QJsonObject jsonObj = photo.toObject();
 				const QJsonArray geo = jsonObj.value("geo").toArray(); // [lat, lon]
+				const auto povDirection = jsonObj.value("dir").toString();
 
 				beginResetModel();
 				m_impl->items.push_back({
@@ -103,11 +122,11 @@ PastVuModel::PastVuModel(QObject * parent)
 					{ geo.at(0).toDouble(), geo.at(1).toDouble() },
 					jsonObj.value("file").toString(),
 					jsonObj.value("title").toString(),
+					BearingFromDirection(jsonObj.value("dir").toString()),
 					jsonObj.value("year").toInt()
                 });
 				endResetModel();
 				LOG(INFO) << m_impl->items.back().title.toStdString();
-				auto foo = 0;
 			}
 		}
 		reply->deleteLater();
@@ -133,6 +152,10 @@ QVariant PastVuModel::data(const QModelIndex & index, int role) const
 			return QVariant::fromValue(item.coord);
 		case Roles::Title:
 			return item.title;
+		case Roles::File:
+			return "https://pastvu.com/_p/h/" + item.file;
+		case Roles::Bearing:
+			return item.bearing;
 		default:
 			assert(false && "Unexpected role");
 	}
@@ -142,8 +165,15 @@ QVariant PastVuModel::data(const QModelIndex & index, int role) const
 
 QHash<int, QByteArray> PastVuModel::roleNames() const
 {
+#define ROLENAME(NAME)     \
+	{                      \
+		Roles::NAME, #NAME \
+	}
 	return {
-		{ Roles::Coordinate, "coordinate" },
-		{ Roles::Title,      "title"      },
+		ROLENAME(Coordinate),
+		ROLENAME(Title),
+		ROLENAME(File),
+		ROLENAME(Bearing),
 	};
+#undef ROLENAME
 }
