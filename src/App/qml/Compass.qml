@@ -87,8 +87,7 @@ Item {
 
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: map.bearing = 0  // tap to snap north-up
+    TapHandler {
+        onTapped: map.bearing = 0  // tap to snap north-up
     }
 }
