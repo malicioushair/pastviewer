@@ -13,7 +13,9 @@ ApplicationWindow {
 
     StackView {
         id: stackViewID
+
         anchors.fill: parent
+
         initialItem: mapPageID
     }
 
@@ -24,7 +26,8 @@ ApplicationWindow {
             anchors.fill: parent
 
             PositionSource {
-                id: positionSource
+                id: positionSourceID
+
                 active: true
             }
 
@@ -49,7 +52,7 @@ ApplicationWindow {
                 }
 
                 Map {
-                    id: map
+                    id: mapID
 
                     property geoCoordinate startCentroid
 
@@ -57,7 +60,7 @@ ApplicationWindow {
                     plugin: Plugin { name: "osm" }
 
                     // @todo Start somewhere sensible until GPS is valid:
-                    center: positionSource.position.coordinate
+                    center: positionSourceID.position.coordinate
                     zoomLevel: 13
 
                     MapItemView {
@@ -79,11 +82,9 @@ ApplicationWindow {
 
                                 size: 20
                                 bearing: model.Bearing - compassID.bearing
-                                mapBearing: map.bearing
+                                mapBearing: mapID.bearing
 
                                 onClicked: {
-                                    print("DELEGATE_CLICKED")
-
                                     stackViewID.push("PhotoDetails.qml", {
                                         imageSource: model.File,
                                         title: model.Title,
@@ -94,6 +95,19 @@ ApplicationWindow {
                         }
                     }
 
+                    RecenterItem {
+                        id: recenterID
+
+                        anchors {
+                            bottom: parent.bottom
+                            right: parent.right
+                            margins: 12
+                        }
+
+                        height: 48
+                        width: 96
+                    }
+
                     // Drag to pan (continuous)
                     DragHandler {
                         id: mapDragID
@@ -102,6 +116,8 @@ ApplicationWindow {
                         grabPermissions: PointerHandler.CanTakeOverFromAnything
                         xAxis.onActiveValueChanged: (dx) => target.pan(-dx, 0)
                         yAxis.onActiveValueChanged: (dy) => target.pan(0, -dy)
+
+                        onGrabChanged: positionSourceID.active = false
                     }
 
                     PinchHandler {
@@ -109,15 +125,15 @@ ApplicationWindow {
 
                         target: null
                         onActiveChanged: if (active) {
-                            map.startCentroid = map.toCoordinate(pinchHandlerID.centroid.position, false)
+                            mapID.startCentroid = mapID.toCoordinate(pinchHandlerID.centroid.position, false)
                         }
                         onScaleChanged: (delta) => {
-                            map.zoomLevel += Math.log2(delta)
-                            map.alignCoordinateToPoint(map.startCentroid, pinchHandlerID.centroid.position)
+                            mapID.zoomLevel += Math.log2(delta)
+                            mapID.alignCoordinateToPoint(mapID.startCentroid, pinchHandlerID.centroid.position)
                         }
                         onRotationChanged: (delta) => {
-                            map.bearing -= delta
-                            map.alignCoordinateToPoint(map.startCentroid, pinchHandlerID.centroid.position)
+                            mapID.bearing -= delta
+                            mapID.alignCoordinateToPoint(mapID.startCentroid, pinchHandlerID.centroid.position)
                         }
                         grabPermissions: PointerHandler.TakeOverForbidden
                     }
@@ -125,7 +141,7 @@ ApplicationWindow {
                     // "you are here" marker (optional)
                     MapQuickItem {
                         anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
-                        coordinate: positionSource.position.coordinate
+                        coordinate: positionSourceID.position.coordinate
                         visible: coordinate.isValid
                         sourceItem: Rectangle {
                             id: dotID
@@ -140,8 +156,8 @@ ApplicationWindow {
             }
 
             Text {
-                text: `position: ${positionSource.position.coordinate.isValid}\n
-                lat/lon ${positionSource.position.coordinate.latitude}/${positionSource.position.coordinate.longitude}\n
+                text: `position: ${positionSourceID.position.coordinate.isValid}\n
+                lat/lon ${positionSourceID.position.coordinate.latitude}/${positionSourceID.position.coordinate.longitude}\n
                 number of photos nearby: ${pastVuModelController.GetModel().rowCount()}
                 `
             }

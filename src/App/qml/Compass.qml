@@ -29,7 +29,7 @@ Item {
                 x: needleHolderID.width / 2
                 y: needleHolderID.height / 2
             }
-            angle: -map.bearing
+            angle: -mapID.bearing
         }
 
         Shape {
@@ -88,6 +88,6 @@ Item {
     }
 
     TapHandler {
-        onTapped: map.bearing = 0  // tap to snap north-up
+        onTapped: mapID.bearing = 0  // tap to snap north-up
     }
 }
