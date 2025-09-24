@@ -58,8 +58,8 @@ enum Roles
 	Title,
 	File,
 	Bearing,
+	Year,
 };
-
 }
 
 struct PastVuModel::Impl
@@ -71,6 +71,7 @@ struct PastVuModel::Impl
 
 	QNetworkAccessManager * networkManager;
 	Items items;
+	std::unordered_set<int> seenCids;
 };
 
 PastVuModel::PastVuModel(QObject * parent)
@@ -119,24 +120,30 @@ PastVuModel::PastVuModel(QObject * parent)
 
 			for (const QJsonValue & photo : photos)
 			{
-				const QJsonObject jsonObj = photo.toObject();
-				const QJsonArray geo = jsonObj.value("geo").toArray(); // [lat, lon]
+				const auto jsonObj = photo.toObject();
+				const auto geo = jsonObj.value("geo").toArray(); // [lat, lon]
 				const auto povDirection = jsonObj.value("dir").toString();
+
+				const auto cid = jsonObj.value("cid").toInt();
+				if (!m_impl->seenCids.contains(cid))
+					m_impl->seenCids.insert(cid);
+				else
+					continue;
 
 				beginResetModel();
 				m_impl->items.push_back({
-					jsonObj.value("cid").toInt(),
+					cid,
 					{ geo.at(0).toDouble(), geo.at(1).toDouble() },
 					jsonObj.value("file").toString(),
 					jsonObj.value("title").toString(),
 					BearingFromDirection(jsonObj.value("dir").toString()),
 					jsonObj.value("year").toInt()
                 });
+				endResetModel();
 
 				if (const auto item = m_impl->items.back(); item.bearing == 1)
 					LOG(WARNING) << "Incorrect bearing for item: " << item.title.toStdString();
 
-				endResetModel();
 				LOG(INFO) << m_impl->items.back().title.toStdString();
 			}
 		}
@@ -148,6 +155,8 @@ PastVuModel::~PastVuModel() = default;
 
 int PastVuModel::rowCount(const QModelIndex & parent) const
 {
+	if (!m_impl->items.empty())
+		LOG(INFO) << "FOO: " << m_impl->items.size() << " " << m_impl->items.back().title.toStdString();
 	return m_impl->items.size();
 }
 
@@ -164,9 +173,11 @@ QVariant PastVuModel::data(const QModelIndex & index, int role) const
 		case Roles::Title:
 			return item.title;
 		case Roles::File:
-			return "https://pastvu.com/_p/h/" + item.file;
+			return "https://pastvu.com/_p/a/" + item.file;
 		case Roles::Bearing:
 			return item.bearing;
+		case Roles::Year:
+			return item.year;
 		default:
 			assert(false && "Unexpected role");
 	}
@@ -185,6 +196,7 @@ QHash<int, QByteArray> PastVuModel::roleNames() const
 		ROLENAME(Title),
 		ROLENAME(File),
 		ROLENAME(Bearing),
+		ROLENAME(Year),
 	};
 #undef ROLENAME
 }

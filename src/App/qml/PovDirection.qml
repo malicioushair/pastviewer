@@ -8,14 +8,23 @@ Item {
     required property real bearing // degrees, 0=N, 90=E (clockwise)
     required property real mapBearing
 
+    signal clicked()
+
     property color color: "black"
 
     width: size
     height: size
 
+    MouseArea {
+        anchors.fill: parent
+        onClicked: rootID.clicked()
+    }
+
     Item {
         id: arrowID
+
         anchors.fill: parent
+
         transform: Rotation {
             origin.x: arrowID.width / 2
             origin.y: arrowID.height / 2
@@ -62,14 +71,6 @@ Item {
                     y: arrowHeadID.height
                 }
             }
-        }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-
-        onClicked: {
-            print("CLICKED")
         }
     }
 }
