@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 
-Item {
+Rectangle {
     id: rootID
 
     required property int size
@@ -10,14 +10,17 @@ Item {
 
     signal clicked()
 
-    property color color: "black"
+    property color arrowColor: "black"
 
     width: size
     height: size
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: rootID.clicked()
+    radius: width / 2
+    border.color: "red"
+
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds | TapHandler.WithinBounds
+        onTapped: rootID.clicked()
     }
 
     Item {
@@ -36,7 +39,7 @@ Item {
 
             width: 2
             height: rootID.height * 0.42
-            color: rootID.color
+            color: rootID.arrowColor
 
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
@@ -56,7 +59,7 @@ Item {
             anchors.topMargin: rootID.height * 0.14
 
             ShapePath {
-                fillColor: rootID.color
+                fillColor: rootID.arrowColor
                 strokeColor: "transparent"
                 PathMove {
                     x: arrowHeadID.width / 2
