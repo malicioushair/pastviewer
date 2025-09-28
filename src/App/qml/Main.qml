@@ -55,13 +55,27 @@ ApplicationWindow {
                     id: mapID
 
                     property geoCoordinate startCentroid
+                    property bool follow: true
 
                     anchors.fill: parent
                     plugin: Plugin { name: "osm" }
 
-                    // @todo Start somewhere sensible until GPS is valid:
-                    center: positionSourceID.position.coordinate
                     zoomLevel: 13
+
+                    Component.onCompleted: {
+                        if (positionSourceID.position.coordinate.isValid)
+                            mapID.center = positionSourceID.position.coordinate
+                    }
+
+                    Binding {
+                        id: followCenterID
+
+                        target: mapID
+                        property: "center"
+                        value: positionSourceID.position.coordinate
+                        when: mapID.follow && positionSourceID.position.coordinate.isValid
+                        restoreMode: Binding.RestoreNone
+                    }
 
                     MapItemView {
                         id: mapItemViewID
@@ -95,7 +109,7 @@ ApplicationWindow {
                         }
                     }
 
-                    RecenterItem {
+                    RecenterButton {
                         id: recenterID
 
                         anchors {
@@ -106,25 +120,33 @@ ApplicationWindow {
 
                         height: 48
                         width: 96
+
+                        onTapped: mapID.follow = true
                     }
 
                     // Drag to pan (continuous)
                     DragHandler {
                         id: mapDragID
 
-                        dragThreshold: 0
+                        dragThreshold: 20
                         grabPermissions: PointerHandler.CanTakeOverFromAnything
                         xAxis.onActiveValueChanged: (dx) => target.pan(-dx, 0)
                         yAxis.onActiveValueChanged: (dy) => target.pan(0, -dy)
 
-                        onGrabChanged: positionSourceID.active = false
+                        onActiveChanged: {
+                            if (active) {
+                                mapID.follow = false
+                            }
+                        }
                     }
 
                     PinchHandler {
                         id: pinchHandlerID
 
                         target: null
-                        onActiveChanged: if (active) {
+                        onActiveChanged: {
+                            if (active)
+                                mapID.follow = false
                             mapID.startCentroid = mapID.toCoordinate(pinchHandlerID.centroid.position, false)
                         }
                         onScaleChanged: (delta) => {
@@ -159,6 +181,7 @@ ApplicationWindow {
                 text: `position: ${positionSourceID.position.coordinate.isValid}\n
                 lat/lon ${positionSourceID.position.coordinate.latitude}/${positionSourceID.position.coordinate.longitude}\n
                 number of photos nearby: ${pastVuModelController.GetModel().rowCount()}
+                mapID.follow: ${mapID.follow}
                 `
             }
         }

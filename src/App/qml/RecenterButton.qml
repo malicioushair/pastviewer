@@ -4,6 +4,8 @@ import QtQuick.Controls
 Rectangle {
     id: rootID
 
+    signal tapped()
+
     radius: width/2
     color: "#66000000"
     border {
@@ -19,6 +21,7 @@ Rectangle {
     }
 
     TapHandler {
-        onTapped: positionSourceID.active = true
+        grabPermissions: PointerHandler.TakeOverForbidden
+        onTapped: rootID.tapped()
     }
 }
