@@ -23,6 +23,20 @@ Page {
         }
     }
 
+    footer: ToolBar {
+        ColumnLayout {
+            Label {
+                Layout.leftMargin: 20
+                text: qsTr("Year: ") + rootID.year
+                font {
+                    bold: true
+                    pixelSize: 16
+                }
+                wrapMode: Text.WordWrap
+            }
+        }
+    }
+
     ColumnLayout {
         anchors {
             fill: parent
