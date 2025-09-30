@@ -9,13 +9,17 @@ Page {
     required property int year
 
     header: ToolBar {
-        ToolButton {
-            text: "←"
-            onClicked: rootID.StackView.view.pop()
-        }
-        Label {
-            anchors.centerIn: parent
-            text: rootID.title
+        RowLayout {
+            anchors.fill: parent
+            ToolButton {
+                text: "←"
+                onClicked: rootID.StackView.view.pop()
+            }
+            Label {
+                Layout.fillWidth: true
+                text: rootID.title
+                wrapMode: Text.Wrap
+            }
         }
     }
 
