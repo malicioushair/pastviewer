@@ -107,7 +107,6 @@ PastVuModel::PastVuModel(QObject * parent)
 		{
 			LOG(INFO) << "Reply received";
 			const auto response = reply->readAll();
-			LOG(INFO) << "Response:" << response.toStdString();
 
 			QJsonParseError parserError;
 			const auto jsonDoc = QJsonDocument::fromJson(response, &parserError);
@@ -143,8 +142,6 @@ PastVuModel::PastVuModel(QObject * parent)
 
 				if (const auto item = m_impl->items.back(); item.bearing == 1)
 					LOG(WARNING) << "Incorrect bearing for item: " << item.title.toStdString();
-
-				LOG(INFO) << m_impl->items.back().title.toStdString();
 			}
 		}
 		reply->deleteLater();
@@ -155,8 +152,6 @@ PastVuModel::~PastVuModel() = default;
 
 int PastVuModel::rowCount(const QModelIndex & parent) const
 {
-	if (!m_impl->items.empty())
-		LOG(INFO) << "FOO: " << m_impl->items.size() << " " << m_impl->items.back().title.toStdString();
 	return m_impl->items.size();
 }
 
