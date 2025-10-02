@@ -1,12 +1,12 @@
 #include "GuiController.h"
 
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QLocationPermission>
 #include <QQmlContext>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QtGui/qguiapplication.h>
-#include <exception>
+
 #include <memory>
 
 #include "glog/logging.h"
