@@ -8,11 +8,11 @@
 	<string>APPL</string>
 
 	<key>CFBundleName</key>
-	<string>TorrentPlayer</string>
+	<string>PastViewer</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.ab0d2faa.TorrentPlayer</string>
+	<string>com.yourcompany.ab0d2faa.PastViewer</string>
 	<key>CFBundleExecutable</key>
-	<string>TorrentPlayer</string>
+	<string>PastViewer</string>
 
 	<key>CFBundleVersion</key>
 	<string>@APP_MAJOR_VERSION@.@APP_MINOR_VERSION@.@APP_PATCH_VERSION@</string>
@@ -26,7 +26,7 @@
 	<string></string>
 
 	<key>CFBundleIconFile</key>
-	<string>TorrentPlayer</string>
+	<string>PastViewer</string>
 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>

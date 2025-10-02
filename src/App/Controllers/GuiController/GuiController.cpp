@@ -15,7 +15,7 @@
 
 constexpr auto PATH = "PATH";
 
-using namespace TorrentPlayer;
+using namespace PastViewer;
 
 struct GuiController::Impl
 {

@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QQmlApplicationEngine>
 
-namespace TorrentPlayer {
+namespace PastViewer {
 class GuiController
 	: public QObject
 {
@@ -18,4 +18,4 @@ private:
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
 };
-} // namespace TorrentPlayer
+} // namespace PastViewer
