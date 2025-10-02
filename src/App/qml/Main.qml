@@ -5,6 +5,8 @@ import QtLocation
 import QtPositioning
 
 ApplicationWindow {
+    id: mainWindowID
+
     width: 900
     height: 600
     visible: true
@@ -13,6 +15,14 @@ ApplicationWindow {
 
     StackView {
         id: stackViewID
+
+        function openPhotoDetails(photo, title, year) {
+            stackViewID.push("PhotoDetails.qml", {
+                imageSource: photo,
+                title: title,
+                year: year
+            })
+        }
 
         anchors.fill: parent
 
@@ -88,6 +98,7 @@ ApplicationWindow {
                         id: delegateID
 
                         MapQuickItem {
+                            z: Selected ? 1 : 0
                             coordinate: model.Coordinate
                             anchorPoint: Qt.point(povDirectionID.width / 2, povDirectionID.height)
 
@@ -97,14 +108,9 @@ ApplicationWindow {
                                 size: 20
                                 bearing: model.Bearing - compassID.bearing
                                 mapBearing: mapID.bearing
+                                selected: model.Selected
 
-                                onClicked: {
-                                    stackViewID.push("PhotoDetails.qml", {
-                                        imageSource: model.File,
-                                        title: model.Title,
-                                        year: model.Year
-                                    })
-                                }
+                                onClicked: stackViewID.openPhotoDetails(model.Photo, model.Title, model.Year)
                             }
                         }
                     }
@@ -160,7 +166,7 @@ ApplicationWindow {
                         grabPermissions: PointerHandler.TakeOverForbidden
                     }
 
-                    // "you are here" marker (optional)
+                    // "you are here" marker
                     MapQuickItem {
                         anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
                         coordinate: positionSourceID.position.coordinate
@@ -176,13 +182,30 @@ ApplicationWindow {
                     }
                 }
             }
+            ListView {
+                id: listViewID
 
-            Text {
-                text: `position: ${positionSourceID.position.coordinate.isValid}\n
-                lat/lon ${positionSourceID.position.coordinate.latitude}/${positionSourceID.position.coordinate.longitude}\n
-                number of photos nearby: ${pastVuModelController.GetModel().rowCount()}
-                mapID.follow: ${mapID.follow}
-                `
+                Layout.fillWidth: true
+                Layout.preferredHeight: 100
+
+                model: pastVuModelController.GetModel()
+                orientation: ListView.Horizontal
+                spacing: 10
+                delegate: Rectangle {
+                    width: 100
+                    height: 100
+                    color: "blue"
+
+                    Image {
+                        anchors.fill: parent
+                        source: Thumbnail
+
+                        TapHandler {
+                            onTapped: Selected = true
+                            onDoubleTapped: stackViewID.openPhotoDetails(Photo, Title, Year)
+                        }
+                    }
+                }
             }
         }
     }

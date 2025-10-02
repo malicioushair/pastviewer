@@ -8,6 +8,8 @@ Rectangle {
     required property real bearing // degrees, 0=N, 90=E (clockwise)
     required property real mapBearing
 
+    property bool selected: false
+
     signal clicked()
 
     property color arrowColor: "black"
@@ -16,6 +18,7 @@ Rectangle {
     height: size
 
     radius: width / 2
+    color: selected ? "green" : "white"
     border.color: "red"
 
     TapHandler {
