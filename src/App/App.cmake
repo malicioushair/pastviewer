@@ -59,5 +59,3 @@ qt_add_qml_module(${PROJECT_NAME}
     QML_FILES
         ${REL_QML}
 )
-
-qt_finalize_executable(PastViewer)
