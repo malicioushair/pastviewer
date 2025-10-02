@@ -1,9 +1,11 @@
 #include "PastVuModel.h"
 
+#include <QAbstractListModel>
 #include <QGeoPositionInfoSource>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QNetworkReply>
+#include <QVariant>
 #include <stdexcept>
 
 #include "glog/logging.h"
@@ -42,23 +44,29 @@ int BearingFromDirection(const QString & direction)
 
 struct Item
 {
-	int cid = 0;
+	int cid { 0 };
 	QGeoCoordinate coord;
 	QString file;
 	QString title;
-	int bearing = 0;
-	int year = 0;
+	int bearing { 0 };
+	int year { 0 };
+	bool selected { false };
 };
 
 using Items = std::vector<Item>;
 
 enum Roles
 {
+	// Getters
 	Coordinate = Qt::UserRole + 1,
 	Title,
-	File,
+	Photo,
+	Thumbnail,
 	Bearing,
 	Year,
+
+	// Setters
+	Selected,
 };
 }
 
@@ -160,6 +168,8 @@ QVariant PastVuModel::data(const QModelIndex & index, int role) const
 	if (!index.isValid())
 		return assert(false && "Invalid index"), QVariant();
 
+	static constexpr auto fullSizeImageUrl = "https://pastvu.com/_p/a/";
+	static constexpr auto thumbnailUrl = "https://pastvu.com/_p/h/";
 	const auto item = m_impl->items.at(index.row());
 	switch (role)
 	{
@@ -167,17 +177,41 @@ QVariant PastVuModel::data(const QModelIndex & index, int role) const
 			return QVariant::fromValue(item.coord);
 		case Roles::Title:
 			return item.title;
-		case Roles::File:
-			return "https://pastvu.com/_p/a/" + item.file;
+		case Roles::Photo:
+			return fullSizeImageUrl + item.file;
+		case Roles::Thumbnail:
+			return thumbnailUrl + item.file;
 		case Roles::Bearing:
 			return item.bearing;
 		case Roles::Year:
 			return item.year;
+		case Roles::Selected:
+			return item.selected;
 		default:
 			assert(false && "Unexpected role");
 	}
 
 	return {};
+}
+
+bool PastVuModel::setData(const QModelIndex & index, const QVariant & value, int role)
+{
+	auto & item = m_impl->items.at(index.row());
+	switch (role)
+	{
+		case Roles::Selected:
+		{
+			for (auto & item : m_impl->items)
+				item.selected = false;
+
+			item.selected = value.toBool();
+			emit dataChanged(this->index(0, 0), this->index(rowCount() - 1, 0), { Roles::Selected });
+			return true;
+		}
+		default:
+			assert(false && "Unexpected role");
+	}
+	return false;
 }
 
 QHash<int, QByteArray> PastVuModel::roleNames() const
@@ -189,9 +223,11 @@ QHash<int, QByteArray> PastVuModel::roleNames() const
 	return {
 		ROLENAME(Coordinate),
 		ROLENAME(Title),
-		ROLENAME(File),
+		ROLENAME(Photo),
+		ROLENAME(Thumbnail),
 		ROLENAME(Bearing),
 		ROLENAME(Year),
+		ROLENAME(Selected),
 	};
 #undef ROLENAME
 }
