@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QQmlApplicationEngine>
 
-namespace TorrentPlayer {
+namespace PastViewer {
 class GuiController
 	: public QObject
 {
@@ -14,8 +14,11 @@ public:
 	GuiController(QObject * parent = nullptr);
 	~GuiController();
 
+	Q_INVOKABLE bool IsDebug();
+	Q_INVOKABLE void BumpHotReloadToken();
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
 };
-} // namespace TorrentPlayer
+} // namespace PastViewer

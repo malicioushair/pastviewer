@@ -27,12 +27,12 @@ void InitLogging(const std::string & execName)
 int main(int argc, char * argv[])
 {
 	QCoreApplication::setOrganizationName("MyOrg");
-	QCoreApplication::setApplicationName("TorrentPlayer");
+	QCoreApplication::setApplicationName("PastViewer");
 	InitLogging(argv[0]);
 
-	LOG(INFO) << "Starting TorrentPlayer application";
+	LOG(INFO) << "Starting PastViewer application";
 
 	QGuiApplication app(argc, argv);
-	TorrentPlayer::GuiController guiController;
+	PastViewer::GuiController guiController;
 	return QGuiApplication::exec();
 }

@@ -16,7 +16,7 @@ function(SignAndDeploy)
         if (APPLE)
             message("Signing...")
             execute_process(
-                COMMAND /bin/bash "${CMAKE_CURRENT_LIST_DIR}/../deployScripts/mac/sign.sh" "${CMAKE_CURRENT_LIST_DIR}/install/TorrentPlayer.app"
+                COMMAND /bin/bash "${CMAKE_CURRENT_LIST_DIR}/../deployScripts/mac/sign.sh" "${CMAKE_CURRENT_LIST_DIR}/install/PastViewer.app"
                 RESULT_VARIABLE result
                 OUTPUT_VARIABLE out
                 ERROR_VARIABLE err

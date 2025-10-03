@@ -13,13 +13,6 @@ include_directories(src)
 
 include(cmake/Helpers.cmake)
 
-# execute_process(
-#   COMMAND conan install ${CMAKE_SOURCE_DIR}
-#           --build=missing
-#           --output-folder=${CMAKE_BINARY_DIR}
-#           -s build_type=${CMAKE_BUILD_TYPE}
-# )
-
 include(src/TorrentDownloader/TorrentDownloader.cmake)
 include(src/App/App.cmake)
 

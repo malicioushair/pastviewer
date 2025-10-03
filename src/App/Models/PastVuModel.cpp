@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QNetworkReply>
 #include <QVariant>
+
 #include <stdexcept>
 
 #include "glog/logging.h"

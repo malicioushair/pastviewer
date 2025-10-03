@@ -19,12 +19,18 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 )
 include(ext/android_openssl/android_openssl.cmake)
 qt_add_executable(${PROJECT_NAME} ${SOURCES} ${QT_RESOURCES})
+if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG=1)
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE MAIN_QML="${CMAKE_CURRENT_LIST_DIR}/qml/Main.qml")
+endif()
+
 if (APPLE)
     configure_file(${CMAKE_SOURCE_DIR}/resources/mac/Info.plist.in ${CMAKE_BINARY_DIR}/Info.plist @ONLY)
-    set(APP_ICON resources/mac/TorrentPlayer.icns)
+    set(APP_ICON resources/mac/PastViewer.icns)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE ON
-        MACOSX_BUNDLE_ICON_FILE "TorrentPlayer"
+        MACOSX_BUNDLE_ICON_FILE "PastViewer"
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_BINARY_DIR}/Info.plist
     )
     set_source_files_properties(${APP_ICON} PROPERTIES
@@ -59,5 +65,3 @@ qt_add_qml_module(${PROJECT_NAME}
     QML_FILES
         ${REL_QML}
 )
-
-qt_finalize_executable(PastViewer)
