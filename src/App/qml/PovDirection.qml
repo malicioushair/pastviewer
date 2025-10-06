@@ -19,7 +19,7 @@ Rectangle {
 
     radius: width / 2
     color: selected ? "green" : "white"
-    border.color: "red"
+    border.color: "#313233"
 
     TapHandler {
         gesturePolicy: TapHandler.ReleaseWithinBounds | TapHandler.WithinBounds

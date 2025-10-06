@@ -5,6 +5,10 @@ import QtLocation
 import QtPositioning
 
 Rectangle {
+    id: rootID
+
+    color: "#F5F0E5"
+
     StackView {
         id: stackViewID
 
@@ -51,6 +55,31 @@ Rectangle {
                     width: 48
                     height: 48
                     z: 999   // above the map
+                }
+
+                Rectangle {
+                    id: imagesNearbyID
+
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        margins: 12
+                    }
+
+                    width: 24
+                    height: 24
+                    z: 999
+
+                    radius: 10
+
+                    color: "#6289ac"
+                    border.color: "#313233"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: mapItemViewID.model.rowCount()
+                        color: "white"
+                    }
                 }
 
                 Map {
@@ -114,6 +143,7 @@ Rectangle {
                             bottom: parent.bottom
                             right: parent.right
                             margins: 12
+                            bottomMargin: 30
                         }
 
                         height: 48
@@ -174,30 +204,11 @@ Rectangle {
                     }
                 }
             }
-            ListView {
-                id: listViewID
 
-                Layout.fillWidth: true
-                Layout.preferredHeight: 100
+            PhotosNear {
+                id: photosNearID
 
-                model: pastVuModelController.GetModel()
-                orientation: ListView.Horizontal
-                spacing: 10
-                delegate: Rectangle {
-                    width: 100
-                    height: 100
-                    color: "blue"
-
-                    Image {
-                        anchors.fill: parent
-                        source: Thumbnail
-
-                        TapHandler {
-                            onTapped: Selected = true
-                            onDoubleTapped: stackViewID.openPhotoDetails(Photo, Title, Year)
-                        }
-                    }
-                }
+                color: rootID.color
             }
         }
     }

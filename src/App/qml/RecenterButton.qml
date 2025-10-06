@@ -9,7 +9,7 @@ Rectangle {
     radius: width/2
     color: "#66000000"
     border {
-        color: "white"
+        color: "#313233"
         width: 1
     }
 

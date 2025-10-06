@@ -7,8 +7,10 @@ import QtPositioning
 ApplicationWindow {
     id: mainWindowID
 
-    width: 900
-    height: 600
+    // on a mobile device, the size is adjusted to the device screen
+    // these fields just represent how it is approximately displayed on a phone
+    width: 1080 / 3
+    height: 1920 / 3
     visible: true
 
     title: "Past Viewer"
