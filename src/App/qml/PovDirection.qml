@@ -18,7 +18,7 @@ Rectangle {
     height: size
 
     radius: width / 2
-    color: selected ? "green" : "white"
+    color: selected ? "#b7b2a7" : "white"
     border.color: "#313233"
 
     TapHandler {
