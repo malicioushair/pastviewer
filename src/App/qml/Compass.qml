@@ -42,7 +42,7 @@ Item {
                 id: northID
 
                 strokeWidth: 0
-                fillColor: "#e53935"
+                fillColor: "black"
                 startX: needleID.x + needleID.width / 2
                 startY: needleID.y
                 PathLine {
@@ -55,11 +55,21 @@ Item {
                 }
             }
 
+            Rectangle {
+                id: needleCenterID
+
+                anchors.centerIn: parent
+
+                width: 6
+                height: width
+                radius: width / 2
+            }
+
             ShapePath {
                 id: southID
 
                 strokeWidth: 0
-                fillColor: "white"
+                fillColor: "#63625d"
                 startX: needleID.x + needleID.width / 2
                 startY: needleID.y + needleID.height
                 PathLine {
