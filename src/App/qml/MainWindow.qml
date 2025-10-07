@@ -188,6 +188,17 @@ Rectangle {
                         grabPermissions: PointerHandler.TakeOverForbidden
                     }
 
+                    TapHandler {
+                        id: mapTapHandlerID
+
+                        target: null
+                        onDoubleTapped: {
+                            mapID.follow = false
+                            ++mapID.zoomLevel
+                            mapID.center = mapID.toCoordinate(mapTapHandlerID.point.position)
+                        }
+                    }
+
                     // "you are here" marker
                     MapQuickItem {
                         anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
