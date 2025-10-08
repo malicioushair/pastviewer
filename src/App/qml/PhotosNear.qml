@@ -11,9 +11,6 @@ Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: 210
 
-    // hiding the footer of the open street map
-    Layout.topMargin: -28
-
     radius: 16
     color: Colors.pallete.bg
 

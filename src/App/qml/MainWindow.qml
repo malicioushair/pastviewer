@@ -91,7 +91,20 @@ Rectangle {
                     property bool follow: true
 
                     anchors.fill: parent
-                    plugin: Plugin { name: "osm" }
+                    copyrightsVisible: false
+                    plugin: Plugin {
+                        name: "osm"
+                        PluginParameter { name: "osm.mapping.providersrepository.disabled"; value: true }
+
+                        // Good practice for OSM tile usage policy
+                        PluginParameter { name: "osm.useragent"; value: "PastViewer/1.0 (youremail@example.com)" }
+
+                        // Optional: Hi-DPI tiles
+                        PluginParameter {
+                            name: "osm.mapping.host"
+                            value: "https://tiles.stadiamaps.com/styles/outdoors.json?api_key=99a79a53-37fd-48c8-871d-d3f810b4cd88"
+                        }
+                    }
 
                     zoomLevel: 13
 
@@ -145,7 +158,6 @@ Rectangle {
                             bottom: parent.bottom
                             right: parent.right
                             margins: 12
-                            bottomMargin: 30
                         }
 
                         height: 48
