@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Effects
 
+import "Helpers/colors.js" as Colors
+
 Rectangle {
     id: rootID
 
@@ -13,6 +15,7 @@ Rectangle {
     Layout.topMargin: -28
 
     radius: 16
+    color: Colors.pallete.bg
 
     ColumnLayout {
         anchors {

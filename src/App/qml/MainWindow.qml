@@ -4,10 +4,12 @@ import QtQuick.Layouts
 import QtLocation
 import QtPositioning
 
+import "Helpers/colors.js" as Colors
+
 Rectangle {
     id: rootID
 
-    color: "#F5F0E5"
+    color: Colors.pallete.bg
 
     StackView {
         id: stackViewID
@@ -72,8 +74,8 @@ Rectangle {
 
                     radius: 10
 
-                    color: "#6289ac"
-                    border.color: "#313233"
+                    color: Colors.pallete.accentAlt
+                    border.color: Colors.pallete.border
 
                     Text {
                         anchors.centerIn: parent
@@ -219,7 +221,6 @@ Rectangle {
             PhotosNear {
                 id: photosNearID
 
-                color: rootID.color
             }
         }
     }
