@@ -31,7 +31,6 @@ endif()
 
 if (APPLE)
     configure_file(${CMAKE_SOURCE_DIR}/resources/mac/Info.plist.in ${CMAKE_BINARY_DIR}/Info.plist @ONLY)
-    set(APP_ICON resources/mac/PastViewer.icns)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE ON
         MACOSX_BUNDLE_ICON_FILE "PastViewer"
