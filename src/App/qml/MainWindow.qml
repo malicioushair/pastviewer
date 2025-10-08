@@ -79,7 +79,7 @@ Rectangle {
 
                     Text {
                         anchors.centerIn: parent
-                        text: mapItemViewID.model.rowCount()
+                        text: mapItemViewID.model.count
                         color: "white"
                     }
                 }
