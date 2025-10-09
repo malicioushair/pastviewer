@@ -22,3 +22,8 @@ QAbstractListModel * PastVuModelController::GetModel()
 {
 	return m_impl->pastVuModel.get();
 }
+
+std::string PastVuModelController::GetMapHostApiKey()
+{
+	return API_KEY;
+}

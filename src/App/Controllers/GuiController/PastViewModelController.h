@@ -15,6 +15,7 @@ public:
 	~PastVuModelController();
 
 	Q_INVOKABLE QAbstractListModel * GetModel();
+	Q_INVOKABLE std::string GetMapHostApiKey();
 
 private:
 	struct Impl;

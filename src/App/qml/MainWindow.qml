@@ -93,17 +93,22 @@ Rectangle {
                     anchors.fill: parent
                     copyrightsVisible: false
                     plugin: Plugin {
+                        id: mapPluginID
+
                         name: "osm"
-                        PluginParameter { name: "osm.mapping.providersrepository.disabled"; value: true }
 
-                        // Good practice for OSM tile usage policy
-                        PluginParameter { name: "osm.useragent"; value: "PastViewer/1.0 (youremail@example.com)" }
-
-                        // Optional: Hi-DPI tiles
                         PluginParameter {
-                            name: "osm.mapping.host"
-                            value: "https://tiles.stadiamaps.com/styles/outdoors.json?api_key=99a79a53-37fd-48c8-871d-d3f810b4cd88"
+                            name: "osm.mapping.custom.host"
+                            value: "https://tiles.stadiamaps.com/tiles/outdoors/%z/%x/%y.png?api_key=" + pastVuModelController.GetMapHostApiKey()
                         }
+                    }
+
+                    activeMapType: {
+                        const customMapType = supportedMapTypes.find((map) => { return map.style === MapType.CustomMap });
+                        if (customMapType)
+                            return customMapType;
+                        else
+                            console.warn("CustomMap not provided by this plugin.");
                     }
 
                     zoomLevel: 13

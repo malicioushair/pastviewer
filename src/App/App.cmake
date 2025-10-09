@@ -19,6 +19,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 )
 include(ext/android_openssl/android_openssl.cmake)
 qt_add_executable(${PROJECT_NAME} ${SOURCES} ${QT_RESOURCES})
+target_compile_definitions(${PROJECT_NAME} PRIVATE API_KEY="${OSM_API_KEY}") # pass API key via -D in cmake
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG=1)
 else()
