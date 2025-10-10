@@ -13,7 +13,6 @@ PastVuModelController::PastVuModelController(QObject * parent)
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>())
 {
-	const auto a = 0;
 }
 
 PastVuModelController::~PastVuModelController() = default;
@@ -23,7 +22,7 @@ QAbstractListModel * PastVuModelController::GetModel()
 	return m_impl->pastVuModel.get();
 }
 
-std::string PastVuModelController::GetMapHostApiKey()
+QString PastVuModelController::GetMapHostApiKey()
 {
-	return API_KEY;
+	return QString::fromUtf8(API_KEY);
 }

@@ -1,8 +1,8 @@
 #pragma once
 
+#include <QAbstractItemModel>
 #include <QObject>
-#include <QtCore/qabstractitemmodel.h>
-#include <QtCore/qtmetamacros.h>
+
 #include <memory>
 
 class PastVuModelController
@@ -15,7 +15,7 @@ public:
 	~PastVuModelController();
 
 	Q_INVOKABLE QAbstractListModel * GetModel();
-	Q_INVOKABLE std::string GetMapHostApiKey();
+	Q_INVOKABLE QString GetMapHostApiKey();
 
 private:
 	struct Impl;
