@@ -17,7 +17,7 @@
 
 #include "glog/logging.h"
 
-#include "PastViewModelController.h"
+#include "App/Controllers/ModelController/PastViewModelController.h"
 
 constexpr auto PATH = "PATH";
 
