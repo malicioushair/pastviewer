@@ -9,7 +9,7 @@ import "Helpers/colors.js" as Colors
 Rectangle {
     id: rootID
 
-    color: Colors.pallete.bg
+    color: Colors.palette.bg
 
     StackView {
         id: stackViewID
@@ -74,8 +74,8 @@ Rectangle {
 
                     radius: 10
 
-                    color: Colors.pallete.accentAlt
-                    border.color: Colors.pallete.border
+                    color: Colors.palette.accentAlt
+                    border.color: Colors.palette.border
 
                     Text {
                         anchors.centerIn: parent

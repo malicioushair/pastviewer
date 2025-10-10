@@ -1,4 +1,4 @@
-const pallete = {
+const palette = {
     bg:              "#F5F0E5",
     toolbar:         "#EADDC7",
     accent:          "#C2643F",

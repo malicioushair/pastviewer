@@ -11,12 +11,12 @@ Page {
     required property int year
 
     background: Rectangle {
-        color: Colors.pallete.bg
+        color: Colors.palette.bg
     }
 
     header: ToolBar {
         background: Rectangle {
-            color: Colors.pallete.toolbar
+            color: Colors.palette.toolbar
         }
         RowLayout {
             anchors.fill: parent
@@ -24,13 +24,13 @@ Page {
                 text: "←"
                 onClicked: rootID.StackView.view.pop()
                 background: Rectangle {
-                    color: Colors.pallete.accent
+                    color: Colors.palette.accent
                 }
             }
             Label {
                 Layout.fillWidth: true
                 text: rootID.title
-                color: Colors.pallete.text
+                color: Colors.palette.text
                 wrapMode: Text.Wrap
             }
         }
@@ -38,13 +38,13 @@ Page {
 
     footer: ToolBar {
         background: Rectangle {
-            color: Colors.pallete.toolbar
+            color: Colors.palette.toolbar
         }
         ColumnLayout {
             Label {
                 Layout.leftMargin: 10
                 text: qsTr("Year: ") + rootID.year
-                color: Colors.pallete.text
+                color: Colors.palette.text
                 font {
                     bold: true
                     pixelSize: 16

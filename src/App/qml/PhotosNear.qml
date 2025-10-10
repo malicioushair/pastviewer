@@ -12,7 +12,7 @@ Rectangle {
     Layout.preferredHeight: 210
 
     radius: 16
-    color: Colors.pallete.bg
+    color: Colors.palette.bg
 
     ColumnLayout {
         anchors {

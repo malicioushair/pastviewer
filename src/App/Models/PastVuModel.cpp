@@ -158,8 +158,6 @@ PastVuModel::PastVuModel(QObject * parent)
 
 	connect(this, &QAbstractListModel::rowsInserted, this, [&] { emit countChanged(); });
 	connect(this, &QAbstractListModel::rowsRemoved, this, [&] { emit countChanged(); });
-	connect(this, &QAbstractListModel::columnsInserted, this, [&] { emit countChanged(); });
-	connect(this, &QAbstractListModel::columnsRemoved, this, [&] { emit countChanged(); });
 	connect(this, &QAbstractListModel::modelReset, this, [&] { emit countChanged(); });
 }
 

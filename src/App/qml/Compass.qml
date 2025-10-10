@@ -14,7 +14,7 @@ Item {
 
         anchors.fill: parent
         radius: width/2
-        color: Colors.pallete.seeThroughBlack
+        color: Colors.palette.seeThroughBlack
         border {
             color: "white"
             width: 1
@@ -44,7 +44,7 @@ Item {
                 id: northID
 
                 strokeWidth: 0
-                fillColor: Colors.pallete.northNeedle
+                fillColor: Colors.palette.northNeedle
                 startX: needleID.x + needleID.width / 2
                 startY: needleID.y
                 PathLine {
@@ -71,7 +71,7 @@ Item {
                 id: southID
 
                 strokeWidth: 0
-                fillColor: Colors.pallete.southNeedle
+                fillColor: Colors.palette.southNeedle
                 startX: needleID.x + needleID.width / 2
                 startY: needleID.y + needleID.height
                 PathLine {
