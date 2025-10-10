@@ -4,7 +4,13 @@ import QtQuick.Layouts
 import QtLocation
 import QtPositioning
 
+import "Helpers/colors.js" as Colors
+
 Rectangle {
+    id: rootID
+
+    color: Colors.palette.bg
+
     StackView {
         id: stackViewID
 
@@ -53,6 +59,31 @@ Rectangle {
                     z: 999   // above the map
                 }
 
+                Rectangle {
+                    id: imagesNearbyID
+
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        margins: 12
+                    }
+
+                    width: 24
+                    height: 24
+                    z: 999
+
+                    radius: 10
+
+                    color: Colors.palette.accentAlt
+                    border.color: Colors.palette.border
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: mapItemViewID.model.count
+                        color: "white"
+                    }
+                }
+
                 Map {
                     id: mapID
 
@@ -60,7 +91,25 @@ Rectangle {
                     property bool follow: true
 
                     anchors.fill: parent
-                    plugin: Plugin { name: "osm" }
+                    copyrightsVisible: false
+                    plugin: Plugin {
+                        id: mapPluginID
+
+                        name: "osm"
+
+                        PluginParameter {
+                            name: "osm.mapping.custom.host"
+                            value: "https://tiles.stadiamaps.com/tiles/outdoors/%z/%x/%y.png?api_key=" + pastVuModelController.GetMapHostApiKey()
+                        }
+                    }
+
+                    activeMapType: {
+                        const customMapType = supportedMapTypes.find((map) => { return map.style === MapType.CustomMap });
+                        if (customMapType)
+                            return customMapType;
+                        else
+                            console.warn("CustomMap not provided by this plugin.");
+                    }
 
                     zoomLevel: 13
 
@@ -158,6 +207,17 @@ Rectangle {
                         grabPermissions: PointerHandler.TakeOverForbidden
                     }
 
+                    TapHandler {
+                        id: mapTapHandlerID
+
+                        target: null
+                        onDoubleTapped: {
+                            mapID.follow = false
+                            ++mapID.zoomLevel
+                            mapID.center = mapID.toCoordinate(mapTapHandlerID.point.position)
+                        }
+                    }
+
                     // "you are here" marker
                     MapQuickItem {
                         anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
@@ -174,30 +234,10 @@ Rectangle {
                     }
                 }
             }
-            ListView {
-                id: listViewID
 
-                Layout.fillWidth: true
-                Layout.preferredHeight: 100
+            PhotosNear {
+                id: photosNearID
 
-                model: pastVuModelController.GetModel()
-                orientation: ListView.Horizontal
-                spacing: 10
-                delegate: Rectangle {
-                    width: 100
-                    height: 100
-                    color: "blue"
-
-                    Image {
-                        anchors.fill: parent
-                        source: Thumbnail
-
-                        TapHandler {
-                            onTapped: Selected = true
-                            onDoubleTapped: stackViewID.openPhotoDetails(Photo, Title, Year)
-                        }
-                    }
-                }
             }
         }
     }

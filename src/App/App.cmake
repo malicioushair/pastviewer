@@ -19,6 +19,10 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 )
 include(ext/android_openssl/android_openssl.cmake)
 qt_add_executable(${PROJECT_NAME} ${SOURCES} ${QT_RESOURCES})
+if (NOT DEFINED CACHE{OSM_API_KEY})
+    message(FATAL_ERROR "OSM_API_KEY has to be set as a -D option!")
+endif()
+target_compile_definitions(${PROJECT_NAME} PRIVATE API_KEY="${OSM_API_KEY}") # pass API key via -D in cmake
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG=1)
 else()
@@ -27,7 +31,6 @@ endif()
 
 if (APPLE)
     configure_file(${CMAKE_SOURCE_DIR}/resources/mac/Info.plist.in ${CMAKE_BINARY_DIR}/Info.plist @ONLY)
-    set(APP_ICON resources/mac/PastViewer.icns)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE ON
         MACOSX_BUNDLE_ICON_FILE "PastViewer"
@@ -39,6 +42,10 @@ if (APPLE)
     target_sources(${PROJECT_NAME} PRIVATE ${APP_ICON})
 elseif(ANDROID)
     add_android_openssl_libraries(${PROJECT_NAME})
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources/android"
+        QT_ANDROID_APP_ICON "@mipmap/ic_launcher"
+    )
 endif()
 
 qt6_import_qml_plugins(${PROJECT_NAME})
@@ -62,6 +69,8 @@ qt_add_qml_module(${PROJECT_NAME}
     URI ${PROJECT_NAME}
     VERSION 1.0
     RESOURCE_PREFIX "/qt/qml"
+    RESOURCES
+        "src/App/qml/Helpers/colors.js"
     QML_FILES
         ${REL_QML}
 )

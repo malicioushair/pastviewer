@@ -2,32 +2,49 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import "Helpers/colors.js" as Colors
+
 Page {
     id: rootID
 
     required property string imageSource
     required property int year
 
+    background: Rectangle {
+        color: Colors.palette.bg
+    }
+
     header: ToolBar {
+        background: Rectangle {
+            color: Colors.palette.toolbar
+        }
         RowLayout {
             anchors.fill: parent
             ToolButton {
                 text: "←"
                 onClicked: rootID.StackView.view.pop()
+                background: Rectangle {
+                    color: Colors.palette.accent
+                }
             }
             Label {
                 Layout.fillWidth: true
                 text: rootID.title
+                color: Colors.palette.text
                 wrapMode: Text.Wrap
             }
         }
     }
 
     footer: ToolBar {
+        background: Rectangle {
+            color: Colors.palette.toolbar
+        }
         ColumnLayout {
             Label {
                 Layout.leftMargin: 10
                 text: qsTr("Year: ") + rootID.year
+                color: Colors.palette.text
                 font {
                     bold: true
                     pixelSize: 16

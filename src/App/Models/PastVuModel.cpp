@@ -155,6 +155,10 @@ PastVuModel::PastVuModel(QObject * parent)
 		}
 		reply->deleteLater();
 	});
+
+	connect(this, &QAbstractListModel::rowsInserted, this, [&] { emit countChanged(); });
+	connect(this, &QAbstractListModel::rowsRemoved, this, [&] { emit countChanged(); });
+	connect(this, &QAbstractListModel::modelReset, this, [&] { emit countChanged(); });
 }
 
 PastVuModel::~PastVuModel() = default;
