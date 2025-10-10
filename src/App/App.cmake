@@ -40,6 +40,10 @@ if (APPLE)
     target_sources(${PROJECT_NAME} PRIVATE ${APP_ICON})
 elseif(ANDROID)
     add_android_openssl_libraries(${PROJECT_NAME})
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources/android"
+        QT_ANDROID_APP_ICON "@mipmap/ic_launcher"
+    )
 endif()
 
 qt6_import_qml_plugins(${PROJECT_NAME})
