@@ -26,16 +26,63 @@ else()
 endif()
 
 if (APPLE)
-    configure_file(${CMAKE_SOURCE_DIR}/resources/mac/Info.plist.in ${CMAKE_BINARY_DIR}/Info.plist @ONLY)
+    # Use different Info.plist template for iOS vs macOS
+    set(OS_SUB_DIR mac)
+    if(IOS)
+        set(OS_SUB_DIR ios)
+    endif()
+    configure_file(${CMAKE_SOURCE_DIR}/resources/${OS_SUB_DIR}/Info.plist.in ${CMAKE_BINARY_DIR}/Info.plist @ONLY)
+
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE ON
-        MACOSX_BUNDLE_ICON_FILE "PastViewer"
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_BINARY_DIR}/Info.plist
     )
-    set_source_files_properties(${APP_ICON} PROPERTIES
-        MACOSX_PACKAGE_LOCATION "Resources"
-    )
-    target_sources(${PROJECT_NAME} PRIVATE ${APP_ICON})
+
+    if(IOS)
+        set(IOS_ASSETS_DIR "${CMAKE_SOURCE_DIR}/resources/${OS_SUB_DIR}/Assets.xcassets")
+
+        if(EXISTS ${IOS_ASSETS_DIR})
+            # Detect platform (simulator vs device)
+            if(CMAKE_OSX_SYSROOT MATCHES "simulator")
+                set(ACTOOL_PLATFORM "iphonesimulator")
+            else()
+                set(ACTOOL_PLATFORM "iphoneos")
+            endif()
+
+            set(ASSETS_CAR_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Assets.car")
+
+            file(GLOB_RECURSE ASSET_FILES "${IOS_ASSETS_DIR}/*")
+
+            set(ICON_60_2X "${CMAKE_CURRENT_BINARY_DIR}/AppIcon60x60@2x.png")
+            set(ICON_76_2X "${CMAKE_CURRENT_BINARY_DIR}/AppIcon76x76@2x~ipad.png")
+
+            # Use actool to compile the asset catalog
+            add_custom_command(
+                OUTPUT ${ASSETS_CAR_OUTPUT} ${ICON_60_2X} ${ICON_76_2X}
+                COMMAND xcrun actool
+                    --compile ${CMAKE_CURRENT_BINARY_DIR}
+                    --platform ${ACTOOL_PLATFORM}
+                    --minimum-deployment-target 13.0
+                    --app-icon AppIcon
+                    --output-partial-info-plist ${CMAKE_CURRENT_BINARY_DIR}/AssetCatalog-Info.plist
+                    ${IOS_ASSETS_DIR}
+                DEPENDS ${ASSET_FILES}
+                COMMENT "Compiling asset catalog for ${ACTOOL_PLATFORM}"
+                VERBATIM
+            )
+
+            # Add the compiled assets as a custom target
+            add_custom_target(CompileAssets ALL DEPENDS ${ASSETS_CAR_OUTPUT} ${ICON_60_2X} ${ICON_76_2X})
+            add_dependencies(${PROJECT_NAME} CompileAssets)
+
+            # Add compiled asset catalog and icon files to the bundle
+            set_source_files_properties(${ASSETS_CAR_OUTPUT} ${ICON_60_2X} ${ICON_76_2X} PROPERTIES
+                MACOSX_PACKAGE_LOCATION Resources
+                GENERATED TRUE
+            )
+            target_sources(${PROJECT_NAME} PRIVATE ${ASSETS_CAR_OUTPUT} ${ICON_60_2X} ${ICON_76_2X})
+        endif()
+    endif()
 elseif(ANDROID)
     add_android_openssl_libraries(${PROJECT_NAME})
     set_target_properties(${PROJECT_NAME} PROPERTIES
