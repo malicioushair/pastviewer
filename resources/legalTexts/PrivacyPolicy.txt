@@ -1,0 +1,175 @@
+PRIVACY POLICY
+
+Last updated: October 20, 2025
+
+This Privacy Notice for Dmitry Vorobyev (Individual developer) (“we,” “us,” or “our”) describes how and why we might access, collect, store, use, and/or share (“process”) your personal information when you use our services (“Services”), including when you:
+	•	Download and use our mobile application (PastViewer), or any other application of ours that links to this Privacy Notice
+	•	Engage with us in other related ways, including any sales, marketing, or events
+
+Questions or concerns? Reading this Privacy Notice will help you understand your privacy rights and choices. If you do not agree with our policies and practices, please do not use our Services. If you still have questions or concerns, contact us at d.vorobyov.personal@gmail.com
+
+SUMMARY OF KEY POINTS
+	•	What personal information do we process? It depends on how you interact with us and the Services, the choices you make, and the features you use. (See “1. WHAT INFORMATION DO WE COLLECT?”)
+	•	Sensitive personal information? We do not process sensitive personal information.
+	•	Information from third parties? We do not collect information from third parties.
+	•	How do we process your information? To provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. (See “2. HOW DO WE PROCESS YOUR INFORMATION?”)
+	•	Sharing? We may share in specific situations and with specific third parties. (See “4. WHEN AND WITH WHOM DO WE SHARE YOUR PERSONAL INFORMATION?”)
+	•	Safety? We use organizational and technical safeguards, but no method is 100% secure. (See “6. HOW DO WE KEEP YOUR INFORMATION SAFE?”)
+	•	Your rights? Depending on your location, you may have rights over your personal information. (See “8. WHAT ARE YOUR PRIVACY RIGHTS?”)
+	•	How to exercise rights? Submit a DSAR (https://app.termly.io/dsar/52cef21a-3962-47ec-935e-acedb1df1e21) or email us at d.vorobyov.personal@gmail.com
+
+TABLE OF CONTENTS
+	1.	WHAT INFORMATION DO WE COLLECT?
+	2.	HOW DO WE PROCESS YOUR INFORMATION?
+	3.	WHAT LEGAL BASES DO WE RELY ON?
+	4.	WHEN AND WITH WHOM DO WE SHARE YOUR PERSONAL INFORMATION?
+	5.	HOW LONG DO WE KEEP YOUR INFORMATION?
+	6.	HOW DO WE KEEP YOUR INFORMATION SAFE?
+	7.	DO WE COLLECT INFORMATION FROM MINORS?
+	8.	WHAT ARE YOUR PRIVACY RIGHTS?
+	9.	CONTROLS FOR DO-NOT-TRACK
+	10.	U.S. STATE PRIVACY DISCLOSURES
+	11.	DO WE MAKE UPDATES TO THIS NOTICE?
+	12.	HOW CAN YOU CONTACT US ABOUT THIS NOTICE?
+	13.	HOW CAN YOU REVIEW, UPDATE, OR DELETE THE DATA WE COLLECT?
+
+
+⸻
+	1.	WHAT INFORMATION DO WE COLLECT?
+
+Personal information you disclose to us.
+We collect personal information that you voluntarily provide when you express interest in obtaining information about us or our products and Services, when you participate in activities on the Services, or otherwise when you contact us. All personal information you provide must be true, complete, and accurate, and you must notify us of changes.
+
+Sensitive Information.
+We do not process sensitive information.
+
+Application Data.
+If you use our application(s), we may request access or permission to track location-based information from your mobile device, either continuously or while you are using the app, to provide certain location-based features. You can change our access or permissions in your device settings.
+
+Google API.
+Our use of information received from Google APIs adheres to the Google API Services User Data Policy (https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements (https://developers.google.com/terms/api-services-user-data-policy#limited-use).
+
+⸻
+	2.	HOW DO WE PROCESS YOUR INFORMATION?
+
+In short: We process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. We process personal information for the purposes described in this Notice and, if applicable, for other purposes with your consent.
+
+Examples include:
+	•	Providing and maintaining the app and its features
+	•	Responding to inquiries and providing support
+	•	Protecting against fraud, abuse, or security threats
+	•	Complying with legal obligations
+	•	Performing internal analytics and reporting
+
+
+⸻
+	3.	WHAT LEGAL BASES DO WE RELY ON?
+
+We process your personal information only when we believe it is necessary and we have a valid legal reason (legal basis), such as with your consent, to comply with laws, to provide services, to protect your rights, or to pursue legitimate interests.
+
+EU/UK Users (GDPR/UK GDPR).
+Legal bases may include: consent (you can withdraw at any time), compliance with legal obligations, vital interests, contract performance, and legitimate interests.
+
+Canada.
+We may process your information with express or implied consent, and in some cases without consent as permitted by law (e.g., investigations, fraud prevention, legal proceedings, emergencies).
+
+⸻
+	4.	WHEN AND WITH WHOM DO WE SHARE YOUR PERSONAL INFORMATION?
+
+We may share information in specific situations and with specific third parties, for example:
+	•	Business Transfers. In connection with any merger, sale of assets, financing, or acquisition of all or a portion of our business.
+
+We may disclose de-identified information for internal research and development. We have not disclosed, sold, or shared personal information with third parties for a business or commercial purpose in the preceding twelve (12) months and will not sell or share such information in the future.
+
+⸻
+	5.	HOW LONG DO WE KEEP YOUR INFORMATION?
+
+In short: We keep your information for as long as necessary to fulfill the purposes outlined in this Notice unless otherwise required by law. When we have no ongoing legitimate business need to process your information, we delete or anonymize it. If deletion is not possible (e.g., backups), we securely store it and isolate it from further processing until deletion is possible.
+
+⸻
+	6.	HOW DO WE KEEP YOUR INFORMATION SAFE?
+
+We have implemented appropriate organizational and technical security measures. However, no electronic transmission or storage can be guaranteed 100% secure. Transmission of personal information to and from our Services is at your own risk. Access the Services within a secure environment.
+
+⸻
+	7.	DO WE COLLECT INFORMATION FROM MINORS?
+
+In short: We do not knowingly collect data from or market to children under 18 or the equivalent age in your jurisdiction. If we learn that we have collected personal information from such users, we will deactivate and delete it promptly. If you become aware of any such collection, contact us at: d.vorobyov.personal@gmail.com
+
+⸻
+	8.	WHAT ARE YOUR PRIVACY RIGHTS?
+
+Depending on your location, you may have rights to:
+	•	Request access and obtain a copy of your personal information
+	•	Request rectification or erasure
+	•	Restrict or object to processing
+	•	Data portability (if applicable)
+	•	Not be subject to automated decision-making producing legal or similarly significant effects
+
+Withdrawing consent:
+Where processing is based on consent, you may withdraw consent at any time by contacting us (see Section 12). This does not affect processing prior to withdrawal or processing based on other legal grounds.
+
+How to exercise your rights:
+	•	Submit a DSAR: https://app.termly.io/dsar/52cef21a-3962-47ec-935e-acedb1df1e21
+	•	Email: d.vorobyov.personal@gmail.com
+
+You also have the right to lodge a complaint with your local authority (e.g., EU Member State DPA, UK ICO, or the Swiss FDPIC).
+	9.	CONTROLS FOR DO-NOT-TRACK
+
+⸻
+
+Browsers and devices may include a Do-Not-Track (DNT) feature. No uniform DNT standard has been finalized, so we currently do not respond to DNT signals. If a standard is adopted, we will update this Notice.
+
+⸻
+	10.	U.S. STATE PRIVACY DISCLOSURES
+
+If you are a resident of certain U.S. states, you may have additional rights, such as to know, access, correct, delete, obtain a copy, withdraw consent, and opt out of certain processing (e.g., targeted advertising, sale, or profiling producing legal or similarly significant effects).
+
+Categories of Personal Information We Collect (last 12 months)
+
++—————————––+–––––––––––––––––––––––––––––––+———–———–———–———–———–———–———–———–———–———–———–———–———–———–———–––+
+| Category                      | Examples                                                     | Collected |
++===============================+==============================================================+===========+
+| A. Identifiers                | Real name, alias, postal address, phone, IP, email,          | NO        |
+|                               | account name                                                 |           |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| B. Personal info (Cal.        | Name, contact info, education, employment, history,          | NO        |
+| Customer Records)             | financial info                                               |           |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| C. Protected classifications   | Gender, age, DOB, race/ethnicity, national origin,          | NO        |
+| (state/federal law)           | marital status, other demographic data                       |           |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| D. Commercial information     | Transactions, purchase history, financial/payment info       | NO        |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| E. Biometric information      | Fingerprints, voiceprints                                    | NO        |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| F. Internet/network activity  | Browsing/search history, online behavior/interest data,      | NO        |
+|                               | interactions with websites/apps/ads                          |           |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| G. Geolocation data           | Device location                                              | YES*      |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| H. Audio/electronic/sensory   | Images; audio/video/call recordings related to business      | NO        |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| I. Professional info          | Business contact details, job title, work history,           | NO        |
+|                               | professional qualifications                                  |           |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| J. Education information      | Student records and directory information                    | NO        |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| K. Inferences                 | Profiles/inferences about preferences and characteristics    | NO        |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+| L. Sensitive personal info    | (as defined by law)                                          | NO        |
++—————————––+–––––––––––––––––––––––––––––––+———–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––+
+* Used only to provide location-based features; not stored, sold, or shared. Retained, if at all, only transiently/in-memory/on-device.
+
+We may also collect other personal information in contexts such as customer support, surveys/contests, and facilitating delivery of our Services and responding to inquiries.
+
+⸻
+	11.	DO WE MAKE UPDATES TO THIS NOTICE?
+
+Yes. We may update this Notice as needed to stay compliant with relevant laws. The updated version will be indicated by a “Last updated” date and is effective when posted.
+
+⸻
+	12.	HOW CAN YOU CONTACT US ABOUT THIS NOTICE?
+
+Email: d.vorobyov.personal@gmail.com
+
