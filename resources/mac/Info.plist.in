@@ -15,9 +15,9 @@
 	<string>PastViewer</string>
 
 	<key>CFBundleVersion</key>
-	<string>@APP_MAJOR_VERSION@.@APP_MINOR_VERSION@.@APP_PATCH_VERSION@</string>
+	<string>@CMAKE_PROJECT_VERSION_MAJOR@.@CMAKE_PROJECT_VERSION_MINOR@.@CMAKE_PROJECT_VERSION_PATCH@</string>
 	<key>CFBundleShortVersionString</key>
-	<string>@APP_MAJOR_VERSION@.@APP_MINOR_VERSION@</string>
+	<string>@CMAKE_PROJECT_VERSION_MAJOR@.@CMAKE_PROJECT_VERSION_MINOR@</string>
 
 	<key>LSMinimumSystemVersion</key>
 	<string></string>
