@@ -126,6 +126,7 @@ PastVuModel::PastVuModel(QObject * parent)
 			const auto result = root.value("result").toObject();
 			const auto photos = result.value("photos").toArray();
 
+			beginInsertRows(QModelIndex(), m_impl->items.size(), m_impl->items.size() + photos.size());
 			for (const QJsonValue & photo : photos)
 			{
 				const auto jsonObj = photo.toObject();
@@ -138,7 +139,6 @@ PastVuModel::PastVuModel(QObject * parent)
 				else
 					continue;
 
-				beginResetModel();
 				m_impl->items.push_back({
 					cid,
 					{ geo.at(0).toDouble(), geo.at(1).toDouble() },
@@ -147,11 +147,11 @@ PastVuModel::PastVuModel(QObject * parent)
 					BearingFromDirection(jsonObj.value("dir").toString()),
 					jsonObj.value("year").toInt()
                 });
-				endResetModel();
 
 				if (const auto item = m_impl->items.back(); item.bearing == 1)
 					LOG(WARNING) << "Incorrect bearing for item: " << item.title.toStdString();
 			}
+			endInsertRows();
 		}
 		reply->deleteLater();
 	});
