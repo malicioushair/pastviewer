@@ -206,11 +206,15 @@ bool PastVuModel::setData(const QModelIndex & index, const QVariant & value, int
 	{
 		case Roles::Selected:
 		{
-			for (auto & item : m_impl->items)
-				item.selected = false;
+			const auto selectedItemIndices = match(this->index(0, 0), Roles::Selected, true);
+			if (!selectedItemIndices.isEmpty() && selectedItemIndices.front() != index)
+			{
+				setData(selectedItemIndices.front(), false, Roles::Selected);
+				emit dataChanged(selectedItemIndices.front(), selectedItemIndices.front(), { Roles::Selected });
+			}
 
 			item.selected = value.toBool();
-			emit dataChanged(this->index(0, 0), this->index(rowCount() - 1, 0), { Roles::Selected });
+			emit dataChanged(index, index, { Roles::Selected });
 			return true;
 		}
 		default:
