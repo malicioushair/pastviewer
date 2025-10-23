@@ -87,7 +87,7 @@ PastVuModel::PastVuModel(QObject * parent)
 	: QAbstractListModel(parent)
 	, m_impl(std::make_unique<Impl>())
 {
-	const auto source = QGeoPositionInfoSource::createDefaultSource(nullptr);
+	const auto source = QGeoPositionInfoSource::createDefaultSource(this);
 	if (source)
 	{
 		connect(source, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
