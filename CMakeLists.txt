@@ -24,6 +24,7 @@ install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION .)
 
 
+#@TODO remove
 if (ON_BUILD_SERVER)
     message("ON_BUILD_SERVER!")
     SignAndDeploy()

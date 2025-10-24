@@ -1,8 +1,8 @@
 #pragma once
 
 #include <QAbstractListModel>
+#include <QGeoPositionInfoSource>
 #include <QVariant>
-#include <QtCore/qtmetamacros.h>
 #include <memory>
 
 class PastVuModel
@@ -11,7 +11,7 @@ class PastVuModel
 	Q_OBJECT
 
 public:
-	explicit PastVuModel(QObject * parent = nullptr);
+	explicit PastVuModel(QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
 	~PastVuModel();
 
 	Q_PROPERTY(int count READ rowCount() NOTIFY countChanged());
@@ -24,6 +24,8 @@ public:
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 	bool setData(const QModelIndex & index, const QVariant & value, int role) override;
 	QHash<int, QByteArray> roleNames() const override;
+
+	void OnPositionPermissionGranted();
 
 private:
 	struct Impl;

@@ -7,6 +7,7 @@
 #include <QNetworkReply>
 #include <QVariant>
 
+#include <ranges>
 #include <stdexcept>
 
 #include "glog/logging.h"
@@ -73,40 +74,32 @@ enum Roles
 
 struct PastVuModel::Impl
 {
-	Impl()
+	Impl(QGeoPositionInfoSource * positionSource)
 		: networkManager(new QNetworkAccessManager())
+		, positionSource(positionSource)
 	{
 	}
 
 	QNetworkAccessManager * networkManager;
 	Items items;
 	std::unordered_set<int> seenCids;
+	QGeoPositionInfoSource * positionSource;
 };
 
-PastVuModel::PastVuModel(QObject * parent)
+PastVuModel::PastVuModel(QGeoPositionInfoSource * positionSource, QObject * parent)
 	: QAbstractListModel(parent)
-	, m_impl(std::make_unique<Impl>())
+	, m_impl(std::make_unique<Impl>(positionSource))
 {
-	const auto source = QGeoPositionInfoSource::createDefaultSource(this);
-	if (source)
-	{
-		connect(source, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
-			const auto currentCoordinates = info.coordinate();
-			const auto lat = currentCoordinates.latitude();
-			const auto lon = currentCoordinates.longitude();
-			const auto url = QString(R"(https://pastvu.com/api2?method=photo.giveNearestPhotos&params={"geo":[%1,%2],"limit":12,"except":228481})").arg(lat).arg(lon);
-			QNetworkRequest request(url);
-			m_impl->networkManager->get(request);
-		});
-		source->startUpdates(); // Start receiving position updates
-		LOG(INFO) << "Position updates started.";
-	}
-	else
-	{
-		qDebug() << "No position source available.";
-	}
-
+	connect(m_impl->positionSource, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
+		const auto currentCoordinates = info.coordinate();
+		const auto lat = currentCoordinates.latitude();
+		const auto lon = currentCoordinates.longitude();
+		const auto url = QString(R"(https://pastvu.com/api2?method=photo.giveNearestPhotos&params={"geo":[%1,%2],"limit":12,"except":228481})").arg(lat).arg(lon);
+		QNetworkRequest request(url);
+		m_impl->networkManager->get(request);
+	});
 	connect(m_impl->networkManager, &QNetworkAccessManager::finished, this, [&](QNetworkReply * reply) {
+		// @TODO deceiving log message. change to "Reply received" and "Reply success"
 		LOG(INFO) << "Sending request";
 		if (reply->error())
 		{
@@ -126,32 +119,34 @@ PastVuModel::PastVuModel(QObject * parent)
 			const auto result = root.value("result").toObject();
 			const auto photos = result.value("photos").toArray();
 
-			beginInsertRows(QModelIndex(), m_impl->items.size(), m_impl->items.size() + photos.size());
-			for (const QJsonValue & photo : photos)
+			auto newItemsView = photos
+							  | std::views::transform([](const QJsonValue & v) { return v.toObject(); })
+							  | std::views::filter([&](const QJsonObject & obj) {
+									auto cid = obj.value("cid").toInt();
+									if (m_impl->seenCids.contains(cid))
+										return false;
+									m_impl->seenCids.insert(cid);
+									return true;
+								})
+							  | std::views::transform([&](const QJsonObject & obj) -> Item {
+									const auto geo = obj.value("geo").toArray();
+									return {
+										obj.value("cid").toInt(),
+										{ geo.at(0).toDouble(), geo.at(1).toDouble() },
+										obj.value("file").toString(),
+										obj.value("title").toString(),
+										BearingFromDirection(obj.value("dir").toString()),
+										obj.value("year").toInt()
+									};
+								});
+
+			const auto newItems = Items(newItemsView.begin(), newItemsView.end());
+			if (!newItems.empty())
 			{
-				const auto jsonObj = photo.toObject();
-				const auto geo = jsonObj.value("geo").toArray(); // [lat, lon]
-				const auto povDirection = jsonObj.value("dir").toString();
-
-				const auto cid = jsonObj.value("cid").toInt();
-				if (!m_impl->seenCids.contains(cid))
-					m_impl->seenCids.insert(cid);
-				else
-					continue;
-
-				m_impl->items.push_back({
-					cid,
-					{ geo.at(0).toDouble(), geo.at(1).toDouble() },
-					jsonObj.value("file").toString(),
-					jsonObj.value("title").toString(),
-					BearingFromDirection(jsonObj.value("dir").toString()),
-					jsonObj.value("year").toInt()
-                });
-
-				if (const auto item = m_impl->items.back(); item.bearing == 1)
-					LOG(WARNING) << "Incorrect bearing for item: " << item.title.toStdString();
+				beginInsertRows(QModelIndex(), m_impl->items.size(), m_impl->items.size() + newItems.size() - 1);
+				m_impl->items.insert(m_impl->items.end(), newItems.begin(), newItems.end());
+				endInsertRows();
 			}
-			endInsertRows();
 		}
 		reply->deleteLater();
 	});
@@ -239,4 +234,10 @@ QHash<int, QByteArray> PastVuModel::roleNames() const
 		ROLENAME(Selected),
 	};
 #undef ROLENAME
+}
+
+void PastVuModel::OnPositionPermissionGranted()
+{
+	if (m_impl->positionSource)
+		m_impl->positionSource->startUpdates();
 }
