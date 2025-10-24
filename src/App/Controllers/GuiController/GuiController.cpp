@@ -104,15 +104,21 @@ GuiController::GuiController(QObject * parent)
 		throw std::runtime_error("Failed to load QML");
 	}
 
+	connect(this, &GuiController::PositionPermissionGranted, m_impl->pastVuModelController.get(), &PastVuModelController::OnPositionPermissionGranted);
+
 	QLocationPermission permission;
 	permission.setAccuracy(QLocationPermission::Precise);
 	switch (qApp->checkPermission(permission))
 	{
 		case Qt::PermissionStatus::Undetermined:
-			qApp->requestPermission(permission, this, [] {
-				LOG(INFO) << "QLocationPermission granted";
+			qApp->requestPermission(permission, this, [&] {
+				LOG(INFO) << "QLocationPermission requested";
+				if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted)
+				{
+					LOG(INFO) << "QLocationPermission granted";
+					emit PositionPermissionGranted();
+				}
 			});
-			break;
 		case Qt::PermissionStatus::Denied:
 			LOG(WARNING) << "QLocationPermission denied!";
 			break;

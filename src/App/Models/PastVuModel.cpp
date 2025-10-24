@@ -87,25 +87,6 @@ PastVuModel::PastVuModel(QObject * parent)
 	: QAbstractListModel(parent)
 	, m_impl(std::make_unique<Impl>())
 {
-	const auto source = QGeoPositionInfoSource::createDefaultSource(this);
-	if (source)
-	{
-		connect(source, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
-			const auto currentCoordinates = info.coordinate();
-			const auto lat = currentCoordinates.latitude();
-			const auto lon = currentCoordinates.longitude();
-			const auto url = QString(R"(https://pastvu.com/api2?method=photo.giveNearestPhotos&params={"geo":[%1,%2],"limit":12,"except":228481})").arg(lat).arg(lon);
-			QNetworkRequest request(url);
-			m_impl->networkManager->get(request);
-		});
-		source->startUpdates(); // Start receiving position updates
-		LOG(INFO) << "Position updates started.";
-	}
-	else
-	{
-		qDebug() << "No position source available.";
-	}
-
 	connect(m_impl->networkManager, &QNetworkAccessManager::finished, this, [&](QNetworkReply * reply) {
 		LOG(INFO) << "Sending request";
 		if (reply->error())
@@ -239,4 +220,27 @@ QHash<int, QByteArray> PastVuModel::roleNames() const
 		ROLENAME(Selected),
 	};
 #undef ROLENAME
+}
+
+void PastVuModel::OnPositionPermissionGranted()
+{
+	const auto source = QGeoPositionInfoSource::createDefaultSource(this);
+	if (source)
+	{
+		connect(source, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
+			const auto currentCoordinates = info.coordinate();
+			const auto lat = currentCoordinates.latitude();
+			const auto lon = currentCoordinates.longitude();
+			const auto url = QString(R"(https://pastvu.com/api2?method=photo.giveNearestPhotos&params={"geo":[%1,%2],"limit":12,"except":228481})").arg(lat).arg(lon);
+			QNetworkRequest request(url);
+			m_impl->networkManager->get(request);
+		});
+		source->startUpdates(); // Start receiving position updates
+		LOG(INFO) << "Position updates started.";
+	}
+	else
+	{
+		// @TODO: use glog
+		qDebug() << "No position source available.";
+	}
 }

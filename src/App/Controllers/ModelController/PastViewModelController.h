@@ -10,12 +10,17 @@ class PastVuModelController
 {
 	Q_OBJECT
 
+signals:
+	void PositionPermissionGranted();
+
 public:
 	PastVuModelController(QObject * parent = nullptr);
 	~PastVuModelController();
 
 	Q_INVOKABLE QAbstractListModel * GetModel();
 	Q_INVOKABLE QString GetMapHostApiKey();
+
+	void OnPositionPermissionGranted();
 
 private:
 	struct Impl;

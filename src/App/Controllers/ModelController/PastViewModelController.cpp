@@ -13,6 +13,7 @@ PastVuModelController::PastVuModelController(QObject * parent)
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>())
 {
+	connect(this, &PastVuModelController::PositionPermissionGranted, m_impl->pastVuModel.get(), &PastVuModel::OnPositionPermissionGranted);
 }
 
 PastVuModelController::~PastVuModelController() = default;
@@ -25,4 +26,9 @@ QAbstractListModel * PastVuModelController::GetModel()
 QString PastVuModelController::GetMapHostApiKey()
 {
 	return QString::fromUtf8(API_KEY);
+}
+
+void PastVuModelController::OnPositionPermissionGranted()
+{
+	emit PositionPermissionGranted();
 }
