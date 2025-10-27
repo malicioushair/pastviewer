@@ -6,6 +6,9 @@ import QtPositioning
 
 import PastViewer 1.0
 
+import "ErrorMessageDialog"
+import "GuiItems"
+
 import "Helpers/colors.js" as Colors
 
 Rectangle {
@@ -17,7 +20,7 @@ Rectangle {
         id: stackViewID
 
         function openPhotoDetails(photo, title, year) {
-            stackViewID.push("PhotoDetails.qml", {
+            stackViewID.push("Views/PhotoDetails.qml", {
                 imageSource: photo,
                 title: title,
                 year: year
@@ -29,7 +32,7 @@ Rectangle {
         initialItem: mapPageID
     }
 
-    ErrorDialog {
+    ErrorMessageDialog {
         id: errorDialogID
 
         anchors.centerIn: Overlay.overlay

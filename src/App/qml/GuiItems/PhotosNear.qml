@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Effects
 
-import "Helpers/colors.js" as Colors
+import "../Helpers/colors.js" as Colors
 
 Rectangle {
     id: rootID
