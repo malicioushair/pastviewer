@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "Helpers/colors.js" as Colors
+import "../Helpers/colors.js" as Colors
 
 Page {
     id: rootID

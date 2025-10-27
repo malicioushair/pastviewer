@@ -1,0 +1,6 @@
+module GuiItems
+Compass 1.0 Compass.qml
+PhotosNear 1.0 PhotosNear.qml
+PovDirection 1.0 PovDirection.qml
+RecenterButton 1.0 RecenterButton.qml
+
