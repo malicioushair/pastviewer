@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStringLiteral>
+#include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
 
@@ -80,7 +81,7 @@ struct GuiController::Impl
 		p.setAccuracy(QLocationPermission::Precise);
 		return p;
 	}() };
-	std::unique_ptr<PastVuModelController> pastVuModelController { std::make_unique<PastVuModelController>(permission) };
+	std::unique_ptr<PastVuModelController> pastVuModelController;
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
 
 	void LoadQml()
@@ -99,21 +100,23 @@ GuiController::GuiController(QObject * parent)
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>())
 {
-	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
-	qRegisterMetaType<QGeoCoordinate>();
-	qRegisterMetaType<QGeoPositionInfo>();
-	m_impl->engine.rootContext()->setContextProperty("guiController", this);
-
 	try
 	{
-		m_impl->engine.rootContext()->setContextProperty("pastVuModelController", m_impl->pastVuModelController.get());
+		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->permission) };
 	}
 	catch (const std::runtime_error & error)
 	{
 		LOG(ERROR) << "Failed to init PastVuModelController: " << error.what();
-		// @TODO: show error message in GUI
+		QTimer::singleShot(0, this, [this, error] {
+			emit showErrorDialog(QString::fromStdString(error.what()));
+		});
 	}
 
+	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
+	qRegisterMetaType<QGeoCoordinate>();
+	qRegisterMetaType<QGeoPositionInfo>();
+	m_impl->engine.rootContext()->setContextProperty("guiController", this);
+	m_impl->engine.rootContext()->setContextProperty("pastVuModelController", m_impl->pastVuModelController.get());
 	m_impl->engine.addImportPath("qrc:/qt/qml");
 	m_impl->engine.addUrlInterceptor(m_impl->interceptor.get());
 	m_impl->LoadQml();

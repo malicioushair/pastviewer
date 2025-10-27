@@ -12,6 +12,7 @@ class GuiController
 
 signals:
 	void PositionPermissionGranted();
+	void showErrorDialog(const QString & errorMessage);
 
 public:
 	GuiController(QObject * parent = nullptr);

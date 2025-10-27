@@ -17,7 +17,7 @@ struct PastVuModelController::Impl
 		: source(QGeoPositionInfoSource::createDefaultSource(nullptr))
 		, pastVuModel(std::make_unique<PastVuModel>(source.get()))
 		, positionSourceAdapter([&] {
-			if (!source) //
+			if (!source)
 				throw std::runtime_error("POSITION SOURCE EMPTY!");
 			return std::make_unique<PositionSourceAdapter>(*source);
 		}())

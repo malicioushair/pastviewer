@@ -29,6 +29,21 @@ Rectangle {
         initialItem: mapPageID
     }
 
+    ErrorDialog {
+        id: errorDialogID
+
+        anchors.centerIn: Overlay.overlay
+    }
+
+    Connections {
+        target: guiController
+
+        function onShowErrorDialog(message) {
+            errorDialogID.errorMessage = message
+            errorDialogID.open()
+        }
+    }
+
     Component {
         id: mapPageID
 
