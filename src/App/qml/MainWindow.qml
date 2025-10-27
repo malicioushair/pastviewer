@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import QtLocation
 import QtPositioning
 
+import PastViewer 1.0
+
 import "Helpers/colors.js" as Colors
 
 Rectangle {
@@ -27,17 +29,28 @@ Rectangle {
         initialItem: mapPageID
     }
 
+    ErrorDialog {
+        id: errorDialogID
+
+        anchors.centerIn: Overlay.overlay
+    }
+
+    Connections {
+        target: guiController
+
+        function onShowErrorDialog(message) {
+            errorDialogID.errorMessage = message
+            errorDialogID.open()
+        }
+    }
+
     Component {
         id: mapPageID
 
         ColumnLayout {
+            readonly property var positionSource: pastVuModelController.GetPositionSource()
+
             anchors.fill: parent
-
-            PositionSource {
-                id: positionSourceID
-
-                active: true
-            }
 
             MapView {
                 id: mapViewID
@@ -113,18 +126,13 @@ Rectangle {
 
                     zoomLevel: 13
 
-                    Component.onCompleted: {
-                        if (positionSourceID.position.coordinate.isValid)
-                            mapID.center = positionSourceID.position.coordinate
-                    }
-
                     Binding {
                         id: followCenterID
 
                         target: mapID
                         property: "center"
-                        value: positionSourceID.position.coordinate
-                        when: mapID.follow && positionSourceID.position.coordinate.isValid
+                        value: positionSource.coordinate
+                        when: mapID.follow && positionSource.coordinate.isValid
                         restoreMode: Binding.RestoreNone
                     }
 
@@ -221,7 +229,7 @@ Rectangle {
                     // "you are here" marker
                     MapQuickItem {
                         anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
-                        coordinate: positionSourceID.position.coordinate
+                        coordinate: positionSource.coordinate
                         visible: coordinate.isValid
                         sourceItem: Rectangle {
                             id: dotID

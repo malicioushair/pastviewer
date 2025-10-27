@@ -10,6 +10,10 @@ class GuiController
 	Q_OBJECT
 	Q_DISABLE_COPY(GuiController)
 
+signals:
+	void PositionPermissionGranted();
+	void showErrorDialog(const QString & errorMessage);
+
 public:
 	GuiController(QObject * parent = nullptr);
 	~GuiController();

@@ -22,9 +22,3 @@ install(TARGETS ${PROJECT_NAME}
         BUNDLE DESTINATION  .
         LIBRARY DESTINATION .
         RUNTIME DESTINATION .)
-
-
-if (ON_BUILD_SERVER)
-    message("ON_BUILD_SERVER!")
-    SignAndDeploy()
-endif()

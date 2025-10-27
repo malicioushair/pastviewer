@@ -1,6 +1,7 @@
 #include "GuiController.h"
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 #include <QDateTime>
@@ -12,14 +13,14 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStringLiteral>
+#include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
 
 #include "glog/logging.h"
 
 #include "App/Controllers/ModelController/PastViewModelController.h"
-
-constexpr auto PATH = "PATH";
+#include "App/Controllers/ModelController/PositionSourceAdapter.h"
 
 using namespace PastViewer;
 
@@ -73,7 +74,12 @@ struct GuiController::Impl
 {
 	QQmlApplicationEngine engine;
 	QSettings settings;
-	std::unique_ptr<PastVuModelController> pastVuModelController { std::make_unique<PastVuModelController>() };
+	QLocationPermission permission { [] {
+		QLocationPermission p;
+		p.setAccuracy(QLocationPermission::Precise);
+		return p;
+	}() };
+	std::unique_ptr<PastVuModelController> pastVuModelController;
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
 
 	void LoadQml()
@@ -92,6 +98,21 @@ GuiController::GuiController(QObject * parent)
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>())
 {
+	try
+	{
+		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->permission) };
+	}
+	catch (const std::runtime_error & error)
+	{
+		LOG(ERROR) << "Failed to init PastVuModelController: " << error.what();
+		QTimer::singleShot(0, this, [this, error] {
+			emit showErrorDialog(QString::fromStdString(error.what()));
+		});
+	}
+
+	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
+	qRegisterMetaType<QGeoCoordinate>();
+	qRegisterMetaType<QGeoPositionInfo>();
 	m_impl->engine.rootContext()->setContextProperty("guiController", this);
 	m_impl->engine.rootContext()->setContextProperty("pastVuModelController", m_impl->pastVuModelController.get());
 	m_impl->engine.addImportPath("qrc:/qt/qml");
@@ -104,13 +125,18 @@ GuiController::GuiController(QObject * parent)
 		throw std::runtime_error("Failed to load QML");
 	}
 
-	QLocationPermission permission;
-	permission.setAccuracy(QLocationPermission::Precise);
-	switch (qApp->checkPermission(permission))
+	connect(this, &GuiController::PositionPermissionGranted, m_impl->pastVuModelController.get(), &PastVuModelController::OnPositionPermissionGranted);
+
+	switch (qApp->checkPermission(m_impl->permission))
 	{
 		case Qt::PermissionStatus::Undetermined:
-			qApp->requestPermission(permission, this, [] {
-				LOG(INFO) << "QLocationPermission granted";
+			qApp->requestPermission(m_impl->permission, this, [&] {
+				LOG(INFO) << "QLocationPermission requested";
+				if (qApp->checkPermission(m_impl->permission) == Qt::PermissionStatus::Granted)
+				{
+					LOG(INFO) << "QLocationPermission granted";
+					emit PositionPermissionGranted();
+				}
 			});
 			break;
 		case Qt::PermissionStatus::Denied:
