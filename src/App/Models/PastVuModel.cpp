@@ -99,15 +99,14 @@ PastVuModel::PastVuModel(QGeoPositionInfoSource * positionSource, QObject * pare
 		m_impl->networkManager->get(request);
 	});
 	connect(m_impl->networkManager, &QNetworkAccessManager::finished, this, [&](QNetworkReply * reply) {
-		// @TODO deceiving log message. change to "Reply received" and "Reply success"
-		LOG(INFO) << "Sending request";
+		LOG(INFO) << "Reply received";
 		if (reply->error())
 		{
 			LOG(INFO) << "Reply error:" << reply->errorString().toStdString();
 		}
 		else
 		{
-			LOG(INFO) << "Reply received";
+			LOG(INFO) << "Reply success";
 			const auto response = reply->readAll();
 
 			QJsonParseError parserError;

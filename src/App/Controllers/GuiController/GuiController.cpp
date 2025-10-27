@@ -22,8 +22,6 @@
 #include "App/Controllers/ModelController/PastViewModelController.h"
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
 
-constexpr auto PATH = "PATH"; //@TODO: remove as unused
-
 using namespace PastViewer;
 
 namespace {
