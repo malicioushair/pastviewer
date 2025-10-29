@@ -1,5 +1,6 @@
 [requires]
 glog/0.7.1
+gtest/1.14.0
 
 [generators]
 CMakeDeps
