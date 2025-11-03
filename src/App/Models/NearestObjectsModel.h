@@ -5,14 +5,14 @@
 #include <QVariant>
 #include <memory>
 
-class PastVuModel
+class NearestObjectsModel
 	: public QAbstractListModel
 {
 	Q_OBJECT
 
 public:
-	explicit PastVuModel(QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
-	~PastVuModel();
+	explicit NearestObjectsModel(QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
+	~NearestObjectsModel();
 
 	Q_PROPERTY(int count READ rowCount() NOTIFY countChanged());
 

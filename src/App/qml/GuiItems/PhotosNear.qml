@@ -14,6 +14,31 @@ Rectangle {
     radius: 16
     color: Colors.palette.bg
 
+    Rectangle {
+        id: imagesNearbyID
+
+        anchors {
+            top: parent.top
+            right: parent.right
+            margins: 12
+        }
+
+        width: 24
+        height: 24
+        z: 999
+
+        radius: 10
+
+        color: Colors.palette.accentAlt
+        border.color: Colors.palette.border
+
+        Text {
+            anchors.centerIn: parent
+            text: mapItemViewID.model.count
+            color: "white"
+        }
+    }
+
     ColumnLayout {
         anchors {
             fill: parent

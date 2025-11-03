@@ -27,6 +27,10 @@ Rectangle {
             })
         }
 
+        function openSettings() {
+            stackViewID.push("Views/Settings.qml")
+        }
+
         anchors.fill: parent
 
         initialItem: mapPageID
@@ -75,29 +79,18 @@ Rectangle {
                     z: 999   // above the map
                 }
 
-                Rectangle {
-                    id: imagesNearbyID
+                SettingsButton {
+                    id: settingsButtonID
 
-                    anchors {
+                   anchors {
                         top: parent.top
                         left: parent.left
                         margins: 12
                     }
 
-                    width: 24
-                    height: 24
-                    z: 999
+                    z: 999   // above the map
 
-                    radius: 10
-
-                    color: Colors.palette.accentAlt
-                    border.color: Colors.palette.border
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: mapItemViewID.model.count
-                        color: "white"
-                    }
+                    onClicked: stackViewID.openSettings()
                 }
 
                 Map {

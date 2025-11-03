@@ -9,13 +9,14 @@
 #include "glog/logging.h"
 
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
-#include "App/Models/PastVuModel.h"
+#include "App/Models/NearestObjectsModel.h"
+#include "App/Models/ScreenObjectsModel.h"
 
 struct PastVuModelController::Impl
 {
 	Impl(const QLocationPermission & permission)
 		: source(QGeoPositionInfoSource::createDefaultSource(nullptr))
-		, pastVuModel(std::make_unique<PastVuModel>(source.get()))
+		, nearestObjectsModel(std::make_unique<NearestObjectsModel>(source.get()))
 		, positionSourceAdapter([&] {
 			if (!source)
 				throw std::runtime_error("POSITION SOURCE EMPTY!");
@@ -27,22 +28,24 @@ struct PastVuModelController::Impl
 	}
 
 	std::unique_ptr<QGeoPositionInfoSource> source;
-	std::unique_ptr<PastVuModel> pastVuModel;
+	std::unique_ptr<NearestObjectsModel> nearestObjectsModel;
+	std::unique_ptr<ScreenObjectsModel> screenObjectsModel;
 	std::unique_ptr<PositionSourceAdapter> positionSourceAdapter;
+	bool nearestObjectsOnly { true };
 };
 
 PastVuModelController::PastVuModelController(const QLocationPermission & permission, QObject * parent)
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>(permission))
 {
-	connect(this, &PastVuModelController::PositionPermissionGranted, m_impl->pastVuModel.get(), &PastVuModel::OnPositionPermissionGranted);
+	connect(this, &PastVuModelController::PositionPermissionGranted, m_impl->nearestObjectsModel.get(), &NearestObjectsModel::OnPositionPermissionGranted);
 }
 
 PastVuModelController::~PastVuModelController() = default;
 
 QAbstractListModel * PastVuModelController::GetModel()
 {
-	return m_impl->pastVuModel.get();
+	return m_impl->nearestObjectsModel.get();
 }
 
 QString PastVuModelController::GetMapHostApiKey()
@@ -58,4 +61,15 @@ PositionSourceAdapter * PastVuModelController::GetPositionSource()
 void PastVuModelController::OnPositionPermissionGranted()
 {
 	emit PositionPermissionGranted();
+}
+
+bool PastVuModelController::GetNearestObjectsOnly()
+{
+	return m_impl->nearestObjectsOnly;
+}
+
+void PastVuModelController::SetNearestObjectsOnly(bool value)
+{
+	m_impl->nearestObjectsOnly = value;
+	emit NearestObjecrtsOnlyChanged();
 }
