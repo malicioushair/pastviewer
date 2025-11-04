@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <stdexcept>
 #include <string_view>
 
 #include <QString>
@@ -10,12 +9,14 @@
 
 namespace DirectionUtils {
 
+constexpr auto INCORRECT_DIRECTION = 361;
+
 inline int BearingFromDirection(const QString & direction)
 {
 	if (direction.isEmpty())
 	{
 		LOG(WARNING) << "Direction cannot be empty";
-		return 1;
+		return INCORRECT_DIRECTION;
 	}
 
 	static constexpr std::array<std::pair<std::string_view, int>, 8> povDirectionToBearing {
@@ -35,7 +36,10 @@ inline int BearingFromDirection(const QString & direction)
 		return item.first == direction;
 	});
 	if (it == povDirectionToBearing.cend())
-		throw std::runtime_error("Unknown direction: " + direction.toStdString());
+	{
+		LOG(WARNING) << "Incorrect direction: " << direction.toStdString();
+		return INCORRECT_DIRECTION;
+	}
 
 	return it->second;
 }
