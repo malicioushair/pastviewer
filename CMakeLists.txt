@@ -15,10 +15,12 @@ include(cmake/Helpers.cmake)
 
 include(src/App/App.cmake)
 
-option(BUILD_TESTS "Build unit tests" ON)
-if(BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
+if (NOT ANDROID AND NOT IOS)
+    option(BUILD_TESTS "Build unit tests" ON)
+    if(BUILD_TESTS)
+        enable_testing()
+        add_subdirectory(tests)
+    endif()
 endif()
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
