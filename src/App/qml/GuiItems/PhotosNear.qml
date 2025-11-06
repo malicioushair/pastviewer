@@ -59,7 +59,7 @@ Rectangle {
             Layout.fillHeight: true
 
 
-            model: pastVuModelController.GetModel()
+            model: pastVuModelController.model
             orientation: ListView.Horizontal
             spacing: 10
             delegate: Item {

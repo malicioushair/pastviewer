@@ -100,7 +100,7 @@ GuiController::GuiController(QObject * parent)
 {
 	try
 	{
-		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->permission) };
+		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->permission, m_impl->settings) };
 	}
 	catch (const std::runtime_error & error)
 	{

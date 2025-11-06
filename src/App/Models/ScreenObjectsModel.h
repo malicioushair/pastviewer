@@ -2,7 +2,9 @@
 
 #include <QAbstractListModel>
 #include <QGeoPositionInfoSource>
+#include <QGeoRectangle>
 #include <QVariant>
+
 #include <memory>
 
 class ScreenObjectsModel
@@ -11,13 +13,14 @@ class ScreenObjectsModel
 	Q_OBJECT
 
 public:
-	explicit ScreenObjectsModel(QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
+	explicit ScreenObjectsModel(QGeoPositionInfoSource * positionSource, const QGeoRectangle & viewport, QObject * parent = nullptr);
 	~ScreenObjectsModel();
 
 	Q_PROPERTY(int count READ rowCount() NOTIFY countChanged());
 
 signals:
-	void countChanged();
+	void countChanged(); // @TODO PascalCase
+	void UpdateCoords(const QGeoRectangle & viewport);
 
 public:
 	int rowCount(const QModelIndex & parent = QModelIndex()) const override;

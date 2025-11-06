@@ -99,6 +99,26 @@ Rectangle {
                     property geoCoordinate startCentroid
                     property bool follow: true
 
+                    Timer {
+                        id: mapMovementTimerID
+                        interval: 300  // Wait 300ms after map stops moving // @TODO figure out how to know when the pan is stopped
+                        onTriggered: mapID.updateViewCoordinates()
+                    }
+
+                    function scheduleViewUpdate() {
+                        mapMovementTimerID.restart()
+                    }
+
+                    function updateViewCoordinates() {
+                        if (mapID.width <= 0 || mapID.height <= 0) {
+                            return
+                        }
+
+                        const topLeftCoord = mapID.toCoordinate(Qt.point(0, 0), false)
+                        const bottomRightCoord = mapID.toCoordinate(Qt.point(mapID.width, mapID.height), false)
+                        pastVuModelController.SetViewportCoordinates(QtPositioning.rectangle(topLeftCoord, bottomRightCoord))
+                    }
+
                     anchors.fill: parent
                     copyrightsVisible: false
                     plugin: Plugin {
@@ -122,6 +142,10 @@ Rectangle {
 
                     zoomLevel: 13
 
+                    onCenterChanged: scheduleViewUpdate()
+                    onZoomLevelChanged: scheduleViewUpdate()
+                    onBearingChanged: scheduleViewUpdate()
+
                     Binding {
                         id: followCenterID
 
@@ -135,7 +159,7 @@ Rectangle {
                     MapItemView {
                         id: mapItemViewID
 
-                        model: pastVuModelController.GetModel()
+                        model: pastVuModelController.model
                         delegate: delegateID
                     }
 

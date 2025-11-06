@@ -2,8 +2,10 @@
 
 #include <QAbstractItemModel>
 #include <QGeoPositionInfoSource>
+#include <QGeoRectangle>
 #include <QLocationPermission>
 #include <QObject>
+#include <QSettings>
 
 #include <QtCore/qtmetamacros.h>
 #include <memory>
@@ -18,18 +20,23 @@ class PastVuModelController
 signals:
 	void PositionPermissionGranted();
 	void NearestObjecrtsOnlyChanged();
+	void ModelChanged();
 
 public:
-	PastVuModelController(const QLocationPermission & permission, QObject * parent = nullptr);
+	PastVuModelController(const QLocationPermission & permission, QSettings & settings, QObject * parent = nullptr);
 	~PastVuModelController();
 
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjecrtsOnlyChanged);
+	Q_PROPERTY(QAbstractListModel * model READ GetModel NOTIFY ModelChanged);
 
-	Q_INVOKABLE QAbstractListModel * GetModel();
 	Q_INVOKABLE QString GetMapHostApiKey();
 	Q_INVOKABLE PositionSourceAdapter * GetPositionSource();
+	Q_INVOKABLE void SetViewportCoordinates(const QGeoRectangle & viewport);
+	Q_INVOKABLE void ToggleOnlyNearestObjects();
 
 	void OnPositionPermissionGranted();
+
+	QAbstractListModel * GetModel();
 
 	bool GetNearestObjectsOnly();
 	void SetNearestObjectsOnly(bool value);

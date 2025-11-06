@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QNetworkReply>
+#include <QUrlQuery>
 #include <QVariant>
 
 #include <ranges>
@@ -45,9 +46,10 @@ enum Roles
 
 struct ScreenObjectsModel::Impl
 {
-	Impl(QGeoPositionInfoSource * positionSource)
+	Impl(QGeoPositionInfoSource * positionSource, const QGeoRectangle & viewport)
 		: networkManager(new QNetworkAccessManager())
 		, positionSource(positionSource)
+		, viewport(viewport)
 	{
 	}
 
@@ -55,20 +57,36 @@ struct ScreenObjectsModel::Impl
 	Items items;
 	std::unordered_set<int> seenCids;
 	QGeoPositionInfoSource * positionSource;
+	const QGeoRectangle & viewport;
+	QUrl url { "https://pastvu.com/api2" };
 };
 
-ScreenObjectsModel::ScreenObjectsModel(QGeoPositionInfoSource * positionSource, QObject * parent)
+ScreenObjectsModel::ScreenObjectsModel(QGeoPositionInfoSource * positionSource, const QGeoRectangle & viewport, QObject * parent)
 	: QAbstractListModel(parent)
-	, m_impl(std::make_unique<Impl>(positionSource))
+	, m_impl(std::make_unique<Impl>(positionSource, viewport))
 {
-	connect(m_impl->positionSource, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
-		const auto currentCoordinates = info.coordinate();
-		const auto lat = currentCoordinates.latitude();
-		const auto lon = currentCoordinates.longitude();
-		const auto url = QString(R"(https://pastvu.com/api2?method=photo.giveNearestPhotos&params={"geo":[%1,%2],"limit":12,"except":228481})").arg(lat).arg(lon);
-		QNetworkRequest request(url);
+	connect(this, &ScreenObjectsModel::UpdateCoords, this, [&](const QGeoRectangle & viewport) {
+		const auto paramsJson = QString(R"({"z":16,"geometry":{"type":"Polygon","coordinates":[[[%1,%2],[%3,%4],[%5,%6],[%7,%8],[%9,%10]]]},"localWork":0})")
+									.arg(QString::number(viewport.topLeft().longitude(), 'f', 15))
+									.arg(QString::number(viewport.topLeft().latitude(), 'f', 15))
+									.arg(QString::number(viewport.bottomLeft().longitude(), 'f', 15))
+									.arg(QString::number(viewport.bottomLeft().latitude(), 'f', 15))
+									.arg(QString::number(viewport.bottomRight().longitude(), 'f', 15))
+									.arg(QString::number(viewport.bottomRight().latitude(), 'f', 15))
+									.arg(QString::number(viewport.topRight().longitude(), 'f', 15))
+									.arg(QString::number(viewport.topRight().latitude(), 'f', 15))
+									.arg(QString::number(viewport.topLeft().longitude(), 'f', 15))
+									.arg(QString::number(viewport.topLeft().latitude(), 'f', 15));
+
+		QUrlQuery query;
+		query.addQueryItem("method", "photo.getByBounds");
+		query.addQueryItem("params", paramsJson);
+		m_impl->url.setQuery(query);
+
+		QNetworkRequest request(m_impl->url);
 		m_impl->networkManager->get(request);
 	});
+
 	connect(m_impl->networkManager, &QNetworkAccessManager::finished, this, [&](QNetworkReply * reply) {
 		LOG(INFO) << "Reply received";
 		if (reply->error())
