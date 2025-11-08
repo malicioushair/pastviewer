@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Effects
 
 import "../Helpers/colors.js" as Colors
+import "../Helpers/utils.js" as Utils
 
 Rectangle {
     id: rootID
@@ -62,6 +63,9 @@ Rectangle {
             model: pastVuModelController.model
             orientation: ListView.Horizontal
             spacing: 10
+
+            onCountChanged: Utils.setTimeout(positionViewAtEnd, 300) } // @TODO: add animation
+
             delegate: Item {
                 width: 100
                 height: 100

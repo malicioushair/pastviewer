@@ -140,7 +140,7 @@ Rectangle {
                             console.warn("CustomMap not provided by this plugin.");
                     }
 
-                    zoomLevel: 13
+                    zoomLevel: pastVuModelController.zoomLevel
 
                     onCenterChanged: scheduleViewUpdate()
                     onZoomLevelChanged: scheduleViewUpdate()
@@ -226,6 +226,8 @@ Rectangle {
                         }
                         onScaleChanged: (delta) => {
                             mapID.zoomLevel += Math.log2(delta)
+                            pastVuModelController.zoomLevel = mapID.zoomLevel // @TODO think on removing the repetirion
+
                             mapID.alignCoordinateToPoint(mapID.startCentroid, pinchHandlerID.centroid.position)
                         }
                         onRotationChanged: (delta) => {

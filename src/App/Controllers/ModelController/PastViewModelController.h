@@ -21,6 +21,7 @@ signals:
 	void PositionPermissionGranted();
 	void NearestObjecrtsOnlyChanged();
 	void ModelChanged();
+	void ZoomLevelChanged();
 
 public:
 	PastVuModelController(const QLocationPermission & permission, QSettings & settings, QObject * parent = nullptr);
@@ -28,6 +29,7 @@ public:
 
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjecrtsOnlyChanged);
 	Q_PROPERTY(QAbstractListModel * model READ GetModel NOTIFY ModelChanged);
+	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
 
 	Q_INVOKABLE QString GetMapHostApiKey();
 	Q_INVOKABLE PositionSourceAdapter * GetPositionSource();
@@ -40,6 +42,9 @@ public:
 
 	bool GetNearestObjectsOnly();
 	void SetNearestObjectsOnly(bool value);
+
+	int GetZoomLevel() const;
+	void SetZoomLevel(int value);
 
 private:
 	struct Impl;

@@ -13,6 +13,21 @@ class ScreenObjectsModel
 	Q_OBJECT
 
 public:
+	enum Roles
+	{
+		// Getters
+		Coordinate = Qt::UserRole + 1,
+		Title,
+		Photo,
+		Thumbnail,
+		Bearing,
+		Year,
+
+		// Setters
+		Selected,
+		ZoomLevel,
+	};
+
 	explicit ScreenObjectsModel(QGeoPositionInfoSource * positionSource, const QGeoRectangle & viewport, QObject * parent = nullptr);
 	~ScreenObjectsModel();
 

@@ -8,6 +8,7 @@
 #include <QUrlQuery>
 #include <QVariant>
 
+#include <deque>
 #include <ranges>
 
 #include "glog/logging.h"
@@ -27,21 +28,8 @@ struct Item
 	bool selected { false };
 };
 
-using Items = std::vector<Item>;
+using Items = std::deque<Item>;
 
-enum Roles
-{
-	// Getters
-	Coordinate = Qt::UserRole + 1,
-	Title,
-	Photo,
-	Thumbnail,
-	Bearing,
-	Year,
-
-	// Setters
-	Selected,
-};
 }
 
 struct ScreenObjectsModel::Impl
@@ -59,6 +47,7 @@ struct ScreenObjectsModel::Impl
 	QGeoPositionInfoSource * positionSource;
 	const QGeoRectangle & viewport;
 	QUrl url { "https://pastvu.com/api2" };
+	int zoomLevel { 13 };
 };
 
 ScreenObjectsModel::ScreenObjectsModel(QGeoPositionInfoSource * positionSource, const QGeoRectangle & viewport, QObject * parent)
@@ -66,6 +55,9 @@ ScreenObjectsModel::ScreenObjectsModel(QGeoPositionInfoSource * positionSource, 
 	, m_impl(std::make_unique<Impl>(positionSource, viewport))
 {
 	connect(this, &ScreenObjectsModel::UpdateCoords, this, [&](const QGeoRectangle & viewport) {
+		if (m_impl->zoomLevel < 9)
+			return;
+
 		const auto paramsJson = QString(R"({"z":16,"geometry":{"type":"Polygon","coordinates":[[[%1,%2],[%3,%4],[%5,%6],[%7,%8],[%9,%10]]]},"localWork":0})")
 									.arg(QString::number(viewport.topLeft().longitude(), 'f', 15))
 									.arg(QString::number(viewport.topLeft().latitude(), 'f', 15))
@@ -92,50 +84,57 @@ ScreenObjectsModel::ScreenObjectsModel(QGeoPositionInfoSource * positionSource, 
 		if (reply->error())
 		{
 			LOG(INFO) << "Reply error:" << reply->errorString().toStdString();
+			return;
 		}
-		else
+		LOG(INFO) << "Reply success";
+		const auto response = reply->readAll();
+
+		QJsonParseError parserError;
+		const auto jsonDoc = QJsonDocument::fromJson(response, &parserError);
+		if (parserError.error != QJsonParseError::NoError)
+			LOG(WARNING) << "Failed to parse JSON with error" << parserError.errorString().toStdString();
+
+		const auto root = jsonDoc.object();
+		const auto result = root.value("result").toObject();
+		const auto photos = result.value("photos").toArray();
+
+		auto newItemsView = photos
+						  | std::views::transform([](const QJsonValue & v) { return v.toObject(); })
+						  | std::views::filter([&](const QJsonObject & obj) {
+								auto cid = obj.value("cid").toInt();
+								if (m_impl->seenCids.contains(cid))
+									return false;
+								m_impl->seenCids.insert(cid);
+								return true;
+							})
+						  | std::views::transform([&](const QJsonObject & obj) -> Item {
+								const auto geo = obj.value("geo").toArray();
+								return {
+									obj.value("cid").toInt(),
+									{ geo.at(0).toDouble(), geo.at(1).toDouble() },
+									obj.value("file").toString(),
+									obj.value("title").toString(),
+									DirectionUtils::BearingFromDirection(obj.value("dir").toString()),
+									obj.value("year").toInt()
+								};
+							});
+
+		const auto newItems = Items(newItemsView.begin(), newItemsView.end());
+		static constexpr auto MAX_ITEMS_PER_MODEL = 300;
+		if (!newItems.empty() && m_impl->items.size() > MAX_ITEMS_PER_MODEL)
 		{
-			LOG(INFO) << "Reply success";
-			const auto response = reply->readAll();
-
-			QJsonParseError parserError;
-			const auto jsonDoc = QJsonDocument::fromJson(response, &parserError);
-			if (parserError.error != QJsonParseError::NoError)
-				LOG(WARNING) << "Failed to parse JSON with error" << parserError.errorString().toStdString();
-
-			const auto root = jsonDoc.object();
-			const auto result = root.value("result").toObject();
-			const auto photos = result.value("photos").toArray();
-
-			auto newItemsView = photos
-							  | std::views::transform([](const QJsonValue & v) { return v.toObject(); })
-							  | std::views::filter([&](const QJsonObject & obj) {
-									auto cid = obj.value("cid").toInt();
-									if (m_impl->seenCids.contains(cid))
-										return false;
-									m_impl->seenCids.insert(cid);
-									return true;
-								})
-							  | std::views::transform([&](const QJsonObject & obj) -> Item {
-									const auto geo = obj.value("geo").toArray();
-									return {
-										obj.value("cid").toInt(),
-										{ geo.at(0).toDouble(), geo.at(1).toDouble() },
-										obj.value("file").toString(),
-										obj.value("title").toString(),
-										DirectionUtils::BearingFromDirection(obj.value("dir").toString()),
-										obj.value("year").toInt()
-									};
-								});
-
-			const auto newItems = Items(newItemsView.begin(), newItemsView.end());
-			if (!newItems.empty())
-			{
-				beginInsertRows(QModelIndex(), m_impl->items.size(), m_impl->items.size() + newItems.size() - 1);
-				m_impl->items.insert(m_impl->items.end(), newItems.begin(), newItems.end());
-				endInsertRows();
-			}
+			if (newItems.size() > m_impl->items.size())
+				m_impl->items.clear();
+			else
+				m_impl->items.erase(m_impl->items.cbegin(), m_impl->items.cbegin() + newItems.size());
 		}
+		if (!newItems.empty())
+		{
+			beginInsertRows(QModelIndex(), m_impl->items.size(), m_impl->items.size() + newItems.size() - 1);
+			m_impl->items.insert(m_impl->items.end(), newItems.begin(), newItems.end());
+			endInsertRows();
+		}
+
 		reply->deleteLater();
 	});
 
@@ -154,7 +153,15 @@ int ScreenObjectsModel::rowCount(const QModelIndex & parent) const
 QVariant ScreenObjectsModel::data(const QModelIndex & index, int role) const
 {
 	if (!index.isValid())
-		return assert(false && "Invalid index"), QVariant();
+	{
+		switch (role)
+		{
+			case Roles::ZoomLevel:
+				return m_impl->zoomLevel;
+			default:
+				assert(false && "Unexpected role");
+		}
+	}
 
 	static constexpr auto fullSizeImageUrl = "https://pastvu.com/_p/a/";
 	static constexpr auto thumbnailUrl = "https://pastvu.com/_p/h/";
@@ -184,6 +191,20 @@ QVariant ScreenObjectsModel::data(const QModelIndex & index, int role) const
 
 bool ScreenObjectsModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
+	if (!index.isValid())
+	{
+		switch (role)
+		{
+			case Roles::ZoomLevel:
+			{
+				m_impl->zoomLevel = value.toInt();
+				return true;
+			}
+			default:
+				assert(false && "Unexpected role");
+		}
+	}
+
 	auto & item = m_impl->items.at(index.row());
 	switch (role)
 	{
@@ -220,6 +241,7 @@ QHash<int, QByteArray> ScreenObjectsModel::roleNames() const
 		ROLENAME(Bearing),
 		ROLENAME(Year),
 		ROLENAME(Selected),
+		ROLENAME(ZoomLevel),
 	};
 #undef ROLENAME
 }

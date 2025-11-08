@@ -83,6 +83,17 @@ void PastVuModelController::SetNearestObjectsOnly(bool value)
 	emit NearestObjecrtsOnlyChanged();
 }
 
+int PastVuModelController::GetZoomLevel() const
+{
+	return m_impl->screenObjectsModel->data({}, ScreenObjectsModel::Roles::ZoomLevel).toInt();
+}
+
+void PastVuModelController::SetZoomLevel(int value)
+{
+	m_impl->screenObjectsModel->setData({}, value, ScreenObjectsModel::Roles::ZoomLevel);
+	emit ZoomLevelChanged();
+}
+
 void PastVuModelController::ToggleOnlyNearestObjects()
 {
 	SetNearestObjectsOnly(!GetNearestObjectsOnly());
