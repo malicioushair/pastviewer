@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Effects
 
 import "../Helpers/colors.js" as Colors
+import "../Helpers/utils.js" as Utils
 
 Rectangle {
     id: rootID
@@ -13,6 +14,31 @@ Rectangle {
 
     radius: 16
     color: Colors.palette.bg
+
+    Rectangle {
+        id: imagesNearbyID
+
+        anchors {
+            top: parent.top
+            right: parent.right
+            margins: 12
+        }
+
+        width: 24
+        height: 24
+        z: 999
+
+        radius: 10
+
+        color: Colors.palette.accentAlt
+        border.color: Colors.palette.border
+
+        Text {
+            anchors.centerIn: parent
+            text: mapItemViewID.model.count
+            color: "white"
+        }
+    }
 
     ColumnLayout {
         anchors {
@@ -34,9 +60,12 @@ Rectangle {
             Layout.fillHeight: true
 
 
-            model: pastVuModelController.GetModel()
+            model: pastVuModelController.model
             orientation: ListView.Horizontal
             spacing: 10
+
+            onCountChanged: Utils.setTimeout(positionViewAtEnd, 300) } // @TODO: add animation
+
             delegate: Item {
                 width: 100
                 height: 100

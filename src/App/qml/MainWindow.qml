@@ -27,6 +27,10 @@ Rectangle {
             })
         }
 
+        function openSettings() {
+            stackViewID.push("Views/Settings.qml")
+        }
+
         anchors.fill: parent
 
         initialItem: mapPageID
@@ -75,29 +79,18 @@ Rectangle {
                     z: 999   // above the map
                 }
 
-                Rectangle {
-                    id: imagesNearbyID
+                SettingsButton {
+                    id: settingsButtonID
 
-                    anchors {
+                   anchors {
                         top: parent.top
                         left: parent.left
                         margins: 12
                     }
 
-                    width: 24
-                    height: 24
-                    z: 999
+                    z: 999   // above the map
 
-                    radius: 10
-
-                    color: Colors.palette.accentAlt
-                    border.color: Colors.palette.border
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: mapItemViewID.model.count
-                        color: "white"
-                    }
+                    onClicked: stackViewID.openSettings()
                 }
 
                 Map {
@@ -105,6 +98,26 @@ Rectangle {
 
                     property geoCoordinate startCentroid
                     property bool follow: true
+
+                    Timer {
+                        id: mapMovementTimerID
+                        interval: 300  // Wait 300ms after map stops moving // @TODO figure out how to know when the pan is stopped
+                        onTriggered: mapID.updateViewCoordinates()
+                    }
+
+                    function scheduleViewUpdate() {
+                        mapMovementTimerID.restart()
+                    }
+
+                    function updateViewCoordinates() {
+                        if (mapID.width <= 0 || mapID.height <= 0) {
+                            return
+                        }
+
+                        const topLeftCoord = mapID.toCoordinate(Qt.point(0, 0), false)
+                        const bottomRightCoord = mapID.toCoordinate(Qt.point(mapID.width, mapID.height), false)
+                        pastVuModelController.SetViewportCoordinates(QtPositioning.rectangle(topLeftCoord, bottomRightCoord))
+                    }
 
                     anchors.fill: parent
                     copyrightsVisible: false
@@ -127,7 +140,11 @@ Rectangle {
                             console.warn("CustomMap not provided by this plugin.");
                     }
 
-                    zoomLevel: 13
+                    zoomLevel: pastVuModelController.zoomLevel
+
+                    onCenterChanged: scheduleViewUpdate()
+                    onZoomLevelChanged: scheduleViewUpdate()
+                    onBearingChanged: scheduleViewUpdate()
 
                     Binding {
                         id: followCenterID
@@ -142,7 +159,7 @@ Rectangle {
                     MapItemView {
                         id: mapItemViewID
 
-                        model: pastVuModelController.GetModel()
+                        model: pastVuModelController.model
                         delegate: delegateID
                     }
 
@@ -209,6 +226,8 @@ Rectangle {
                         }
                         onScaleChanged: (delta) => {
                             mapID.zoomLevel += Math.log2(delta)
+                            pastVuModelController.zoomLevel = mapID.zoomLevel // @TODO think on removing the repetirion
+
                             mapID.alignCoordinateToPoint(mapID.startCentroid, pinchHandlerID.centroid.position)
                         }
                         onRotationChanged: (delta) => {

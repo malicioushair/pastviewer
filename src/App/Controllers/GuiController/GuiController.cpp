@@ -100,7 +100,7 @@ GuiController::GuiController(QObject * parent)
 {
 	try
 	{
-		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->permission) };
+		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->permission, m_impl->settings) };
 	}
 	catch (const std::runtime_error & error)
 	{
@@ -168,4 +168,9 @@ bool PastViewer::GuiController::IsDebug()
 		false
 #endif
 		;
+}
+
+QString PastViewer::GuiController::GetAppVersion()
+{
+	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
 }

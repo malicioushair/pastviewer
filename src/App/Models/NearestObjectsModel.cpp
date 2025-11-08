@@ -1,4 +1,4 @@
-#include "PastVuModel.h"
+#include "NearestObjectsModel.h"
 
 #include <QAbstractListModel>
 #include <QGeoPositionInfoSource>
@@ -43,7 +43,7 @@ enum Roles
 };
 }
 
-struct PastVuModel::Impl
+struct NearestObjectsModel::Impl
 {
 	Impl(QGeoPositionInfoSource * positionSource)
 		: networkManager(new QNetworkAccessManager())
@@ -57,7 +57,7 @@ struct PastVuModel::Impl
 	QGeoPositionInfoSource * positionSource;
 };
 
-PastVuModel::PastVuModel(QGeoPositionInfoSource * positionSource, QObject * parent)
+NearestObjectsModel::NearestObjectsModel(QGeoPositionInfoSource * positionSource, QObject * parent)
 	: QAbstractListModel(parent)
 	, m_impl(std::make_unique<Impl>(positionSource))
 {
@@ -126,14 +126,14 @@ PastVuModel::PastVuModel(QGeoPositionInfoSource * positionSource, QObject * pare
 	connect(this, &QAbstractListModel::modelReset, this, [&] { emit countChanged(); });
 }
 
-PastVuModel::~PastVuModel() = default;
+NearestObjectsModel::~NearestObjectsModel() = default;
 
-int PastVuModel::rowCount(const QModelIndex & parent) const
+int NearestObjectsModel::rowCount(const QModelIndex & parent) const
 {
 	return m_impl->items.size();
 }
 
-QVariant PastVuModel::data(const QModelIndex & index, int role) const
+QVariant NearestObjectsModel::data(const QModelIndex & index, int role) const
 {
 	if (!index.isValid())
 		return assert(false && "Invalid index"), QVariant();
@@ -164,7 +164,7 @@ QVariant PastVuModel::data(const QModelIndex & index, int role) const
 	return {};
 }
 
-bool PastVuModel::setData(const QModelIndex & index, const QVariant & value, int role)
+bool NearestObjectsModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
 	auto & item = m_impl->items.at(index.row());
 	switch (role)
@@ -188,7 +188,7 @@ bool PastVuModel::setData(const QModelIndex & index, const QVariant & value, int
 	return false;
 }
 
-QHash<int, QByteArray> PastVuModel::roleNames() const
+QHash<int, QByteArray> NearestObjectsModel::roleNames() const
 {
 #define ROLENAME(NAME)     \
 	{                      \
@@ -206,7 +206,7 @@ QHash<int, QByteArray> PastVuModel::roleNames() const
 #undef ROLENAME
 }
 
-void PastVuModel::OnPositionPermissionGranted()
+void NearestObjectsModel::OnPositionPermissionGranted()
 {
 	if (m_impl->positionSource)
 		m_impl->positionSource->startUpdates();

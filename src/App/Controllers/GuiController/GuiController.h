@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QQmlApplicationEngine>
+#include <QtCore/qtmetamacros.h>
 
 namespace PastViewer {
 class GuiController
@@ -20,6 +21,7 @@ public:
 
 	Q_INVOKABLE bool IsDebug();
 	Q_INVOKABLE void BumpHotReloadToken();
+	Q_INVOKABLE QString GetAppVersion();
 
 private:
 	struct Impl;
