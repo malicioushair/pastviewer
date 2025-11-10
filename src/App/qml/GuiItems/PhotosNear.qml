@@ -64,7 +64,7 @@ Rectangle {
             orientation: ListView.Horizontal
             spacing: 10
 
-            onCountChanged: Utils.setTimeout(positionViewAtEnd, 300) } // @TODO: add animation
+            onCountChanged: Utils.setTimeout(positionViewAtEnd, 300) // @TODO: add animation
 
             delegate: Item {
                 width: 100
