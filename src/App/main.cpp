@@ -1,9 +1,10 @@
 #include <QDir>
 #include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#include <QScopeGuard>
 #include <QStandardPaths>
 
 #include "Controllers/GuiController/GuiController.h"
+#include "SentryIntegration/SentryIntegration.h"
 
 #include "glog/logging.h"
 
@@ -14,7 +15,7 @@ void InitLogging(const std::string & execName)
 	{
 		if (!logDir.mkpath(logDir.absolutePath()))
 		{
-			LOG(ERROR) << "Failed to create log directory: " << logDir.absolutePath().toStdString();
+			LOG(WARNING) << "Failed to create log directory: " << logDir.absolutePath().toStdString();
 			return;
 		}
 	}
@@ -22,17 +23,33 @@ void InitLogging(const std::string & execName)
 	FLAGS_log_dir = logDir.absolutePath().toStdString();
 	FLAGS_alsologtostderr = true;
 	google::InitGoogleLogging(execName.data());
+	google::InstallFailureSignalHandler();
 }
 
 int main(int argc, char * argv[])
 {
 	QCoreApplication::setOrganizationName("MyOrg");
 	QCoreApplication::setApplicationName("PastViewer");
+
 	InitLogging(argv[0]);
 
-	LOG(INFO) << "Starting PastViewer application";
-
 	QGuiApplication app(argc, argv);
+
+	// Initialize Sentry with release version
+	// On Android, this must happen after QGuiApplication is created to get the Activity
+	const QString releaseStr = QString("PastViewer@%1.%2.%3")
+								   .arg(VERSION_MAJOR)
+								   .arg(VERSION_MINOR)
+								   .arg(VERSION_PATCH);
+
+	SentryIntegration::InitSentry(releaseStr);
+
+	auto sentryShutdown = qScopeGuard([] {
+		SentryIntegration::GetPlatform().Shutdown();
+	});
+
 	PastViewer::GuiController guiController;
+
+	LOG(INFO) << "Starting PastViewer application";
 	return QGuiApplication::exec();
 }
