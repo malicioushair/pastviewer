@@ -60,6 +60,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glog::glog
 )
 
+file(GLOB_RECURSE ABS_QML CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_LIST_DIR}/qml/*.qml"
+)
+
+AbsToRelPath(REL_QML "${CMAKE_CURRENT_SOURCE_DIR}" ${ABS_QML})
 
 qt_add_qml_module(${PROJECT_NAME}
     URI ${PROJECT_NAME}
@@ -67,4 +72,7 @@ qt_add_qml_module(${PROJECT_NAME}
     RESOURCE_PREFIX "/qt/qml"
     RESOURCES
         "src/App/qml/Helpers/colors.js"
+        "src/App/qml/Helpers/utils.js"
+    QML_FILES
+        ${REL_QML}
 )
