@@ -1,6 +1,10 @@
 [requires]
 glog/0.7.1
 gtest/1.14.0
+sentry-native/0.12.1
 
 [generators]
 CMakeDeps
+
+# Note: sentry-native is only used for macOS builds.
+# Android uses Sentry Android SDK (added via Gradle).
