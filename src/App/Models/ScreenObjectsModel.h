@@ -5,36 +5,26 @@
 #include <QGeoRectangle>
 #include <QVariant>
 
-#include <memory>
+#include "App/Utils/NonCopyMovable.h"
+#include "BaseModel.h"
 
 class ScreenObjectsModel
-	: public QAbstractListModel
+	: public BaseModel
 {
 	Q_OBJECT
 
 public:
 	enum Roles
 	{
-		// Getters
-		Coordinate = Qt::UserRole + 1,
-		Title,
-		Photo,
-		Thumbnail,
-		Bearing,
-		Year,
-
-		// Setters
-		Selected,
-		ZoomLevel,
+		ZoomLevel = BaseModel::Roles::LastBaseRole,
 	};
 
-	explicit ScreenObjectsModel(QGeoPositionInfoSource * positionSource, const QGeoRectangle & viewport, QObject * parent = nullptr);
+	explicit ScreenObjectsModel(QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
+	NON_COPY_MOVABLE(ScreenObjectsModel);
+
 	~ScreenObjectsModel();
 
-	Q_PROPERTY(int count READ rowCount() NOTIFY countChanged());
-
 signals:
-	void countChanged(); // @TODO PascalCase
 	void UpdateCoords(const QGeoRectangle & viewport);
 
 public:
@@ -47,5 +37,5 @@ public:
 
 private:
 	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+	std::unique_ptr<Impl> m_screenImpl;
 };

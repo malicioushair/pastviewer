@@ -21,7 +21,7 @@ struct PastVuModelController::Impl
 	Impl(const QLocationPermission & permission, QSettings & settings)
 		: source(QGeoPositionInfoSource::createDefaultSource(nullptr))
 		, nearestObjectsModel(std::make_unique<NearestObjectsModel>(source.get()))
-		, screenObjectsModel(std::make_unique<ScreenObjectsModel>(source.get(), viewPort))
+		, screenObjectsModel(std::make_unique<ScreenObjectsModel>(source.get()))
 		, positionSourceAdapter([&] {
 			if (!source)
 				throw std::runtime_error("POSITION SOURCE EMPTY!");
