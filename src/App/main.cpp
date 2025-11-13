@@ -8,6 +8,10 @@
 
 #include "glog/logging.h"
 
+#if defined(__ANDROID__)
+extern "C" void android_backtrace_log_status();
+#endif
+
 void InitLogging(const std::string & execName)
 {
 	const auto logDir = QDir(QString::fromStdString(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString() + "/logs"));
@@ -28,14 +32,11 @@ void InitLogging(const std::string & execName)
 
 int main(int argc, char * argv[])
 {
-	// Initialize Sentry with release version
-	// On Android, this must happen after QGuiApplication is created to get the Activity
-	const QString releaseStr = QString("PastViewer@%1.%2.%3")
-								   .arg(VERSION_MAJOR)
-								   .arg(VERSION_MINOR)
-								   .arg(VERSION_PATCH);
-
-	SentryIntegration::InitSentry(releaseStr);
+	// Initialize Sentry prior to everything
+	SentryIntegration::InitSentry(QString("PastViewer@%1.%2.%3")
+			.arg(VERSION_MAJOR)
+			.arg(VERSION_MINOR)
+			.arg(VERSION_PATCH));
 
 	auto sentryShutdown = qScopeGuard([] {
 		SentryIntegration::GetPlatform().Shutdown();
@@ -45,6 +46,11 @@ int main(int argc, char * argv[])
 	QCoreApplication::setApplicationName("PastViewer");
 
 	InitLogging(argv[0]);
+
+// Log backtrace implementation status (after glog is initialized)
+#if defined(__ANDROID__)
+	android_backtrace_log_status();
+#endif
 
 	QGuiApplication app(argc, argv);
 
