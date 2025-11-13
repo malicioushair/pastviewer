@@ -3,73 +3,38 @@
 #include <QAbstractListModel>
 #include <QGeoPositionInfoSource>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QUrlQuery>
 #include <QVariant>
 
 #include <ranges>
 
+#include "App/Models/BaseModel.h"
 #include "glog/logging.h"
 
 #include "App/Utils/DirectionUtils.h"
 
-namespace {
-
-struct Item
+NearestObjectsModel::NearestObjectsModel(QGeoPositionInfoSource * _positionSource, QObject * parent)
+	: BaseModel(_positionSource, parent)
 {
-	int cid { 0 };
-	QGeoCoordinate coord;
-	QString file;
-	QString title;
-	int bearing { 0 };
-	int year { 0 };
-	bool selected { false };
-};
-
-using Items = std::vector<Item>;
-
-enum Roles
-{
-	// Getters
-	Coordinate = Qt::UserRole + 1,
-	Title,
-	Photo,
-	Thumbnail,
-	Bearing,
-	Year,
-
-	// Setters
-	Selected,
-};
-}
-
-struct NearestObjectsModel::Impl
-{
-	Impl(QGeoPositionInfoSource * positionSource)
-		: networkManager(new QNetworkAccessManager())
-		, positionSource(positionSource)
-	{
-	}
-
-	QNetworkAccessManager * networkManager;
-	Items items;
-	std::unordered_set<int> seenCids;
-	QGeoPositionInfoSource * positionSource;
-};
-
-NearestObjectsModel::NearestObjectsModel(QGeoPositionInfoSource * positionSource, QObject * parent)
-	: QAbstractListModel(parent)
-	, m_impl(std::make_unique<Impl>(positionSource))
-{
-	connect(m_impl->positionSource, &QGeoPositionInfoSource::positionUpdated, this, [&](const QGeoPositionInfo & info) {
+	connect(GetPositionSource(), &QGeoPositionInfoSource::positionUpdated, this, [this](const QGeoPositionInfo & info) {
 		const auto currentCoordinates = info.coordinate();
 		const auto lat = currentCoordinates.latitude();
 		const auto lon = currentCoordinates.longitude();
-		const auto url = QString(R"(https://pastvu.com/api2?method=photo.giveNearestPhotos&params={"geo":[%1,%2],"limit":12,"except":228481})").arg(lat).arg(lon);
-		QNetworkRequest request(url);
-		m_impl->networkManager->get(request);
+		const auto paramsJson = QString(R"({"geo":[%1,%2],"limit":12,"except":228481})").arg(lat).arg(lon);
+
+		QUrlQuery query;
+		query.addQueryItem("method", "photo.giveNearestPhotos");
+		query.addQueryItem("params", paramsJson);
+		GetMutableUrl().setQuery(query);
+
+		QNetworkRequest request(GetMutableUrl());
+		GetNetworkManager()->get(request);
 	});
-	connect(m_impl->networkManager, &QNetworkAccessManager::finished, this, [&](QNetworkReply * reply) {
+	connect(GetNetworkManager(), &QNetworkAccessManager::finished, this, [this](QNetworkReply * reply) {
 		LOG(INFO) << "Reply received";
 		if (reply->error())
 		{
@@ -91,14 +56,14 @@ NearestObjectsModel::NearestObjectsModel(QGeoPositionInfoSource * positionSource
 
 			auto newItemsView = photos
 							  | std::views::transform([](const QJsonValue & v) { return v.toObject(); })
-							  | std::views::filter([&](const QJsonObject & obj) {
+							  | std::views::filter([this](const QJsonObject & obj) {
 									auto cid = obj.value("cid").toInt();
-									if (m_impl->seenCids.contains(cid))
+									if (GetMutableSeenCids().contains(cid))
 										return false;
-									m_impl->seenCids.insert(cid);
+									GetMutableSeenCids().insert(cid);
 									return true;
 								})
-							  | std::views::transform([&](const QJsonObject & obj) -> Item {
+							  | std::views::transform([this](const QJsonObject & obj) -> Item {
 									const auto geo = obj.value("geo").toArray();
 									return {
 										obj.value("cid").toInt(),
@@ -113,101 +78,13 @@ NearestObjectsModel::NearestObjectsModel(QGeoPositionInfoSource * positionSource
 			const auto newItems = Items(newItemsView.begin(), newItemsView.end());
 			if (!newItems.empty())
 			{
-				beginInsertRows(QModelIndex(), m_impl->items.size(), m_impl->items.size() + newItems.size() - 1);
-				m_impl->items.insert(m_impl->items.end(), newItems.begin(), newItems.end());
+				beginInsertRows(QModelIndex(), GetMutableItems().size(), GetMutableItems().size() + newItems.size() - 1);
+				GetMutableItems().insert(GetMutableItems().end(), newItems.begin(), newItems.end());
 				endInsertRows();
 			}
 		}
 		reply->deleteLater();
 	});
-
-	connect(this, &QAbstractListModel::rowsInserted, this, [&] { emit countChanged(); });
-	connect(this, &QAbstractListModel::rowsRemoved, this, [&] { emit countChanged(); });
-	connect(this, &QAbstractListModel::modelReset, this, [&] { emit countChanged(); });
 }
 
 NearestObjectsModel::~NearestObjectsModel() = default;
-
-int NearestObjectsModel::rowCount(const QModelIndex & parent) const
-{
-	return m_impl->items.size();
-}
-
-QVariant NearestObjectsModel::data(const QModelIndex & index, int role) const
-{
-	if (!index.isValid())
-		return assert(false && "Invalid index"), QVariant();
-
-	static constexpr auto fullSizeImageUrl = "https://pastvu.com/_p/a/";
-	static constexpr auto thumbnailUrl = "https://pastvu.com/_p/h/";
-	const auto item = m_impl->items.at(index.row());
-	switch (role)
-	{
-		case Roles::Coordinate:
-			return QVariant::fromValue(item.coord);
-		case Roles::Title:
-			return item.title;
-		case Roles::Photo:
-			return fullSizeImageUrl + item.file;
-		case Roles::Thumbnail:
-			return thumbnailUrl + item.file;
-		case Roles::Bearing:
-			return item.bearing;
-		case Roles::Year:
-			return item.year;
-		case Roles::Selected:
-			return item.selected;
-		default:
-			assert(false && "Unexpected role");
-	}
-
-	return {};
-}
-
-bool NearestObjectsModel::setData(const QModelIndex & index, const QVariant & value, int role)
-{
-	auto & item = m_impl->items.at(index.row());
-	switch (role)
-	{
-		case Roles::Selected:
-		{
-			const auto selectedItemIndices = match(this->index(0, 0), Roles::Selected, true);
-			if (!selectedItemIndices.isEmpty() && selectedItemIndices.front() != index)
-			{
-				setData(selectedItemIndices.front(), false, Roles::Selected);
-				emit dataChanged(selectedItemIndices.front(), selectedItemIndices.front(), { Roles::Selected });
-			}
-
-			item.selected = value.toBool();
-			emit dataChanged(index, index, { Roles::Selected });
-			return true;
-		}
-		default:
-			assert(false && "Unexpected role");
-	}
-	return false;
-}
-
-QHash<int, QByteArray> NearestObjectsModel::roleNames() const
-{
-#define ROLENAME(NAME)     \
-	{                      \
-		Roles::NAME, #NAME \
-	}
-	return {
-		ROLENAME(Coordinate),
-		ROLENAME(Title),
-		ROLENAME(Photo),
-		ROLENAME(Thumbnail),
-		ROLENAME(Bearing),
-		ROLENAME(Year),
-		ROLENAME(Selected),
-	};
-#undef ROLENAME
-}
-
-void NearestObjectsModel::OnPositionPermissionGranted()
-{
-	if (m_impl->positionSource)
-		m_impl->positionSource->startUpdates();
-}
