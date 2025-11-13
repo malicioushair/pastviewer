@@ -28,13 +28,6 @@ void InitLogging(const std::string & execName)
 
 int main(int argc, char * argv[])
 {
-	QCoreApplication::setOrganizationName("MyOrg");
-	QCoreApplication::setApplicationName("PastViewer");
-
-	InitLogging(argv[0]);
-
-	QGuiApplication app(argc, argv);
-
 	// Initialize Sentry with release version
 	// On Android, this must happen after QGuiApplication is created to get the Activity
 	const QString releaseStr = QString("PastViewer@%1.%2.%3")
@@ -47,6 +40,13 @@ int main(int argc, char * argv[])
 	auto sentryShutdown = qScopeGuard([] {
 		SentryIntegration::GetPlatform().Shutdown();
 	});
+
+	QCoreApplication::setOrganizationName("MyOrg");
+	QCoreApplication::setApplicationName("PastViewer");
+
+	InitLogging(argv[0]);
+
+	QGuiApplication app(argc, argv);
 
 	PastViewer::GuiController guiController;
 
