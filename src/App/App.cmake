@@ -12,7 +12,7 @@ if(NOT ANDROID)
     find_package(sentry CONFIG REQUIRED)
 endif()
 
-find_package(Qt6 COMPONENTS Core Gui Quick QuickLayouts QuickControls2 Location Positioning PositioningQuick REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Quick QuickLayouts QuickControls2 Location Positioning PositioningQuick  REQUIRED)
 qt_standard_project_setup()
 
 if(QT_KNOWN_POLICY_QTP0004)
