@@ -1,15 +1,16 @@
 #include "PositionSourceAdapter.h"
 
+#include <limits>
+
 namespace {
 
+// 5m is just an arbitrary number to prevent dirrection jitter
 constexpr auto MIN_DISTANCE_METERS = 5.0;
 
 enum class BearingSource
 {
 	None,
-	GpsDirection,
-	Compass,
-	Calculated
+	Calculated,
 };
 
 }
@@ -18,8 +19,7 @@ struct PositionSourceAdapter::Impl
 {
 	Impl(const QGeoPositionInfoSource & source)
 		: source(source)
-	{
-	}
+	{}
 
 	const QGeoPositionInfoSource & source;
 	QGeoPositionInfo position;
@@ -66,7 +66,7 @@ void PositionSourceAdapter::OnPositionUpdated(const QGeoPositionInfo & info)
 			m_impl->previousCoordinate = currentCoord;
 		}
 	}
-	else if (const auto firstValidPosition = currentCoord.isValid())
+	else if (const auto isFirstValidPosition = currentCoord.isValid())
 	{
 		m_impl->previousCoordinate = currentCoord;
 		m_impl->bearing = std::numeric_limits<double>::quiet_NaN(); // No bearing until we have movement

@@ -14,7 +14,7 @@ Item {
 
     Loader {
         anchors.fill: parent
-        sourceComponent: bearing ? directionMarkerID : noDirectionMarkerID
+        sourceComponent: isNaN(bearing) ? noDirectionMarkerID : directionMarkerID
     }
 
     Component {
@@ -32,6 +32,8 @@ Item {
         id: directionMarkerID
 
         Item {
+            id: arrowContainerID
+
             property real bearing: rootID.bearing
             property real mapBearing: rootID.mapBearing
 
