@@ -111,9 +111,8 @@ Rectangle {
                     }
 
                     function updateViewCoordinates() {
-                        if (mapID.width <= 0 || mapID.height <= 0) {
+                        if (mapID.width <= 0 || mapID.height <= 0)
                             return
-                        }
 
                         const topLeftCoord = mapID.toCoordinate(Qt.point(0, 0), false)
                         const bottomRightCoord = mapID.toCoordinate(Qt.point(mapID.width, mapID.height), false)
@@ -210,9 +209,8 @@ Rectangle {
                         yAxis.onActiveValueChanged: (dy) => target.pan(0, -dy)
 
                         onActiveChanged: {
-                            if (active) {
+                            if (active)
                                 mapID.follow = false
-                            }
                         }
                     }
 
@@ -249,48 +247,15 @@ Rectangle {
                         }
                     }
 
-                    // "you are here" marker
                     MapQuickItem {
-                        anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
+                        id: youAreHereMarkerID
+
+                        anchorPoint: Qt.point(sourceItem.width / 2, sourceItem.height / 2)
                         coordinate: positionSource.coordinate
                         visible: coordinate.isValid
-                        sourceItem: Item {
-                            id: arrowContainerID
-
-                            property real bearing: positionSource.bearing
-                            property real mapBearing: mapID.bearing
-
-                            anchors.fill: parent
-
-                            transform: Rotation {
-                                origin.x: arrowContainerID.width / 2
-                                origin.y: arrowContainerID.height / 2
-                                angle: isNaN(arrowContainerID.bearing) ? 0 : ((arrowContainerID.bearing - arrowContainerID.mapBearing) % 360 + 360) % 360
-                            }
-
-                            Shape {
-                                id: arrowHeadID
-
-                                width: 20
-                                height: width
-
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.top: parent.top
-
-                                ShapePath {
-                                    fillColor: "#3dafff"
-                                    strokeColor: "transparent"
-                                    PathPolyline {
-                                        path: [
-                                            Qt.point(arrowHeadID.width / 2, 0),
-                                            Qt.point(0, arrowHeadID.height),
-                                            Qt.point(arrowHeadID.width / 2, arrowHeadID.height / 1.5),
-                                            Qt.point(arrowHeadID.width, arrowHeadID.height),
-                                            Qt.point(arrowHeadID.width / 2, 0)
-                                        ]
-                                    }
-                                }
-                            }
+                        sourceItem: UserPosition {
+                            bearing: positionSource.bearing
+                            mapBearing: mapID.bearing
                         }
                     }
                 }
