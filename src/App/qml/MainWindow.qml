@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtLocation
 import QtPositioning
+import QtQuick.Shapes
 
 import PastViewer 1.0
 
@@ -110,9 +111,8 @@ Rectangle {
                     }
 
                     function updateViewCoordinates() {
-                        if (mapID.width <= 0 || mapID.height <= 0) {
+                        if (mapID.width <= 0 || mapID.height <= 0)
                             return
-                        }
 
                         const topLeftCoord = mapID.toCoordinate(Qt.point(0, 0), false)
                         const bottomRightCoord = mapID.toCoordinate(Qt.point(mapID.width, mapID.height), false)
@@ -209,9 +209,8 @@ Rectangle {
                         yAxis.onActiveValueChanged: (dy) => target.pan(0, -dy)
 
                         onActiveChanged: {
-                            if (active) {
+                            if (active)
                                 mapID.follow = false
-                            }
                         }
                     }
 
@@ -248,18 +247,15 @@ Rectangle {
                         }
                     }
 
-                    // "you are here" marker
                     MapQuickItem {
-                        anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
+                        id: youAreHereMarkerID
+
+                        anchorPoint: Qt.point(sourceItem.width / 2, sourceItem.height / 2)
                         coordinate: positionSource.coordinate
                         visible: coordinate.isValid
-                        sourceItem: Rectangle {
-                            id: dotID
-
-                            width: 14
-                            height: 14
-                            radius: 7
-                            color: "#3dafff"
+                        sourceItem: UserPosition {
+                            bearing: positionSource.bearing
+                            mapBearing: mapID.bearing
                         }
                     }
                 }
@@ -267,7 +263,6 @@ Rectangle {
 
             PhotosNear {
                 id: photosNearID
-
             }
         }
     }
