@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtLocation
 import QtPositioning
+import QtQuick.Shapes
 
 import PastViewer 1.0
 
@@ -253,13 +254,43 @@ Rectangle {
                         anchorPoint: Qt.point(dotID.width / 2, dotID.height / 2)
                         coordinate: positionSource.coordinate
                         visible: coordinate.isValid
-                        sourceItem: Rectangle {
-                            id: dotID
+                        sourceItem: Item {
+                            id: arrowContainerID
 
-                            width: 14
-                            height: 14
-                            radius: 7
-                            color: "#3dafff"
+                            property real bearing: positionSource.bearing
+                            property real mapBearing: mapID.bearing
+
+                            anchors.fill: parent
+
+                            transform: Rotation {
+                                origin.x: arrowContainerID.width / 2
+                                origin.y: arrowContainerID.height / 2
+                                angle: isNaN(arrowContainerID.bearing) ? 0 : ((arrowContainerID.bearing - arrowContainerID.mapBearing) % 360 + 360) % 360
+                            }
+
+                            Shape {
+                                id: arrowHeadID
+
+                                width: 20
+                                height: width
+
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.top: parent.top
+
+                                ShapePath {
+                                    fillColor: "#3dafff"
+                                    strokeColor: "transparent"
+                                    PathPolyline {
+                                        path: [
+                                            Qt.point(arrowHeadID.width / 2, 0),
+                                            Qt.point(0, arrowHeadID.height),
+                                            Qt.point(arrowHeadID.width / 2, arrowHeadID.height / 1.5),
+                                            Qt.point(arrowHeadID.width, arrowHeadID.height),
+                                            Qt.point(arrowHeadID.width / 2, 0)
+                                        ]
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -267,7 +298,6 @@ Rectangle {
 
             PhotosNear {
                 id: photosNearID
-
             }
         }
     }
