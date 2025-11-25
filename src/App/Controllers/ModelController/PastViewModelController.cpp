@@ -21,8 +21,8 @@ struct PastVuModelController::Impl
 {
 	Impl(const QLocationPermission & permission, QSettings & settings)
 		: source(QGeoPositionInfoSource::createDefaultSource(nullptr))
-		, nearestObjectsModel(std::make_unique<NearestObjectsModel>(source.get()))
 		, screenObjectsModel(std::make_unique<ScreenObjectsModel>(source.get()))
+		, nearestObjectsModel(std::make_unique<NearestObjectsModel>(screenObjectsModel.get(), source.get()))
 		, positionSourceAdapter([&] {
 			if (!source)
 				throw std::runtime_error("POSITION SOURCE EMPTY!");
@@ -36,8 +36,8 @@ struct PastVuModelController::Impl
 
 	std::unique_ptr<QGeoPositionInfoSource> source;
 	QGeoRectangle viewPort;
-	std::unique_ptr<NearestObjectsModel> nearestObjectsModel;
 	std::unique_ptr<ScreenObjectsModel> screenObjectsModel;
+	std::unique_ptr<NearestObjectsModel> nearestObjectsModel;
 	std::unique_ptr<PositionSourceAdapter> positionSourceAdapter;
 	QSettings & settings;
 };
@@ -46,7 +46,7 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>(permission, settings))
 {
-	connect(this, &PastVuModelController::PositionPermissionGranted, m_impl->nearestObjectsModel.get(), &NearestObjectsModel::OnPositionPermissionGranted);
+	connect(this, &PastVuModelController::PositionPermissionGranted, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::OnPositionPermissionGranted);
 }
 
 PastVuModelController::~PastVuModelController() = default;
