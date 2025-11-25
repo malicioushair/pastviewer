@@ -14,6 +14,7 @@
 
 namespace {
 constexpr auto NEAREST_OBJECTS_ONLY = "NearestObjectsOnly";
+constexpr auto HISTORY_NEAR_MODEL_TYPE = "HistoryNearModelType";
 }
 
 struct PastVuModelController::Impl
@@ -57,6 +58,13 @@ QAbstractListModel * PastVuModelController::GetModel()
 			 : static_cast<QAbstractListModel *>(m_impl->screenObjectsModel.get());
 }
 
+QAbstractListModel * PastVuModelController::GetHistoryNearModel()
+{
+	return GetHistoryNearModelType()
+			 ? static_cast<QAbstractListModel *>(m_impl->screenObjectsModel.get())
+			 : static_cast<QAbstractListModel *>(m_impl->nearestObjectsModel.get());
+}
+
 QString PastVuModelController::GetMapHostApiKey()
 {
 	return QString::fromUtf8(API_KEY);
@@ -83,6 +91,17 @@ void PastVuModelController::SetNearestObjectsOnly(bool value)
 	emit NearestObjecrtsOnlyChanged();
 }
 
+bool PastVuModelController::GetHistoryNearModelType()
+{
+	return m_impl->settings.value(HISTORY_NEAR_MODEL_TYPE).toBool();
+}
+
+void PastVuModelController::SetHistoryNearModelType(bool value)
+{
+	m_impl->settings.setValue(HISTORY_NEAR_MODEL_TYPE, value);
+	emit HistoryNearModelChanged();
+}
+
 int PastVuModelController::GetZoomLevel() const
 {
 	return m_impl->screenObjectsModel->data({}, ScreenObjectsModel::Roles::ZoomLevel).toInt();
@@ -98,6 +117,12 @@ void PastVuModelController::ToggleOnlyNearestObjects()
 {
 	SetNearestObjectsOnly(!GetNearestObjectsOnly());
 	emit ModelChanged();
+}
+
+void PastVuModelController::ToggleHistoryNearYouModel()
+{
+	SetHistoryNearModelType(!GetHistoryNearModelType());
+	emit HistoryNearModelChanged();
 }
 
 void PastVuModelController::SetViewportCoordinates(const QGeoRectangle & viewport)

@@ -35,7 +35,7 @@ Rectangle {
 
         Text {
             anchors.centerIn: parent
-            text: mapItemViewID.model.count
+            text: listViewID.model.count
             color: "white"
         }
     }
@@ -60,7 +60,7 @@ Rectangle {
             Layout.fillHeight: true
 
 
-            model: pastVuModelController.model
+            model: pastVuModelController.historyNearModel
             orientation: ListView.Horizontal
             spacing: 10
 

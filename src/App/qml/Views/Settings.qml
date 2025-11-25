@@ -70,6 +70,12 @@ Page {
                 text: qsTr("Show only nearest objects")
                 onClicked: pastVuModelController.ToggleOnlyNearestObjects();
             }
+
+            StyledCheckBox {
+                checked: pastVuModelController.historyNearModelType
+                text: qsTr('Show all objects in "History near you"')
+                onClicked: pastVuModelController.ToggleHistoryNearYouModel();
+            }
         }
     }
 }

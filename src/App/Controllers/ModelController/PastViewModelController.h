@@ -21,6 +21,7 @@ signals:
 	void PositionPermissionGranted();
 	void NearestObjecrtsOnlyChanged();
 	void ModelChanged();
+	void HistoryNearModelChanged();
 	void ZoomLevelChanged();
 
 public:
@@ -29,19 +30,26 @@ public:
 
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjecrtsOnlyChanged);
 	Q_PROPERTY(QAbstractListModel * model READ GetModel NOTIFY ModelChanged);
+	Q_PROPERTY(QAbstractListModel * historyNearModel READ GetHistoryNearModel NOTIFY HistoryNearModelChanged); // @TODO: merge with model property (DRY)
+	Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
 	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
 
 	Q_INVOKABLE QString GetMapHostApiKey();
 	Q_INVOKABLE PositionSourceAdapter * GetPositionSource();
 	Q_INVOKABLE void SetViewportCoordinates(const QGeoRectangle & viewport);
 	Q_INVOKABLE void ToggleOnlyNearestObjects();
+	Q_INVOKABLE void ToggleHistoryNearYouModel();
 
 	void OnPositionPermissionGranted();
 
 	QAbstractListModel * GetModel();
+	QAbstractListModel * GetHistoryNearModel();
 
 	bool GetNearestObjectsOnly();
 	void SetNearestObjectsOnly(bool value);
+
+	bool GetHistoryNearModelType();
+	void SetHistoryNearModelType(bool value);
 
 	int GetZoomLevel() const;
 	void SetZoomLevel(int value);
