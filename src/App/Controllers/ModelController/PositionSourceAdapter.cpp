@@ -23,9 +23,11 @@ struct PositionSourceAdapter::Impl
 
 	const QGeoPositionInfoSource & source;
 	QGeoPositionInfo position;
+	QGeoCoordinate lastValidCoordinate;
 	QGeoCoordinate previousCoordinate;
 	double bearing { std::numeric_limits<double>::quiet_NaN() };
 	BearingSource bearingSource { BearingSource::None };
+	bool positionAvailable { true };
 };
 
 PositionSourceAdapter::PositionSourceAdapter(const QGeoPositionInfoSource & source, QObject * parent)
@@ -44,7 +46,8 @@ QGeoPositionInfo PositionSourceAdapter::Position() const
 
 QGeoCoordinate PositionSourceAdapter::Coordinate() const
 {
-	return Position().coordinate();
+	const auto currentCoord = Position().coordinate();
+	return currentCoord.isValid() ? currentCoord : m_impl->lastValidCoordinate;
 }
 
 double PositionSourceAdapter::Bearing() const
@@ -52,27 +55,45 @@ double PositionSourceAdapter::Bearing() const
 	return m_impl->bearing;
 }
 
+bool PositionSourceAdapter::IsPositionAvailable() const
+{
+	return m_impl->positionAvailable;
+}
+
 void PositionSourceAdapter::OnPositionUpdated(const QGeoPositionInfo & info)
 {
 	const auto currentCoord = info.coordinate();
-	if (m_impl->previousCoordinate.isValid() && currentCoord.isValid())
-	{
-		const auto distance = m_impl->previousCoordinate.distanceTo(currentCoord);
 
-		if (distance >= MIN_DISTANCE_METERS)
+	if (currentCoord.isValid())
+	{
+		m_impl->positionAvailable = true;
+		emit PositionAvailableChanged();
+
+		if (m_impl->previousCoordinate.isValid())
 		{
-			m_impl->bearing = m_impl->previousCoordinate.azimuthTo(currentCoord);
-			m_impl->bearingSource = BearingSource::Calculated;
-			m_impl->previousCoordinate = currentCoord;
-		}
-	}
-	else if (const auto isFirstValidPosition = currentCoord.isValid())
-	{
-		m_impl->previousCoordinate = currentCoord;
-		m_impl->bearing = std::numeric_limits<double>::quiet_NaN(); // No bearing until we have movement
-		m_impl->bearingSource = BearingSource::None;
-	}
+			const auto distance = m_impl->previousCoordinate.distanceTo(currentCoord);
 
-	m_impl->position = info;
-	emit PositionChanged();
+			if (distance >= MIN_DISTANCE_METERS)
+			{
+				m_impl->bearing = m_impl->previousCoordinate.azimuthTo(currentCoord);
+				m_impl->bearingSource = BearingSource::Calculated;
+				m_impl->previousCoordinate = currentCoord;
+			}
+		}
+		else
+		{
+			m_impl->previousCoordinate = currentCoord;
+			m_impl->bearing = std::numeric_limits<double>::quiet_NaN(); // No bearing until we have movement
+			m_impl->bearingSource = BearingSource::None;
+		}
+
+		m_impl->lastValidCoordinate = currentCoord;
+		m_impl->position = info;
+		emit PositionChanged();
+	}
+	else
+	{
+		m_impl->positionAvailable = false;
+		emit PositionAvailableChanged();
+	}
 }

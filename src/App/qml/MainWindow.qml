@@ -60,6 +60,48 @@ Rectangle {
 
             anchors.fill: parent
 
+            Rectangle {
+                id: noLocationWarningID
+
+                Layout.alignment: Qt.AlignHCenter
+                Layout.margins: 8
+
+                Layout.preferredWidth: warningTextID.implicitWidth + 64
+                Layout.preferredHeight: warningTextID.implicitHeight + 16
+
+                visible: !positionSource.positionAvailable
+
+                radius: 8
+                color: Colors.palette.bg
+                border.color: Colors.palette.accent
+                border.width: 1
+
+                RowLayout {
+                    anchors.centerIn: parent
+                    spacing: 8
+
+                    Text {
+                        text: "⚠"
+                        font.pixelSize: 16
+                        color: Colors.palette.accent
+                    }
+
+                    Text {
+                        id: warningTextID
+
+                        text: qsTr("Current position is not available")
+                        color: Colors.palette.text
+                        font.pixelSize: 14
+                    }
+
+                    Text {
+                        text: "⚠"
+                        font.pixelSize: 16
+                        color: Colors.palette.accent
+                    }
+                }
+            }
+
             MapView {
                 id: mapViewID
 
