@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(PastViewer VERSION 0.5.1 LANGUAGES CXX)
+project(PastViewer VERSION 0.5.2 LANGUAGES CXX)
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")

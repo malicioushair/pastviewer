@@ -51,18 +51,18 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 
 PastVuModelController::~PastVuModelController() = default;
 
-QAbstractListModel * PastVuModelController::GetModel()
+QAbstractItemModel * PastVuModelController::GetModel()
 {
 	return GetNearestObjectsOnly()
-			 ? static_cast<QAbstractListModel *>(m_impl->nearestObjectsModel.get())
-			 : static_cast<QAbstractListModel *>(m_impl->screenObjectsModel.get());
+			 ? static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get())
+			 : static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get());
 }
 
-QAbstractListModel * PastVuModelController::GetHistoryNearModel()
+QAbstractItemModel * PastVuModelController::GetHistoryNearModel()
 {
 	return GetHistoryNearModelType()
-			 ? static_cast<QAbstractListModel *>(m_impl->screenObjectsModel.get())
-			 : static_cast<QAbstractListModel *>(m_impl->nearestObjectsModel.get());
+			 ? static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get())
+			 : static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get());
 }
 
 QString PastVuModelController::GetMapHostApiKey()

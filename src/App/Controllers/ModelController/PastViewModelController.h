@@ -29,8 +29,8 @@ public:
 	~PastVuModelController();
 
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjecrtsOnlyChanged);
-	Q_PROPERTY(QAbstractListModel * model READ GetModel NOTIFY ModelChanged);
-	Q_PROPERTY(QAbstractListModel * historyNearModel READ GetHistoryNearModel NOTIFY HistoryNearModelChanged); // @TODO: merge with model property (DRY)
+	Q_PROPERTY(QAbstractItemModel * model READ GetModel NOTIFY ModelChanged);
+	Q_PROPERTY(QAbstractItemModel * historyNearModel READ GetHistoryNearModel NOTIFY HistoryNearModelChanged); // @TODO: merge with model property (DRY)
 	Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
 	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
 
@@ -42,8 +42,8 @@ public:
 
 	void OnPositionPermissionGranted();
 
-	QAbstractListModel * GetModel();
-	QAbstractListModel * GetHistoryNearModel();
+	QAbstractItemModel * GetModel();
+	QAbstractItemModel * GetHistoryNearModel();
 
 	bool GetNearestObjectsOnly();
 	void SetNearestObjectsOnly(bool value);
