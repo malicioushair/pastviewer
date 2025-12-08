@@ -76,6 +76,31 @@ Page {
                 text: qsTr('Show all objects in "History near you"')
                 onClicked: pastVuModelController.ToggleHistoryNearYouModel();
             }
+
+            ColumnLayout {
+                id: timelineSettingID
+
+                Layout.leftMargin: 5
+                Layout.rightMargin: 5
+
+                Text {
+                    text: qsTr("Timeline: ") + Math.floor(timelineSliderID.first.value) + " - " + Math.floor(timelineSliderID.second.value)
+                    font.family: "monospace"
+                }
+
+                RangeSlider {
+                    id: timelineSliderID
+
+                    Layout.fillWidth: true
+
+                    from: 1800
+                    to: 2025
+                    first.value: pastVuModelController.yearFrom
+                    second.value: pastVuModelController.yearTo
+                    first.onMoved: pastVuModelController.yearFrom = Math.round(first.value)
+                    second.onMoved: pastVuModelController.yearTo = Math.round(second.value)
+                }
+            }
         }
     }
 }

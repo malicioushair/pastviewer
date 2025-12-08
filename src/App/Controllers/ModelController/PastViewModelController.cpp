@@ -15,6 +15,9 @@
 namespace {
 constexpr auto NEAREST_OBJECTS_ONLY = "NearestObjectsOnly";
 constexpr auto HISTORY_NEAR_MODEL_TYPE = "HistoryNearModelType";
+constexpr auto YEAR_FROM = "YEAR_FROM";
+constexpr auto YEAR_TO = "YEAR_TO";
+constexpr auto YEAR_FROM_VALUE = 1800;
 }
 
 struct PastVuModelController::Impl
@@ -40,6 +43,7 @@ struct PastVuModelController::Impl
 	std::unique_ptr<NearestObjectsModel> nearestObjectsModel;
 	std::unique_ptr<PositionSourceAdapter> positionSourceAdapter;
 	QSettings & settings;
+	Range timelineLimits { YEAR_FROM_VALUE, QDate::currentDate().year() };
 };
 
 PastVuModelController::PastVuModelController(const QLocationPermission & permission, QSettings & settings, QObject * parent)
@@ -111,6 +115,33 @@ void PastVuModelController::SetZoomLevel(int value)
 {
 	m_impl->screenObjectsModel->setData({}, value, ScreenObjectsModel::Roles::ZoomLevel);
 	emit ZoomLevelChanged();
+}
+
+Range PastVuModelController::GetTimelineRange() const
+{
+	return { m_impl->timelineLimits.min, m_impl->timelineLimits.max };
+}
+
+int PastVuModelController::GetYearFrom() const
+{
+	return m_impl->settings.value(YEAR_FROM, m_impl->timelineLimits.min).toInt();
+}
+
+int PastVuModelController::GetYearTo() const
+{
+	return m_impl->settings.value(YEAR_TO, m_impl->timelineLimits.max).toInt();
+}
+
+void PastVuModelController::SetYearFrom(int year)
+{
+	m_impl->settings.setValue(YEAR_FROM, year);
+	emit YearFromChanged();
+}
+
+void PastVuModelController::SetYearTo(int year)
+{
+	m_impl->settings.setValue(YEAR_TO, year);
+	emit YearToChanged();
 }
 
 void PastVuModelController::ToggleOnlyNearestObjects()
