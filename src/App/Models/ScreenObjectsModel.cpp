@@ -8,270 +8,112 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QSettings>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QVariant>
 
+#include <QtCore/qabstractitemmodel.h>
 #include <cassert>
 #include <memory>
-#include <ranges>
 
 #include "glog/logging.h"
 
-#include "App/Utils/DirectionUtils.h"
-
-namespace {
-
-Item JsonObjectToItem(const QJsonObject & obj)
-{
-	const auto geo = obj.value("geo").toArray();
-	return {
-		obj.value("cid").toInt(),
-		{ geo.at(0).toDouble(), geo.at(1).toDouble() },
-		obj.value("file").toString(),
-		obj.value("title").toString(),
-		DirectionUtils::BearingFromDirection(obj.value("dir").toString()),
-		obj.value("year").toInt()
-	};
-}
-}
+#include "App/Models/BaseModel.h"
+#include "App/Utils/Range.h"
 
 struct ScreenObjectsModel::Impl
 {
-	explicit Impl(QGeoPositionInfoSource * positionSource)
-		: networkManager(std::make_unique<QNetworkAccessManager>())
-		, positionSource(positionSource)
-		, zoomLevel(13)
-	{
-	}
-
-	~Impl() = default;
-
-	NON_COPY_MOVABLE(Impl);
-
-	std::unique_ptr<QNetworkAccessManager> networkManager;
-	Items items;
-	std::unordered_set<int> seenCids;
-	QGeoPositionInfoSource * positionSource;
-	QUrl url { "https://pastvu.com/api2" };
-	int zoomLevel;
+	std::unordered_set<int> belongsToTimeline;
+	QSettings settings;
+	Range timeline {
+		settings.value("YEARS_FROM", 1800).toInt(),
+		settings.value("YEARS_TO", QDate::currentDate().year()).toInt()
+	};
 };
 
-ScreenObjectsModel::ScreenObjectsModel(QGeoPositionInfoSource * positionSource, QObject * parent)
-	: QAbstractListModel(parent)
-	, m_impl(std::make_unique<Impl>(positionSource))
+ScreenObjectsModel::ScreenObjectsModel(QAbstractListModel * sourceModel, QObject * parent)
+	: QSortFilterProxyModel(parent)
+	, m_impl(std::make_unique<Impl>())
 {
-	connect(this, &QAbstractListModel::rowsInserted, this, [this] { emit CountChanged(); });
-	connect(this, &QAbstractListModel::rowsRemoved, this, [this] { emit CountChanged(); });
-	connect(this, &QAbstractListModel::modelReset, this, [this] { emit CountChanged(); });
+	if (assert(sourceModel); !sourceModel)
+	{
+		LOG(ERROR) << "NearestObjectsModel: sourceModel is null";
+		return;
+	}
 
-	connect(this, &ScreenObjectsModel::UpdateCoords, this, [this](const QGeoRectangle & viewport) {
-		if (m_impl->zoomLevel < 9)
-			return;
+	setSourceModel(sourceModel);
 
-		const auto paramsJson = QString(R"({"z":16,"geometry":{"type":"Polygon","coordinates":[[[%1,%2],[%3,%4],[%5,%6],[%7,%8],[%9,%10]]]},"localWork":0})")
-									.arg(QString::number(viewport.topLeft().longitude(), 'f', 15))
-									.arg(QString::number(viewport.topLeft().latitude(), 'f', 15))
-									.arg(QString::number(viewport.bottomLeft().longitude(), 'f', 15))
-									.arg(QString::number(viewport.bottomLeft().latitude(), 'f', 15))
-									.arg(QString::number(viewport.bottomRight().longitude(), 'f', 15))
-									.arg(QString::number(viewport.bottomRight().latitude(), 'f', 15))
-									.arg(QString::number(viewport.topRight().longitude(), 'f', 15))
-									.arg(QString::number(viewport.topRight().latitude(), 'f', 15))
-									.arg(QString::number(viewport.topLeft().longitude(), 'f', 15))
-									.arg(QString::number(viewport.topLeft().latitude(), 'f', 15));
+	connect(sourceModel, &QAbstractListModel::rowsInserted, this, &ScreenObjectsModel::OnSourceModelChanged);
+	connect(sourceModel, &QAbstractListModel::rowsRemoved, this, &ScreenObjectsModel::OnSourceModelChanged);
+	connect(sourceModel, &QAbstractListModel::modelReset, this, &ScreenObjectsModel::OnSourceModelChanged);
 
-		QUrlQuery query;
-		query.addQueryItem("method", "photo.getByBounds");
-		query.addQueryItem("params", paramsJson);
-		m_impl->url.setQuery(query);
+	connect(this, &QSortFilterProxyModel::rowsInserted, this, [this] { emit CountChanged(); });
+	connect(this, &QSortFilterProxyModel::rowsRemoved, this, [this] { emit CountChanged(); });
+	connect(this, &QSortFilterProxyModel::modelReset, this, [this] { emit CountChanged(); });
 
-		QNetworkRequest request(m_impl->url);
-		m_impl->networkManager->get(request);
-	});
-
-	connect(m_impl->networkManager.get(), &QNetworkAccessManager::finished, this, &ScreenObjectsModel::OnNetworkReplyFinished);
+	UpdateAcceptedRows();
+	invalidateFilter();
 }
 
 ScreenObjectsModel::~ScreenObjectsModel() = default;
 
-int ScreenObjectsModel::rowCount(const QModelIndex & parent) const
+void ScreenObjectsModel::OnUserSelectedTimelineRangeChanged(const Range & timeline)
 {
-	if (parent.isValid())
-		return 0;
-	return static_cast<int>(m_impl->items.size());
+	m_impl->timeline = timeline;
+	UpdateAcceptedRows();
+	invalidateFilter();
 }
 
-QVariant ScreenObjectsModel::data(const QModelIndex & index, int role) const
+bool ScreenObjectsModel::filterAcceptsRow(int source_row, const QModelIndex & source_parent) const
 {
-	if (!index.isValid())
-	{
-		switch (role)
-		{
-			case Roles::ZoomLevel:
-				return m_impl->zoomLevel;
-			default:
-				assert(false && "Unexpected role");
-		}
-	}
+	if (source_parent.isValid())
+		return false;
 
-	if (index.row() < 0 || index.row() >= static_cast<int>(m_impl->items.size()))
-		return assert(false && "Invalid index"), QVariant();
-
-	static constexpr auto fullSizeImageUrl = "https://pastvu.com/_p/a/";
-	static constexpr auto thumbnailUrl = "https://pastvu.com/_p/h/";
-	const auto item = m_impl->items.at(index.row());
-	switch (role)
-	{
-		case Roles::Coordinate:
-			return QVariant::fromValue(item.coord);
-		case Roles::Title:
-			return item.title;
-		case Roles::Photo:
-			return fullSizeImageUrl + item.file;
-		case Roles::Thumbnail:
-			return thumbnailUrl + item.file;
-		case Roles::Bearing:
-			return item.bearing;
-		case Roles::Year:
-			return item.year;
-		case Roles::Selected:
-			return item.selected;
-		default:
-			assert(false && "Unexpected role");
-	}
-
-	return {};
+	return m_impl->belongsToTimeline.find(source_row) != m_impl->belongsToTimeline.cend();
 }
 
-bool ScreenObjectsModel::setData(const QModelIndex & index, const QVariant & value, int role)
+bool ScreenObjectsModel::lessThan(const QModelIndex & left, const QModelIndex & right) const
 {
-	if (!index.isValid())
-	{
-		switch (role)
-		{
-			case Roles::ZoomLevel:
-			{
-				m_impl->zoomLevel = value.toInt();
-				return true;
-			}
-			default:
-				assert(false && "Unexpected role");
-		}
-	}
-
-	if (index.row() < 0 || index.row() >= static_cast<int>(m_impl->items.size()))
-		return assert(false && "Invalid index"), false;
-
-	auto & item = m_impl->items.at(index.row());
-	switch (role)
-	{
-		case Roles::Selected:
-		{
-			const auto selectedItemIndices = match(this->index(0, 0), Roles::Selected, true);
-			if (!selectedItemIndices.isEmpty() && selectedItemIndices.front() != index)
-			{
-				setData(selectedItemIndices.front(), false, Roles::Selected);
-				emit dataChanged(selectedItemIndices.front(), selectedItemIndices.front(), { Roles::Selected });
-			}
-
-			item.selected = value.toBool();
-			emit dataChanged(index, index, { Roles::Selected });
-			return true;
-		}
-		default:
-			assert(false && "Unexpected role");
-	}
-	return false;
+	return true;
 }
 
-QHash<int, QByteArray> ScreenObjectsModel::roleNames() const
+void ScreenObjectsModel::OnPositionUpdated(const QGeoPositionInfo & info)
 {
-#define ROLENAME(NAME)     \
-	{                      \
-		Roles::NAME, #NAME \
-	}
-	return {
-		ROLENAME(Coordinate),
-		ROLENAME(Title),
-		ROLENAME(Photo),
-		ROLENAME(Thumbnail),
-		ROLENAME(Bearing),
-		ROLENAME(Year),
-		ROLENAME(Selected),
-		ROLENAME(ZoomLevel),
-	};
-#undef ROLENAME
 }
 
-void ScreenObjectsModel::OnPositionPermissionGranted()
+void ScreenObjectsModel::OnSourceModelChanged()
 {
-	if (m_impl->positionSource)
-		m_impl->positionSource->startUpdates();
+	UpdateAcceptedRows();
+	invalidateFilter();
 }
 
-void ScreenObjectsModel::OnNetworkReplyFinished(QNetworkReply * reply)
+void ScreenObjectsModel::UpdateAcceptedRows()
 {
-	LOG(INFO) << "Reply received";
-	if (reply->error())
-	{
-		LOG(INFO) << "Reply error:" << reply->errorString().toStdString();
-		reply->deleteLater();
-		return;
-	}
+	m_impl->belongsToTimeline.clear();
 
-	LOG(INFO) << "Reply success";
-	const auto response = reply->readAll();
-	reply->deleteLater();
+	// if (!m_impl->currentPosition.isValid())
+	// return;
 
-	QJsonParseError parserError;
-	const auto jsonDoc = QJsonDocument::fromJson(response, &parserError);
-	if (parserError.error != QJsonParseError::NoError)
-	{
-		LOG(WARNING) << "Failed to parse JSON with error" << parserError.errorString().toStdString();
-		return;
-	}
-
-	const auto root = jsonDoc.object();
-	const auto result = root.value("result").toObject();
-	const auto photos = result.value("photos").toArray();
-
-	if (!photos.isEmpty())
-		ProcessPhotos(photos);
-}
-
-void ScreenObjectsModel::ProcessPhotos(const QJsonArray & photos)
-{
-	auto newItemsView = photos
-					  | std::views::transform([](const QJsonValue & v) { return v.toObject(); })
-					  | std::views::filter([this](const QJsonObject & obj) {
-							auto cid = obj.value("cid").toInt();
-							if (m_impl->seenCids.contains(cid))
-								return false;
-							m_impl->seenCids.insert(cid);
-							return true;
-						})
-					  | std::views::transform([](const QJsonObject & obj) { return JsonObjectToItem(obj); });
-
-	const auto newItems = Items(newItemsView.begin(), newItemsView.end());
-	AddItemsToModel(newItems);
-}
-
-void ScreenObjectsModel::AddItemsToModel(const Items & newItems)
-{
-	if (newItems.empty())
+	const auto * sourceModel = this->sourceModel();
+	if (!sourceModel || sourceModel->rowCount() == 0)
 		return;
 
-	static constexpr auto MAX_ITEMS_PER_MODEL = 300;
-	if (m_impl->items.size() > MAX_ITEMS_PER_MODEL)
-	{
-		if (newItems.size() > m_impl->items.size())
-			m_impl->items.clear();
-		else
-			m_impl->items.erase(m_impl->items.cbegin(), m_impl->items.cbegin() + newItems.size());
-	}
+	const auto sourceRowCount = sourceModel->rowCount();
 
-	beginInsertRows(QModelIndex(), m_impl->items.size(), m_impl->items.size() + newItems.size() - 1);
-	m_impl->items.insert(m_impl->items.end(), newItems.begin(), newItems.end());
-	endInsertRows();
+	for (int i = 0; i < sourceRowCount; ++i)
+	{
+		const auto sourceIndex = sourceModel->index(i, 0);
+		const auto year = sourceModel->data(sourceIndex, BaseModel::Roles::Year).toInt();
+
+		if (year > m_impl->timeline.min && year <= m_impl->timeline.max)
+			m_impl->belongsToTimeline.insert(i);
+
+		// if (year.isValid())
+		// {
+		// const auto distance = m_impl->currentPosition.distanceTo(year);
+		// if (distance <= MAX_DISTANCE_METERS)
+		// m_impl->belongsToTimeline.insert(i);
+		// }
+	}
 }

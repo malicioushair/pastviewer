@@ -8,9 +8,9 @@
 #include <limits>
 #include <unordered_set>
 
-#include "glog/logging.h"
+#include "App/Models/BaseModel.h"
 
-#include "App/Models/ScreenObjectsModel.h"
+#include "glog/logging.h"
 
 namespace {
 constexpr auto MAX_DISTANCE_METERS = 4000.0;
@@ -30,20 +30,36 @@ struct NearestObjectsModel::Impl
 	std::unordered_set<int> withinDistanceIndices;
 };
 
-NearestObjectsModel::NearestObjectsModel(QAbstractListModel * sourceModel, QGeoPositionInfoSource * positionSource, QObject * parent)
+NearestObjectsModel::NearestObjectsModel(QAbstractItemModel * sourceModel, QGeoPositionInfoSource * positionSource, QObject * parent)
 	: QSortFilterProxyModel(parent)
 	, m_impl(std::make_unique<Impl>(positionSource))
 {
-	if (!sourceModel)
+	if (assert(sourceModel); !sourceModel)
 	{
 		LOG(ERROR) << "NearestObjectsModel: sourceModel is null";
 		return;
 	}
 
 	setSourceModel(sourceModel);
-	setDynamicSortFilter(true);
+	setDynamicSortFilter(false);
 	sort(0);
 
+	connect(sourceModel, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex & topLeft, const QModelIndex & bottomRight, const QVector<int> & roles) {
+		auto onlySelectedRole = true;
+		for (int role : roles)
+		{
+			if (role != BaseModel::Roles::Selected)
+			{
+				onlySelectedRole = false;
+				break;
+			}
+		}
+
+		// clang-format off
+		if (!onlySelectedRole)
+		invalidate();
+}, Qt::DirectConnection);
+	// clang-format on
 	connect(sourceModel, &QAbstractListModel::rowsInserted, this, &NearestObjectsModel::OnSourceModelChanged);
 	connect(sourceModel, &QAbstractListModel::rowsRemoved, this, &NearestObjectsModel::OnSourceModelChanged);
 	connect(sourceModel, &QAbstractListModel::modelReset, this, &NearestObjectsModel::OnSourceModelChanged);
@@ -66,7 +82,7 @@ bool NearestObjectsModel::filterAcceptsRow(int source_row, const QModelIndex & s
 	if (source_parent.isValid())
 		return false;
 
-	return m_impl->withinDistanceIndices.find(source_row) != m_impl->withinDistanceIndices.end();
+	return m_impl->withinDistanceIndices.find(source_row) != m_impl->withinDistanceIndices.cend();
 }
 
 bool NearestObjectsModel::lessThan(const QModelIndex & left, const QModelIndex & right) const
@@ -109,7 +125,7 @@ void NearestObjectsModel::UpdateAcceptedRows()
 	for (int i = 0; i < sourceRowCount; ++i)
 	{
 		const auto sourceIndex = sourceModel->index(i, 0);
-		const auto coord = sourceModel->data(sourceIndex, ScreenObjectsModel::Roles::Coordinate).value<QGeoCoordinate>();
+		const auto coord = sourceModel->data(sourceIndex, BaseModel::Roles::Coordinate).value<QGeoCoordinate>();
 		if (coord.isValid())
 		{
 			const auto distance = m_impl->currentPosition.distanceTo(coord);
@@ -126,7 +142,7 @@ double NearestObjectsModel::GetDistance(int sourceRow) const
 		return std::numeric_limits<double>::max();
 
 	const auto sourceIndex = sourceModel->index(sourceRow, 0);
-	const auto coord = sourceModel->data(sourceIndex, ScreenObjectsModel::Roles::Coordinate).value<QGeoCoordinate>();
+	const auto coord = sourceModel->data(sourceIndex, BaseModel::Roles::Coordinate).value<QGeoCoordinate>();
 	if (!coord.isValid())
 		return std::numeric_limits<double>::max();
 

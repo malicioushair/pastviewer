@@ -16,7 +16,7 @@ class NearestObjectsModel
 	Q_OBJECT
 
 public:
-	explicit NearestObjectsModel(QAbstractListModel * sourceModel, QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
+	explicit NearestObjectsModel(QAbstractItemModel * sourceModel, QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
 	NON_COPY_MOVABLE(NearestObjectsModel);
 
 	~NearestObjectsModel();

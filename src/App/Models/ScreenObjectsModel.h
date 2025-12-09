@@ -4,51 +4,25 @@
 #include <QGeoCoordinate>
 #include <QGeoPositionInfoSource>
 #include <QGeoRectangle>
+#include <QSortFilterProxyModel>
 #include <QVariant>
 
 #include <memory>
 #include <vector>
 
 #include "App/Utils/NonCopyMovable.h"
+#include "App/Utils/Range.h"
 
 class QNetworkAccessManager;
 class QNetworkReply;
 
-struct Item
-{
-	int cid { 0 };
-	QGeoCoordinate coord;
-	QString file;
-	QString title;
-	int bearing { 0 };
-	int year { 0 };
-	bool selected { false };
-};
-
-using Items = std::vector<Item>;
-
 class ScreenObjectsModel
-	: public QAbstractListModel
+	: public QSortFilterProxyModel
 {
 	Q_OBJECT
 
 public:
-	enum Roles
-	{
-		// Getters
-		Bearing = Qt::UserRole + 1,
-		Coordinate,
-		Photo,
-		Thumbnail,
-		Title,
-		Year,
-		ZoomLevel,
-
-		// Setters
-		Selected,
-	};
-
-	explicit ScreenObjectsModel(QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
+	explicit ScreenObjectsModel(QAbstractListModel * sourceModel, QObject * parent = nullptr);
 	NON_COPY_MOVABLE(ScreenObjectsModel);
 
 	~ScreenObjectsModel();
@@ -57,22 +31,21 @@ public:
 
 signals:
 	void CountChanged();
-	void UpdateCoords(const QGeoRectangle & viewport);
 
-public:
-	int rowCount(const QModelIndex & parent = QModelIndex()) const override;
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-	bool setData(const QModelIndex & index, const QVariant & value, int role) override;
-	QHash<int, QByteArray> roleNames() const override;
+public slots:
+	void OnUserSelectedTimelineRangeChanged(const Range & timeline);
 
-	void OnPositionPermissionGranted();
+protected:
+	bool
+	filterAcceptsRow(int source_row, const QModelIndex & source_parent) const override;
+	bool lessThan(const QModelIndex & left, const QModelIndex & right) const override;
 
 private slots:
-	void OnNetworkReplyFinished(QNetworkReply * reply);
+	void OnPositionUpdated(const QGeoPositionInfo & info);
+	void OnSourceModelChanged();
 
 private:
-	void ProcessPhotos(const QJsonArray & photos);
-	void AddItemsToModel(const Items & newItems);
+	void UpdateAcceptedRows();
 
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;

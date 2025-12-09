@@ -93,12 +93,12 @@ Page {
 
                     Layout.fillWidth: true
 
-                    from: 1800
-                    to: 2025
-                    first.value: pastVuModelController.yearFrom
-                    second.value: pastVuModelController.yearTo
-                    first.onMoved: pastVuModelController.yearFrom = Math.round(first.value)
-                    second.onMoved: pastVuModelController.yearTo = Math.round(second.value)
+                    from: pastVuModelController.timelineRange.min
+                    to: pastVuModelController.timelineRange.max
+                    first.value: pastVuModelController.userSelectedTimelineRange.min
+                    second.value: pastVuModelController.userSelectedTimelineRange.max
+                    first.onMoved: pastVuModelController.userSelectedTimelineRange.min = Math.round(first.value)
+                    second.onMoved: pastVuModelController.userSelectedTimelineRange.max = Math.round(second.value)
                 }
             }
         }
