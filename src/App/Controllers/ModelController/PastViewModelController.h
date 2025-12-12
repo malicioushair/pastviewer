@@ -4,11 +4,15 @@
 #include <QGeoPositionInfoSource>
 #include <QGeoRectangle>
 #include <QLocationPermission>
+#include <QMetaType>
 #include <QObject>
 #include <QSettings>
 
+#include <QtCore/qsize.h>
 #include <QtCore/qtmetamacros.h>
 #include <memory>
+
+#include "App/Utils/Range.h"
 
 class PositionSourceAdapter;
 
@@ -23,16 +27,21 @@ signals:
 	void ModelChanged();
 	void HistoryNearModelChanged();
 	void ZoomLevelChanged();
+	void YearFromChanged();
+	void YearToChanged();
+	void UserSelectedTimelineRangeChanged(const Range & timeline);
 
 public:
 	PastVuModelController(const QLocationPermission & permission, QSettings & settings, QObject * parent = nullptr);
 	~PastVuModelController();
 
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjecrtsOnlyChanged);
-	Q_PROPERTY(QAbstractListModel * model READ GetModel NOTIFY ModelChanged);
-	Q_PROPERTY(QAbstractListModel * historyNearModel READ GetHistoryNearModel NOTIFY HistoryNearModelChanged); // @TODO: merge with model property (DRY)
+	Q_PROPERTY(QAbstractItemModel * model READ GetModel NOTIFY ModelChanged);
+	Q_PROPERTY(QAbstractItemModel * historyNearModel READ GetHistoryNearModel NOTIFY HistoryNearModelChanged); // @TODO: merge with model property (DRY)
 	Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
 	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
+	Q_PROPERTY(Range timelineRange READ GetTimelineRange);
+	Q_PROPERTY(Range userSelectedTimelineRange READ GetUserSelectedTimelineRange WRITE SetUserSelectedTimelineRange NOTIFY UserSelectedTimelineRangeChanged);
 
 	Q_INVOKABLE QString GetMapHostApiKey();
 	Q_INVOKABLE PositionSourceAdapter * GetPositionSource();
@@ -42,9 +51,10 @@ public:
 
 	void OnPositionPermissionGranted();
 
-	QAbstractListModel * GetModel();
-	QAbstractListModel * GetHistoryNearModel();
+	QAbstractItemModel * GetModel();
+	QAbstractItemModel * GetHistoryNearModel();
 
+private:
 	bool GetNearestObjectsOnly();
 	void SetNearestObjectsOnly(bool value);
 
@@ -53,6 +63,10 @@ public:
 
 	int GetZoomLevel() const;
 	void SetZoomLevel(int value);
+
+	Range GetTimelineRange() const;
+	Range GetUserSelectedTimelineRange() const;
+	void SetUserSelectedTimelineRange(const Range & range);
 
 private:
 	struct Impl;

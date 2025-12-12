@@ -1,5 +1,6 @@
 #include <QDir>
 #include <QGuiApplication>
+#include <QQuickStyle>
 #include <QScopeGuard>
 #include <QStandardPaths>
 
@@ -51,6 +52,8 @@ int main(int argc, char * argv[])
 #if defined(__ANDROID__)
 	android_backtrace_log_status();
 #endif
+
+	QQuickStyle::setStyle("Basic");
 
 	QGuiApplication app(argc, argv);
 

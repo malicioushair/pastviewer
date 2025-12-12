@@ -7,13 +7,12 @@
 #include <QVariant>
 
 #include <memory>
-#include <unordered_set>
 #include <vector>
 
 #include "App/Utils/NonCopyMovable.h"
 
-// Forward declarations
 class QNetworkAccessManager;
+class QNetworkReply;
 
 struct Item
 {
@@ -37,25 +36,24 @@ public:
 	enum Roles
 	{
 		// Getters
-		Coordinate = Qt::UserRole + 1,
-		Title,
+		Bearing = Qt::UserRole + 1,
+		Coordinate,
 		Photo,
 		Thumbnail,
-		Bearing,
+		Title,
 		Year,
+		ZoomLevel,
 
 		// Setters
 		Selected,
-
-		LastBaseRole,
 	};
 
 	explicit BaseModel(QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
 	NON_COPY_MOVABLE(BaseModel);
 
-	virtual ~BaseModel();
+	~BaseModel();
 
-	Q_PROPERTY(int count READ rowCount() NOTIFY CountChanged());
+	Q_PROPERTY(int count READ rowCount NOTIFY CountChanged)
 
 signals:
 	void CountChanged();
@@ -69,17 +67,13 @@ public:
 
 	void OnPositionPermissionGranted();
 
-protected:
-	QNetworkAccessManager * GetNetworkManager() const;
-	Items & GetMutableItems();
-	const Items & GetItems() const;
-	std::unordered_set<int> & GetMutableSeenCids();
-	const std::unordered_set<int> & GetSeenCids() const;
-	QGeoPositionInfoSource * GetPositionSource() const;
-	QUrl & GetMutableUrl();
-	const QUrl & GetUrl() const;
+private slots:
+	void OnNetworkReplyFinished(QNetworkReply * reply);
 
 private:
+	void ProcessPhotos(const QJsonArray & photos);
+	void AddItemsToModel(const Items & newItems);
+
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
 };

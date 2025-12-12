@@ -56,7 +56,6 @@ Item {
 
                 ShapePath {
                     fillColor: Colors.palette.userPosition
-                    strokeColor: "transparent"
                     PathPolyline {
                         path: [
                             Qt.point(arrowHeadID.width / 2, 0),

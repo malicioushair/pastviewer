@@ -1,90 +1,150 @@
 #include "NearestObjectsModel.h"
 
-#include <QAbstractListModel>
+#include <QGeoCoordinate>
 #include <QGeoPositionInfoSource>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QUrlQuery>
+#include <QModelIndex>
 #include <QVariant>
 
-#include <ranges>
+#include <limits>
+#include <unordered_set>
 
 #include "App/Models/BaseModel.h"
+
 #include "glog/logging.h"
 
-#include "App/Utils/DirectionUtils.h"
+namespace {
+constexpr auto MAX_DISTANCE_METERS = 4000.0;
+}
 
-NearestObjectsModel::NearestObjectsModel(QGeoPositionInfoSource * _positionSource, QObject * parent)
-	: BaseModel(_positionSource, parent)
+struct NearestObjectsModel::Impl
 {
-	connect(GetPositionSource(), &QGeoPositionInfoSource::positionUpdated, this, [this](const QGeoPositionInfo & info) {
-		const auto currentCoordinates = info.coordinate();
-		const auto lat = currentCoordinates.latitude();
-		const auto lon = currentCoordinates.longitude();
-		const auto paramsJson = QString(R"({"geo":[%1,%2],"limit":12,"except":228481})").arg(lat).arg(lon);
+	explicit Impl(QGeoPositionInfoSource * positionSource)
+		: positionSource(positionSource)
+		, currentPosition()
+	{
+	}
 
-		QUrlQuery query;
-		query.addQueryItem("method", "photo.giveNearestPhotos");
-		query.addQueryItem("params", paramsJson);
-		GetMutableUrl().setQuery(query);
+	QGeoPositionInfoSource * positionSource;
+	QGeoCoordinate currentPosition;
 
-		QNetworkRequest request(GetMutableUrl());
-		GetNetworkManager()->get(request);
-	});
-	connect(GetNetworkManager(), &QNetworkAccessManager::finished, this, [this](QNetworkReply * reply) {
-		LOG(INFO) << "Reply received";
-		if (reply->error())
+	std::unordered_set<int> withinDistanceIndices;
+};
+
+NearestObjectsModel::NearestObjectsModel(QAbstractItemModel * sourceModel, QGeoPositionInfoSource * positionSource, QObject * parent)
+	: QSortFilterProxyModel(parent)
+	, m_impl(std::make_unique<Impl>(positionSource))
+{
+	if (assert(sourceModel); !sourceModel)
+	{
+		LOG(ERROR) << "NearestObjectsModel: sourceModel is null";
+		return;
+	}
+
+	setSourceModel(sourceModel);
+	setDynamicSortFilter(false);
+	sort(0);
+
+	connect(sourceModel, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex & topLeft, const QModelIndex & bottomRight, const QVector<int> & roles) {
+		auto onlySelectedRole = true;
+		for (int role : roles)
 		{
-			LOG(INFO) << "Reply error:" << reply->errorString().toStdString();
-		}
-		else
-		{
-			LOG(INFO) << "Reply success";
-			const auto response = reply->readAll();
-
-			QJsonParseError parserError;
-			const auto jsonDoc = QJsonDocument::fromJson(response, &parserError);
-			if (parserError.error != QJsonParseError::NoError)
-				LOG(WARNING) << "Failed to parse JSON with error" << parserError.errorString().toStdString();
-
-			const auto root = jsonDoc.object();
-			const auto result = root.value("result").toObject();
-			const auto photos = result.value("photos").toArray();
-
-			auto newItemsView = photos
-							  | std::views::transform([](const QJsonValue & v) { return v.toObject(); })
-							  | std::views::filter([this](const QJsonObject & obj) {
-									auto cid = obj.value("cid").toInt();
-									if (GetMutableSeenCids().contains(cid))
-										return false;
-									GetMutableSeenCids().insert(cid);
-									return true;
-								})
-							  | std::views::transform([this](const QJsonObject & obj) -> Item {
-									const auto geo = obj.value("geo").toArray();
-									return {
-										obj.value("cid").toInt(),
-										{ geo.at(0).toDouble(), geo.at(1).toDouble() },
-										obj.value("file").toString(),
-										obj.value("title").toString(),
-										DirectionUtils::BearingFromDirection(obj.value("dir").toString()),
-										obj.value("year").toInt()
-									};
-								});
-
-			const auto newItems = Items(newItemsView.begin(), newItemsView.end());
-			if (!newItems.empty())
+			if (role != BaseModel::Roles::Selected)
 			{
-				beginInsertRows(QModelIndex(), GetMutableItems().size(), GetMutableItems().size() + newItems.size() - 1);
-				GetMutableItems().insert(GetMutableItems().end(), newItems.begin(), newItems.end());
-				endInsertRows();
+				onlySelectedRole = false;
+				break;
 			}
 		}
-		reply->deleteLater();
-	});
+
+		// clang-format off
+		if (!onlySelectedRole)
+		invalidate();
+}, Qt::DirectConnection);
+	// clang-format on
+	connect(sourceModel, &QAbstractListModel::rowsInserted, this, &NearestObjectsModel::OnSourceModelChanged);
+	connect(sourceModel, &QAbstractListModel::rowsRemoved, this, &NearestObjectsModel::OnSourceModelChanged);
+	connect(sourceModel, &QAbstractListModel::modelReset, this, &NearestObjectsModel::OnSourceModelChanged);
+
+	if (m_impl->positionSource)
+		connect(m_impl->positionSource, &QGeoPositionInfoSource::positionUpdated, this, &NearestObjectsModel::OnPositionUpdated);
+
+	connect(this, &QSortFilterProxyModel::rowsInserted, this, [this] { emit CountChanged(); });
+	connect(this, &QSortFilterProxyModel::rowsRemoved, this, [this] { emit CountChanged(); });
+	connect(this, &QSortFilterProxyModel::modelReset, this, [this] { emit CountChanged(); });
+
+	UpdateAcceptedRows();
+	invalidateFilter();
 }
 
 NearestObjectsModel::~NearestObjectsModel() = default;
+
+bool NearestObjectsModel::filterAcceptsRow(int source_row, const QModelIndex & source_parent) const
+{
+	if (source_parent.isValid())
+		return false;
+
+	return m_impl->withinDistanceIndices.find(source_row) != m_impl->withinDistanceIndices.cend();
+}
+
+bool NearestObjectsModel::lessThan(const QModelIndex & left, const QModelIndex & right) const
+{
+	const auto leftDistance = GetDistance(left.row());
+	const auto rightDistance = GetDistance(right.row());
+	return leftDistance < rightDistance;
+}
+
+void NearestObjectsModel::OnPositionUpdated(const QGeoPositionInfo & info)
+{
+	const auto newPosition = info.coordinate();
+	if (newPosition.isValid() && newPosition != m_impl->currentPosition)
+	{
+		m_impl->currentPosition = newPosition;
+		UpdateAcceptedRows();
+		invalidateFilter();
+	}
+}
+
+void NearestObjectsModel::OnSourceModelChanged()
+{
+	UpdateAcceptedRows();
+	invalidateFilter();
+}
+
+void NearestObjectsModel::UpdateAcceptedRows()
+{
+	m_impl->withinDistanceIndices.clear();
+
+	if (!m_impl->currentPosition.isValid())
+		return;
+
+	const auto * sourceModel = this->sourceModel();
+	if (!sourceModel || sourceModel->rowCount() == 0)
+		return;
+
+	const auto sourceRowCount = sourceModel->rowCount();
+
+	for (int i = 0; i < sourceRowCount; ++i)
+	{
+		const auto sourceIndex = sourceModel->index(i, 0);
+		const auto coord = sourceModel->data(sourceIndex, BaseModel::Roles::Coordinate).value<QGeoCoordinate>();
+		if (coord.isValid())
+		{
+			const auto distance = m_impl->currentPosition.distanceTo(coord);
+			if (distance <= MAX_DISTANCE_METERS)
+				m_impl->withinDistanceIndices.insert(i);
+		}
+	}
+}
+
+double NearestObjectsModel::GetDistance(int sourceRow) const
+{
+	const auto * sourceModel = this->sourceModel();
+	if (!sourceModel || !m_impl->currentPosition.isValid())
+		return std::numeric_limits<double>::max();
+
+	const auto sourceIndex = sourceModel->index(sourceRow, 0);
+	const auto coord = sourceModel->data(sourceIndex, BaseModel::Roles::Coordinate).value<QGeoCoordinate>();
+	if (!coord.isValid())
+		return std::numeric_limits<double>::max();
+
+	return m_impl->currentPosition.distanceTo(coord);
+}
