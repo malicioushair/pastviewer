@@ -76,6 +76,18 @@ Page {
                 text: qsTr('Show all objects in "History near you"')
                 onClicked: pastVuModelController.ToggleHistoryNearYouModel();
             }
+
+            StyledRangeSlider {
+                id: timelineSettingID
+
+                rangeMin: pastVuModelController.timelineRange.min
+                rangeMax: pastVuModelController.timelineRange.max
+                selectedMin: pastVuModelController.userSelectedTimelineRange.min
+                selectedMax: pastVuModelController.userSelectedTimelineRange.max
+
+                onSelectedMinChanged: pastVuModelController.userSelectedTimelineRange.min = selectedMin
+                onSelectedMaxChanged: pastVuModelController.userSelectedTimelineRange.max = selectedMax
+            }
         }
     }
 }
