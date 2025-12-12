@@ -77,29 +77,16 @@ Page {
                 onClicked: pastVuModelController.ToggleHistoryNearYouModel();
             }
 
-            ColumnLayout {
+            StyledRangeSlider {
                 id: timelineSettingID
 
-                Layout.leftMargin: 5
-                Layout.rightMargin: 5
+                rangeMin: pastVuModelController.timelineRange.min
+                rangeMax: pastVuModelController.timelineRange.max
+                selectedMin: pastVuModelController.userSelectedTimelineRange.min
+                selectedMax: pastVuModelController.userSelectedTimelineRange.max
 
-                Text {
-                    text: qsTr("Timeline: ") + Math.floor(timelineSliderID.first.value) + " - " + Math.floor(timelineSliderID.second.value)
-                    font.family: "monospace"
-                }
-
-                RangeSlider {
-                    id: timelineSliderID
-
-                    Layout.fillWidth: true
-
-                    from: pastVuModelController.timelineRange.min
-                    to: pastVuModelController.timelineRange.max
-                    first.value: pastVuModelController.userSelectedTimelineRange.min
-                    second.value: pastVuModelController.userSelectedTimelineRange.max
-                    first.onMoved: pastVuModelController.userSelectedTimelineRange.min = Math.round(first.value)
-                    second.onMoved: pastVuModelController.userSelectedTimelineRange.max = Math.round(second.value)
-                }
+                onSelectedMinChanged: pastVuModelController.userSelectedTimelineRange.min = selectedMin
+                onSelectedMaxChanged: pastVuModelController.userSelectedTimelineRange.max = selectedMax
             }
         }
     }

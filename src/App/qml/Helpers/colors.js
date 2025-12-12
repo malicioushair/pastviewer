@@ -7,6 +7,8 @@ const palette = {
     border:          "#313233",
     userPosition:    "#3dafff",
     seeThroughBlack: "#66000000",
-    southNeedle:      "#63625d",
+    southNeedle:     "#63625d",
     northNeedle:     "black",
+    shadowSoft:      "#22000000",
+    slider:          "#C2643F",
 }
