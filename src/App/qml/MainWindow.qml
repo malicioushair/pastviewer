@@ -305,6 +305,7 @@ Rectangle {
 
             PhotosNear {
                 id: photosNearID
+                map: mapID
             }
         }
     }
