@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Effects
+import QtLocation
+import QtPositioning
 
 import "../Helpers/colors.js" as Colors
 import "../Helpers/utils.js" as Utils
@@ -9,11 +11,64 @@ import "../Helpers/utils.js" as Utils
 Rectangle {
     id: rootID
 
+    property Map map: null
+
     Layout.fillWidth: true
     Layout.preferredHeight: 210
 
     radius: 16
     color: Colors.palette.bg
+
+    property real animatedLat: 0
+    property real animatedLon: 0
+
+    function animateMapCenter(targetCoordinate) {
+        if (!map || !targetCoordinate || !targetCoordinate.isValid)
+            return
+
+        map.follow = false
+
+        animatedLat = map.center.latitude
+        animatedLon = map.center.longitude
+
+        mapCenterAnimationLat.from = map.center.latitude
+        mapCenterAnimationLat.to = targetCoordinate.latitude
+        mapCenterAnimationLon.from = map.center.longitude
+        mapCenterAnimationLon.to = targetCoordinate.longitude
+
+        mapCenterAnimationGroup.start()
+    }
+
+    ParallelAnimation {
+        id: mapCenterAnimationGroup
+
+        NumberAnimation {
+            id: mapCenterAnimationLat
+            target: rootID
+            property: "animatedLat"
+            duration: 500
+            easing.type: Easing.InOutCubic
+        }
+        NumberAnimation {
+            id: mapCenterAnimationLon
+            target: rootID
+            property: "animatedLon"
+            duration: 500
+            easing.type: Easing.InOutCubic
+        }
+    }
+
+    onAnimatedLatChanged: {
+        if (map && mapCenterAnimationGroup.running) {
+            map.center = QtPositioning.coordinate(animatedLat, animatedLon)
+        }
+    }
+
+    onAnimatedLonChanged: {
+        if (map && mapCenterAnimationGroup.running) {
+            map.center = QtPositioning.coordinate(animatedLat, animatedLon)
+        }
+    }
 
     Rectangle {
         id: imagesNearbyID
@@ -64,18 +119,24 @@ Rectangle {
             orientation: ListView.Horizontal
             spacing: 10
 
-            onCountChanged: Utils.setTimeout(positionViewAtEnd, 300) // @TODO: add animation
+            onCountChanged: Utils.setTimeout(positionViewAtEnd, 300)
 
             delegate: Item {
                 width: 100
-                height: 100
+                height: 160
 
                 Rectangle {
                     id: maskID
 
                     anchors.fill: parent
+                    anchors.margins: -3
+
                     radius: 10
-                    color: "white"
+                    border {
+                        width: Selected ? 3 : 0
+                        color: Selected ? Colors.palette.accent : "transparent"
+                    }
+                    color: Selected ? Colors.palette.shadowSoft : Colors.palette.bg
                     antialiasing: true
                 }
 
@@ -91,6 +152,7 @@ Rectangle {
                     Image {
                         id: imageID
 
+                        Layout.alignment: Qt.AlignTop
                         Layout.fillWidth: true
                         Layout.preferredHeight: 100
 
@@ -104,13 +166,19 @@ Rectangle {
                         }
 
                         TapHandler {
-                            onTapped: Selected = true
+                            onTapped: {
+                                Selected = true
+                                if (rootID.map && Coordinate && Coordinate.isValid) {
+                                    rootID.animateMapCenter(Coordinate)
+                                }
+                            }
                             onDoubleTapped: stackViewID.openPhotoDetails(Photo, Title, Year)
                         }
                     }
 
                     Text {
                         Layout.fillWidth: true
+                        Layout.leftMargin: 5
 
                         text: Title
                         maximumLineCount: 2
@@ -119,6 +187,8 @@ Rectangle {
                     }
 
                     Text {
+                        Layout.leftMargin: 5
+                        Layout.topMargin: -6
                         text: Year
                     }
                 }
