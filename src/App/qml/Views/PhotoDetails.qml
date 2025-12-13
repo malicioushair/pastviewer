@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtCore
 
 import "../Helpers/colors.js" as Colors
 
@@ -33,6 +34,17 @@ Page {
                 color: Colors.palette.text
                 wrapMode: Text.Wrap
             }
+            ToolButton {
+                text: "📸"
+                onClicked: rootID.StackView.view.push("CameraMode.qml", {
+                    imageSource: imageSource,
+                    title: title,
+                    year: year
+                })
+                background: Rectangle {
+                    color: Colors.palette.accent
+                }
+            }
         }
     }
 
@@ -40,7 +52,8 @@ Page {
         background: Rectangle {
             color: Colors.palette.toolbar
         }
-        ColumnLayout {
+        RowLayout {
+            anchors.fill: parent
             Label {
                 Layout.leftMargin: 10
                 text: qsTr("Year: ") + rootID.year
@@ -50,6 +63,9 @@ Page {
                     pixelSize: 16
                 }
                 wrapMode: Text.WordWrap
+            }
+            Item {
+                Layout.fillWidth: true
             }
         }
     }
@@ -75,6 +91,23 @@ Page {
                 height: viewportID.height
 
                 transformOrigin: Item.Center
+
+                Image {
+                    id: imageID
+
+                    readonly property bool fitsViewPort: true
+                            && imageID.status == Image.Ready
+                            && imageID.paintedWidth * pinchHandlerID.scaleAxis.activeValue <= canvasID.width
+                            && imageID.paintedHeight * pinchHandlerID.scaleAxis.activeValue <= canvasID.height
+
+                    anchors.fill: parent
+                    anchors.centerIn: parent
+
+                    source: rootID.imageSource
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    antialiasing: true
+                }
 
                 PinchHandler {
                     id: pinchHandlerID
@@ -106,23 +139,6 @@ Page {
                         if (!imageID.fitsViewPort)
                             canvasID.y += delta
                     }
-                }
-
-                Image {
-                    id: imageID
-
-                    readonly property bool fitsViewPort: true
-                            && imageID.status == Image.Ready
-                            && imageID.paintedWidth * pinchHandlerID.scaleAxis.activeValue <= canvasID.width
-                            && imageID.paintedHeight * pinchHandlerID.scaleAxis.activeValue <= canvasID.height
-
-                    anchors.fill: parent
-                    anchors.centerIn: parent
-
-                    source: rootID.imageSource
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                    antialiasing: true
                 }
             }
         }

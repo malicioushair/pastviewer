@@ -1,13 +1,12 @@
 #include "GuiController.h"
 
-#include <memory>
-#include <stdexcept>
-#include <string>
-
+#include <QCameraDevice>
 #include <QDateTime>
-#include <QFileInfo>
+#include <QDir>
 #include <QGuiApplication>
 #include <QLocationPermission>
+#include <QMediaDevices>
+#include <QPermissions>
 #include <QQmlAbstractUrlInterceptor>
 #include <QQmlContext>
 #include <QSettings>
@@ -17,8 +16,10 @@
 #include <QUrl>
 #include <QUrlQuery>
 
+#include "App/Utils/PlatformUtils.h"
 #include "glog/logging.h"
 
+#include "App/Controllers/GuiController/platform/Logic.h"
 #include "App/Controllers/ModelController/PastViewModelController.h"
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
 
@@ -67,18 +68,18 @@ public:
 private:
 	std::string m_token;
 };
-
 }
 
 struct GuiController::Impl
 {
 	QQmlApplicationEngine engine;
 	QSettings settings;
-	QLocationPermission permission { [] {
+	QLocationPermission locationPermission { [] {
 		QLocationPermission p;
 		p.setAccuracy(QLocationPermission::Precise);
 		return p;
 	}() };
+	QCameraPermission cameraPermission {};
 	std::unique_ptr<PastVuModelController> pastVuModelController;
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
 
@@ -100,7 +101,7 @@ GuiController::GuiController(QObject * parent)
 {
 	try
 	{
-		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->permission, m_impl->settings) };
+		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->locationPermission, m_impl->settings) };
 	}
 	catch (const std::runtime_error & error)
 	{
@@ -111,7 +112,7 @@ GuiController::GuiController(QObject * parent)
 	}
 
 	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
-	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "Range", "Range is a value type");
+	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
 	qRegisterMetaType<QGeoCoordinate>();
 	qRegisterMetaType<QGeoPositionInfo>();
 	m_impl->engine.rootContext()->setContextProperty("guiController", this);
@@ -126,30 +127,13 @@ GuiController::GuiController(QObject * parent)
 		throw std::runtime_error("Failed to load QML");
 	}
 
-	connect(this, &GuiController::PositionPermissionGranted, m_impl->pastVuModelController.get(), &PastVuModelController::OnPositionPermissionGranted);
+	connect(this, &GuiController::PermissionGranted, m_impl->pastVuModelController.get(), [this](const QPermission & permission) {
+		if (permission.type() == QLocationPermission::staticMetaObject.metaType())
+			m_impl->pastVuModelController->OnPositionPermissionGranted();
+	});
 
-	switch (qApp->checkPermission(m_impl->permission))
-	{
-		case Qt::PermissionStatus::Undetermined:
-			qApp->requestPermission(m_impl->permission, this, [&] {
-				LOG(INFO) << "QLocationPermission requested";
-				if (qApp->checkPermission(m_impl->permission) == Qt::PermissionStatus::Granted)
-				{
-					LOG(INFO) << "QLocationPermission granted";
-					emit PositionPermissionGranted();
-				}
-			});
-			break;
-		case Qt::PermissionStatus::Denied:
-			LOG(WARNING) << "QLocationPermission denied!";
-			break;
-		case Qt::PermissionStatus::Granted:
-			LOG(INFO) << "QLocationPermission has already been granted";
-			break;
-		default:
-			assert(false && "We should never get to this branch!");
-			throw std::runtime_error("Unknown QLocationPermission status");
-	}
+	RequestPermission(m_impl->locationPermission);
+	RequestCameraPermission();
 }
 
 GuiController::~GuiController() = default;
@@ -160,7 +144,7 @@ void GuiController::BumpHotReloadToken()
 	m_impl->engine.clearComponentCache();
 }
 
-bool PastViewer::GuiController::IsDebug()
+bool GuiController::IsDebug()
 {
 	return
 #ifndef NDEBUG
@@ -171,7 +155,80 @@ bool PastViewer::GuiController::IsDebug()
 		;
 }
 
-QString PastViewer::GuiController::GetAppVersion()
+QString GuiController::GetAppVersion()
 {
 	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+}
+
+void GuiController::RequestCameraPermission()
+{
+	QMediaDevices devices;
+	if (const auto cameras = devices.videoInputs(); cameras.isEmpty())
+	{
+		LOG(WARNING) << "No cameras available";
+		return;
+	}
+
+	RequestPermission(m_impl->cameraPermission);
+}
+
+bool GuiController::SaveScreenshotToGallery(const QString & filePath)
+{
+	return PlatformDependentLogic::SaveScreenshotToGallery(filePath);
+}
+
+void GuiController::SaveImage(const QQuickItemGrabResult * grabResult)
+{
+	if (!grabResult)
+	{
+		LOG(WARNING) << "SaveImage called with null grabResult";
+		return;
+	}
+
+	const auto timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+	const auto filename = QString("pastviewer_%1.png").arg(timestamp);
+
+	const auto screenshotsPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+	const auto filePath = QString("%1/%2").arg(screenshotsPath, filename);
+	if (const auto saved = grabResult->saveToFile(filePath); saved)
+	{
+		LOG(INFO) << "Screenshot saved to:" << filePath.toStdString();
+		if (Utils::IsMobile())
+			SaveScreenshotToGallery(filePath);
+	}
+	else
+	{
+		LOG(WARNING) << "Failed to save screenshot to:" << filePath.toStdString();
+	}
+}
+
+void GuiController::RequestPermission(const QPermission & permission)
+{
+	const auto permissionStatus = qApp->checkPermission(permission);
+	const auto permissionName = permission.type().name();
+	switch (permissionStatus)
+	{
+		case Qt::PermissionStatus::Undetermined:
+		{
+			// permissionName and permission have to be captured by value to make sure they are valid
+			qApp->requestPermission(permission, this, [this, permissionName, permission] {
+				LOG(INFO) << permissionName << " requested";
+				if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted)
+				{
+					emit PermissionGranted(permission);
+					LOG(INFO) << permissionName << " granted";
+				}
+			});
+			break;
+		}
+		case Qt::PermissionStatus::Denied:
+			LOG(WARNING) << permissionName << " denied!";
+			break;
+		case Qt::PermissionStatus::Granted:
+			LOG(INFO) << permissionName << " has already been granted";
+			break;
+		default:
+			assert(false && "We should never get to this branch!");
+			throw std::runtime_error("Unknown permission status");
+	}
 }

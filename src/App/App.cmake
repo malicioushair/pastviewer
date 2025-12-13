@@ -12,7 +12,7 @@ if(NOT ANDROID)
     find_package(sentry CONFIG REQUIRED)
 endif()
 
-find_package(Qt6 COMPONENTS Core Gui Quick QuickLayouts QuickControls2 Location Positioning PositioningQuick REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Quick QuickLayouts QuickControls2 Location Positioning PositioningQuick Multimedia REQUIRED)
 qt_standard_project_setup()
 
 if(QT_KNOWN_POLICY_QTP0004)
@@ -96,6 +96,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Location
     Qt6::Positioning
     Qt6::PositioningQuick
+    Qt6::Multimedia
     glog::glog
 )
 
