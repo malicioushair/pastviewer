@@ -13,6 +13,8 @@
 extern "C" void android_backtrace_log_status();
 #endif
 
+using namespace PastViewer;
+
 void InitLogging(const std::string & execName)
 {
 	const auto logDir = QDir(QString::fromStdString(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString() + "/logs"));
@@ -57,7 +59,7 @@ int main(int argc, char * argv[])
 
 	QGuiApplication app(argc, argv);
 
-	PastViewer::GuiController guiController;
+	GuiController guiController;
 
 	LOG(INFO) << "Starting PastViewer application";
 	return QGuiApplication::exec();
