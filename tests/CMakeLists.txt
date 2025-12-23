@@ -10,6 +10,7 @@ enable_testing()
 # Create test executable
 add_executable(PastViewerTests
     DirectionUtilsTest.cpp
+    UniqueCircularBufferTest.cpp
 )
 
 # Include directories

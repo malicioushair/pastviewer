@@ -142,6 +142,8 @@ Rectangle {
                     property geoCoordinate startCentroid
                     property bool follow: true
 
+                    Component.onCompleted: scheduleViewUpdate()
+
                     Timer {
                         id: mapMovementTimerID
                         interval: 300  // Wait 300ms after map stops moving // @TODO figure out how to know when the pan is stopped
@@ -184,8 +186,6 @@ Rectangle {
 
                     zoomLevel: pastVuModelController.zoomLevel
 
-                    onCenterChanged: scheduleViewUpdate()
-                    onZoomLevelChanged: scheduleViewUpdate()
                     onBearingChanged: scheduleViewUpdate()
 
                     Binding {
@@ -253,6 +253,8 @@ Rectangle {
                         onActiveChanged: {
                             if (active)
                                 mapID.follow = false
+                             else
+                                mapID.scheduleViewUpdate()
                         }
                     }
 
@@ -263,6 +265,9 @@ Rectangle {
                         onActiveChanged: {
                             if (active)
                                 mapID.follow = false
+                            else
+                                mapID.scheduleViewUpdate()
+
                             mapID.startCentroid = mapID.toCoordinate(pinchHandlerID.centroid.position, false)
                         }
                         onScaleChanged: (delta) => {

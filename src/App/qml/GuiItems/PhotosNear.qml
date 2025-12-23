@@ -70,6 +70,21 @@ Rectangle {
         }
     }
 
+    Connections {
+        target: pastVuModelController
+        enabled: true
+
+        function onLoadingItems() {
+            budyIndicatorID.visible = true
+            imagesNearbyTextID.visible = false
+        }
+
+        function onItemsLoaded() {
+            budyIndicatorID.visible = false
+            imagesNearbyTextID.visible = true
+        }
+    }
+
     Rectangle {
         id: imagesNearbyID
 
@@ -89,9 +104,62 @@ Rectangle {
         border.color: Colors.palette.border
 
         Text {
+            id: imagesNearbyTextID
+
             anchors.centerIn: parent
             text: listViewID.model.count
             color: "white"
+        }
+
+        BusyIndicator {
+            id: budyIndicatorID
+
+            anchors.centerIn: parent
+            running: visible
+
+            contentItem: Item {
+                implicitWidth: 16
+                implicitHeight: 16
+
+                Item {
+                    id: item
+                    x: (parent.width - width) / 2
+                    y: (parent.height - height) / 2
+
+                    RotationAnimator {
+                        target: item
+                        running: budyIndicatorID.visible && budyIndicatorID.running
+                        from: 0
+                        to: 360
+                        loops: Animation.Infinite
+                        duration: 1250
+                    }
+
+                    Repeater {
+                        id: repeater
+                        model: 6
+
+                        Rectangle {
+                            x: item.width / 2 - width / 2
+                            y: item.height / 2 - height / 2
+                            width: 2
+                            height: 2
+                            radius: 1
+                            color: "white"
+                            transform: [
+                                Translate {
+                                    y: -6
+                                },
+                                Rotation {
+                                    angle: index / repeater.count * 360
+                                    origin.x: 1
+                                    origin.y: 1
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     }
 

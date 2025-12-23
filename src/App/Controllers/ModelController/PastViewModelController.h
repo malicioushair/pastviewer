@@ -23,7 +23,7 @@ class PastVuModelController
 
 signals:
 	void PositionPermissionGranted();
-	void NearestObjecrtsOnlyChanged();
+	void NearestObjectsOnlyChanged();
 	void ModelChanged();
 	void HistoryNearModelChanged();
 	void ZoomLevelChanged();
@@ -31,11 +31,15 @@ signals:
 	void YearToChanged();
 	void UserSelectedTimelineRangeChanged(const Range & timeline);
 
+	// @IMPORTANT: signals exposed to QML and HAVE to be in camel case
+	void loadingItems();
+	void itemsLoaded();
+
 public:
 	PastVuModelController(const QLocationPermission & permission, QSettings & settings, QObject * parent = nullptr);
 	~PastVuModelController();
 
-	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjecrtsOnlyChanged);
+	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjectsOnlyChanged);
 	Q_PROPERTY(QAbstractItemModel * model READ GetModel NOTIFY ModelChanged);
 	Q_PROPERTY(QAbstractItemModel * historyNearModel READ GetHistoryNearModel NOTIFY HistoryNearModelChanged); // @TODO: merge with model property (DRY)
 	Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
@@ -48,6 +52,7 @@ public:
 	Q_INVOKABLE void SetViewportCoordinates(const QGeoRectangle & viewport);
 	Q_INVOKABLE void ToggleOnlyNearestObjects();
 	Q_INVOKABLE void ToggleHistoryNearYouModel();
+	Q_INVOKABLE void ReloadItems();
 
 	void OnPositionPermissionGranted();
 

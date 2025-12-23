@@ -61,6 +61,8 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 {
 	connect(this, &PastVuModelController::PositionPermissionGranted, m_impl->baseModel.get(), &BaseModel::OnPositionPermissionGranted);
 	connect(this, &PastVuModelController::UserSelectedTimelineRangeChanged, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::OnUserSelectedTimelineRangeChanged);
+	connect(m_impl->baseModel.get(), &BaseModel::LoadingItems, this, &PastVuModelController::loadingItems);
+	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, &PastVuModelController::itemsLoaded);
 }
 
 PastVuModelController::~PastVuModelController() = default;
@@ -102,7 +104,7 @@ bool PastVuModelController::GetNearestObjectsOnly()
 void PastVuModelController::SetNearestObjectsOnly(bool value)
 {
 	m_impl->settings.setValue(NEAREST_OBJECTS_ONLY, value);
-	emit NearestObjecrtsOnlyChanged();
+	emit NearestObjectsOnlyChanged();
 }
 
 bool PastVuModelController::GetHistoryNearModelType()
@@ -155,6 +157,11 @@ void PastVuModelController::ToggleHistoryNearYouModel()
 {
 	SetHistoryNearModelType(!GetHistoryNearModelType());
 	emit HistoryNearModelChanged();
+}
+
+void PastVuModelController::ReloadItems()
+{
+	m_impl->baseModel->ReloadItems();
 }
 
 void PastVuModelController::SetViewportCoordinates(const QGeoRectangle & viewport)

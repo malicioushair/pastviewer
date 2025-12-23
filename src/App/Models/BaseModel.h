@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "App/Models/UniqueCircularBuffer.h"
 #include "App/Utils/NonCopyMovable.h"
 
 class QNetworkAccessManager;
@@ -25,7 +26,8 @@ struct Item
 	bool selected { false };
 };
 
-using Items = std::vector<Item>;
+constexpr auto MAX_ITEMS = 1000;
+using Items = UniqueCircularBuffer<Item, int, MAX_ITEMS, int Item::*>;
 
 class BaseModel
 	: public QAbstractListModel
@@ -58,21 +60,25 @@ public:
 signals:
 	void CountChanged();
 	void UpdateCoords(const QGeoRectangle & viewport);
+	void LoadingItems();
+	void ItemsLoaded();
 
 public:
-	int rowCount(const QModelIndex & parent = QModelIndex()) const override;
+	int
+	rowCount(const QModelIndex & parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 	bool setData(const QModelIndex & index, const QVariant & value, int role) override;
 	QHash<int, QByteArray> roleNames() const override;
 
 	void OnPositionPermissionGranted();
+	void ReloadItems();
 
 private slots:
 	void OnNetworkReplyFinished(QNetworkReply * reply);
 
 private:
 	void ProcessPhotos(const QJsonArray & photos);
-	void AddItemsToModel(const Items & newItems);
+	void AddItemsToModel(std::span<const Item> newItems);
 
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
