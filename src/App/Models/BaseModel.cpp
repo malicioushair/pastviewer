@@ -12,9 +12,9 @@
 #include <QUrlQuery>
 #include <QVariant>
 
-#include <cassert>
 #include <memory>
 #include <ranges>
+#include <vector>
 
 #include "glog/logging.h"
 
@@ -50,11 +50,12 @@ struct BaseModel::Impl
 	NON_COPY_MOVABLE(Impl);
 
 	std::unique_ptr<QNetworkAccessManager> networkManager;
-	Items items;
-	std::unordered_set<int> seenCids;
+	Items items { &Item::cid };
 	QGeoPositionInfoSource * positionSource;
 	QUrl url { "https://pastvu.com/api2" };
 	int zoomLevel;
+	quint64 requestNumber { 0 };
+	QGeoRectangle lastKnownViewport {};
 };
 
 BaseModel::BaseModel(QGeoPositionInfoSource * positionSource, QObject * parent)
@@ -69,6 +70,8 @@ BaseModel::BaseModel(QGeoPositionInfoSource * positionSource, QObject * parent)
 		if (m_impl->zoomLevel < 9)
 			return;
 
+		emit LoadingItems();
+		m_impl->lastKnownViewport = viewport;
 		const auto paramsJson = QString(R"({"z":16,"geometry":{"type":"Polygon","coordinates":[[[%1,%2],[%3,%4],[%5,%6],[%7,%8],[%9,%10]]]},"localWork":0})")
 									.arg(QString::number(viewport.topLeft().longitude(), 'f', 15))
 									.arg(QString::number(viewport.topLeft().latitude(), 'f', 15))
@@ -87,7 +90,8 @@ BaseModel::BaseModel(QGeoPositionInfoSource * positionSource, QObject * parent)
 		m_impl->url.setQuery(query);
 
 		QNetworkRequest request(m_impl->url);
-		m_impl->networkManager->get(request);
+		auto * reply = m_impl->networkManager->get(request);
+		reply->setProperty("requestNumber", ++m_impl->requestNumber);
 	});
 
 	connect(m_impl->networkManager.get(), &QNetworkAccessManager::finished, this, &BaseModel::OnNetworkReplyFinished);
@@ -99,7 +103,7 @@ int BaseModel::rowCount(const QModelIndex & parent) const
 {
 	if (parent.isValid())
 		return 0;
-	return static_cast<int>(m_impl->items.size());
+	return static_cast<int>(m_impl->items.Size());
 }
 
 QVariant BaseModel::data(const QModelIndex & index, int role) const
@@ -115,12 +119,12 @@ QVariant BaseModel::data(const QModelIndex & index, int role) const
 		}
 	}
 
-	if (index.row() < 0 || index.row() >= static_cast<int>(m_impl->items.size()))
+	if (index.row() < 0 || index.row() >= static_cast<int>(m_impl->items.Size()))
 		return assert(false && "Invalid index"), QVariant();
 
 	static constexpr auto fullSizeImageUrl = "https://pastvu.com/_p/a/";
 	static constexpr auto thumbnailUrl = "https://pastvu.com/_p/h/";
-	const auto item = m_impl->items.at(index.row());
+	const auto item = m_impl->items.At(index.row());
 	switch (role)
 	{
 		case Roles::Coordinate:
@@ -161,10 +165,10 @@ bool BaseModel::setData(const QModelIndex & index, const QVariant & value, int r
 		return false;
 	}
 
-	if (index.row() < 0 || index.row() >= static_cast<int>(m_impl->items.size()))
+	if (index.row() < 0 || index.row() >= static_cast<int>(m_impl->items.Size()))
 		return assert(false && "Invalid index"), false;
 
-	auto & item = m_impl->items.at(index.row());
+	auto & item = m_impl->items.At(index.row());
 	switch (role)
 	{
 		case Roles::Selected:
@@ -211,8 +215,18 @@ void BaseModel::OnPositionPermissionGranted()
 		m_impl->positionSource->startUpdates();
 }
 
+void BaseModel::ReloadItems()
+{
+	m_impl->items.Clear();
+	emit UpdateCoords(m_impl->lastKnownViewport);
+}
+
 void BaseModel::OnNetworkReplyFinished(QNetworkReply * reply)
 {
+	const auto requestNumber = reply->property("requestNumber").toInt();
+	if (const auto skipNonLastReply = requestNumber != m_impl->requestNumber)
+		return;
+
 	LOG(INFO) << "Reply received";
 	if (reply->error())
 	{
@@ -243,36 +257,20 @@ void BaseModel::OnNetworkReplyFinished(QNetworkReply * reply)
 
 void BaseModel::ProcessPhotos(const QJsonArray & photos)
 {
-	auto newItemsView = photos
-					  | std::views::transform([](const QJsonValue & v) { return v.toObject(); })
-					  | std::views::filter([this](const QJsonObject & obj) {
-							auto cid = obj.value("cid").toInt();
-							if (m_impl->seenCids.contains(cid))
-								return false;
-							m_impl->seenCids.insert(cid);
-							return true;
-						})
-					  | std::views::transform([](const QJsonObject & obj) { return JsonObjectToItem(obj); });
+	const auto newItemsView = photos
+							| std::views::transform([](const QJsonValue & v) { return v.toObject(); })
+							| std::views::transform([](const QJsonObject & obj) { return JsonObjectToItem(obj); });
 
-	const auto newItems = Items(newItemsView.begin(), newItemsView.end());
-	AddItemsToModel(newItems);
+	AddItemsToModel(std::vector<Item>(newItemsView.begin(), newItemsView.end()));
 }
 
-void BaseModel::AddItemsToModel(const Items & newItems)
+void BaseModel::AddItemsToModel(std::span<const Item> newItems)
 {
 	if (newItems.empty())
 		return;
 
-	static constexpr auto MAX_ITEMS_PER_MODEL = 300;
-	if (m_impl->items.size() > MAX_ITEMS_PER_MODEL)
-	{
-		if (newItems.size() > m_impl->items.size())
-			m_impl->items.clear();
-		else
-			m_impl->items.erase(m_impl->items.cbegin(), m_impl->items.cbegin() + newItems.size());
-	}
-
-	beginInsertRows(QModelIndex(), m_impl->items.size(), m_impl->items.size() + newItems.size() - 1);
-	m_impl->items.insert(m_impl->items.end(), newItems.begin(), newItems.end());
-	endInsertRows();
+	beginResetModel();
+	m_impl->items.Push(newItems);
+	endResetModel();
+	emit ItemsLoaded();
 }
