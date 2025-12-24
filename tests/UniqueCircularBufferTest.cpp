@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -67,7 +68,7 @@ TEST_F(UniqueCircularBufferTest, PopFromEmptyThrows)
 {
 	auto getKey = [](int value) { return value; };
 	UniqueCircularBuffer<int, int, 5, decltype(getKey)> buffer(getKey);
-	EXPECT_THROW(buffer.Pop(), std::runtime_error);
+	EXPECT_THROW(buffer.Pop(), std::out_of_range);
 }
 
 // Test at() on empty buffer (should throw)
@@ -302,7 +303,7 @@ TEST_F(UniqueCircularBufferTest, SequentialPushPop)
 		buffer.Pop();
 
 	EXPECT_EQ(buffer.Size(), 0);
-	EXPECT_THROW(buffer.Pop(), std::runtime_error);
+	EXPECT_THROW(buffer.Pop(), std::out_of_range);
 }
 
 // Test at() modification
@@ -404,5 +405,5 @@ TEST_F(UniqueCircularBufferTest, EmptyStateAfterOperations)
 	EXPECT_EQ(buffer.Size(), 0);
 
 	// Should throw when popping from empty buffer
-	EXPECT_THROW(buffer.Pop(), std::runtime_error);
+	EXPECT_THROW(buffer.Pop(), std::out_of_range);
 }

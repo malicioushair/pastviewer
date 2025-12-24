@@ -64,18 +64,18 @@ TEST_F(DirectionUtilsTest, NorthWestDirection)
 TEST_F(DirectionUtilsTest, EmptyDirection)
 {
 	// Empty direction should return 1 and log a warning
-	EXPECT_EQ(DirectionUtils::BearingFromDirection(""), 1);
+	EXPECT_EQ(DirectionUtils::BearingFromDirection(""), 361);
 }
 
 TEST_F(DirectionUtilsTest, InvalidDirection)
 {
-	// Invalid direction should throw an exception
-	EXPECT_THROW(DirectionUtils::BearingFromDirection("invalid"), std::runtime_error);
+	// Invalid direction should return INCORRECT_DIRRECTION
+	EXPECT_EQ(DirectionUtils::BearingFromDirection("invalid"), 361);
 }
 
 TEST_F(DirectionUtilsTest, CaseMatters)
 {
-	// Test that case matters (uppercase should throw)
-	EXPECT_THROW(DirectionUtils::BearingFromDirection("N"), std::runtime_error);
-	EXPECT_THROW(DirectionUtils::BearingFromDirection("NE"), std::runtime_error);
+	// Test that case matters (uppercase should return INCORRECT_DIRRECTION)
+	EXPECT_EQ(DirectionUtils::BearingFromDirection("N"), 361);
+	EXPECT_EQ(DirectionUtils::BearingFromDirection("NE"), 361);
 }
