@@ -66,15 +66,17 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 	connect(this, &PastVuModelController::UserSelectedTimelineRangeChanged, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::OnUserSelectedTimelineRangeChanged);
 	connect(m_impl->baseModel.get(), &BaseModel::LoadingItems, this, &PastVuModelController::loadingItems);
 	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, &PastVuModelController::itemsLoaded);
+	connect(m_impl->baseModel.get(), &BaseModel::UpdateCoords, m_impl->clusterModel.get(), &ClusterModel::OnViewportChanged);
 }
 
 PastVuModelController::~PastVuModelController() = default;
 
 QAbstractItemModel * PastVuModelController::GetModel()
 {
-	return GetNearestObjectsOnly()
-			 ? static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get())
-			 : static_cast<QAbstractItemModel *>(m_impl->clusterModel.get());
+	// return GetNearestObjectsOnly()
+	//  ? static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get())
+	//  : static_cast<QAbstractItemModel *>(m_impl->clusterModel.get());
+	return static_cast<QAbstractItemModel *>(m_impl->clusterModel.get());
 }
 
 QAbstractItemModel * PastVuModelController::GetHistoryNearModel()

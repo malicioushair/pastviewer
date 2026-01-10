@@ -211,17 +211,59 @@ Rectangle {
                         MapQuickItem {
                             z: Selected ? 1 : 0
                             coordinate: model.Coordinate
-                            anchorPoint: Qt.point(povDirectionID.width / 2, povDirectionID.height)
+                            anchorPoint: {
+                                const itemSize = 20
+                                if (model.IsCluster) {
+                                    // Center anchor for clusters
+                                    return Qt.point(itemSize / 2, itemSize / 2)
+                                } else {
+                                    // Bottom center anchor for individual markers (arrow points up)
+                                    return Qt.point(itemSize / 2, itemSize)
+                                }
+                            }
 
-                            sourceItem: PovDirection {
-                                id: povDirectionID
+                            sourceItem: Loader {
+                                id: itemLoaderID
 
-                                size: 20
-                                bearing: model.Bearing - compassID.bearing
-                                mapBearing: mapID.bearing
-                                selected: model.Selected
+                                property bool isCluster: model.IsCluster
+                                property int itemSize: 20
 
-                                onClicked: stackViewID.openPhotoDetails(model.Photo, model.Title, model.Year)
+                                width: itemSize
+                                height: itemSize
+
+                                sourceComponent: isCluster ? clusterMarkerID : individualMarkerID
+
+                                Component {
+                                    id: individualMarkerID
+
+                                    PovDirection {
+                                        id: povDirectionID
+
+                                        size: itemLoaderID.itemSize
+                                        bearing: model.Bearing - compassID.bearing
+                                        mapBearing: mapID.bearing
+                                        selected: model.Selected
+
+                                        onClicked: stackViewID.openPhotoDetails(model.Photo, model.Title, model.Year)
+                                    }
+                                }
+
+                                Component {
+                                    id: clusterMarkerID
+
+                                    ClusterMarker {
+                                        id: clusterMarkerIDInstance
+
+                                        size: itemLoaderID.itemSize
+                                        clusterCount: model.ClusterCount ? model.ClusterCount : 1
+                                        selected: model.Selected
+
+                                        onClicked: {
+                                            // TODO: Handle cluster click - could zoom in or show cluster details
+                                            console.log("Cluster clicked with", clusterCount, "items")
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

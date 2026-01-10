@@ -141,6 +141,8 @@ QVariant BaseModel::data(const QModelIndex & index, int role) const
 			return item.year;
 		case Roles::Selected:
 			return item.selected;
+		case Roles::ZoomLevel:
+			return m_impl->zoomLevel;
 		default:
 			assert(false && "Unexpected role");
 	}
