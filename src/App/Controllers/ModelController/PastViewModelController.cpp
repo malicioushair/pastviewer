@@ -1,6 +1,5 @@
 #include "PastViewModelController.h"
 
-#include <QtCore/qvariant.h>
 #include <memory>
 
 #include <QGuiApplication>
@@ -8,6 +7,7 @@
 #include <QString>
 #include <stdexcept>
 
+#include "App/Models/ClusterModel.h"
 #include "glog/logging.h"
 
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
@@ -28,8 +28,10 @@ struct PastVuModelController::Impl
 	Impl(const QLocationPermission & permission, QSettings & settings)
 		: source(QGeoPositionInfoSource::createDefaultSource(nullptr))
 		, baseModel(std::make_unique<BaseModel>(source.get()))
-		, screenObjectsModel(std::make_unique<ScreenObjectsModel>(baseModel.get(), source.get()))
+		, screenObjectsModel(std::make_unique<ScreenObjectsModel>(baseModel.get()))
 		, nearestObjectsModel(std::make_unique<NearestObjectsModel>(screenObjectsModel.get(), source.get()))
+		, clusterModelScreen(std::make_unique<ClusterModel>(screenObjectsModel.get()))
+		, clusterModelNearest(std::make_unique<ClusterModel>(nearestObjectsModel.get()))
 		, positionSourceAdapter([&] {
 			if (!source)
 				throw std::runtime_error("POSITION SOURCE EMPTY!");
@@ -46,6 +48,8 @@ struct PastVuModelController::Impl
 	std::unique_ptr<BaseModel> baseModel;
 	std::unique_ptr<ScreenObjectsModel> screenObjectsModel;
 	std::unique_ptr<NearestObjectsModel> nearestObjectsModel;
+	std::unique_ptr<ClusterModel> clusterModelScreen;
+	std::unique_ptr<ClusterModel> clusterModelNearest;
 	std::unique_ptr<PositionSourceAdapter> positionSourceAdapter;
 	QSettings & settings;
 	const Range defaultTimelineRange { YEAR_FROM_VALUE, QDate::currentDate().year() };
@@ -62,7 +66,14 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 	connect(this, &PastVuModelController::PositionPermissionGranted, m_impl->baseModel.get(), &BaseModel::OnPositionPermissionGranted);
 	connect(this, &PastVuModelController::UserSelectedTimelineRangeChanged, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::OnUserSelectedTimelineRangeChanged);
 	connect(m_impl->baseModel.get(), &BaseModel::LoadingItems, this, &PastVuModelController::loadingItems);
-	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, &PastVuModelController::itemsLoaded);
+	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, [&]() {
+		emit itemsLoaded();
+		m_impl->clusterModelScreen->OnViewportChanged(m_impl->viewPort);
+		m_impl->clusterModelNearest->OnViewportChanged(m_impl->viewPort);
+	});
+	connect(m_impl->baseModel.get(), &BaseModel::UpdateCoords, m_impl->clusterModelScreen.get(), &ClusterModel::OnViewportChanged);
+	connect(m_impl->baseModel.get(), &BaseModel::UpdateCoords, m_impl->clusterModelNearest.get(), &ClusterModel::OnViewportChanged);
+	connect(m_impl->clusterModelScreen.get(), &ClusterModel::ZoomsToDecluster, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::UpdateZoomsToDecluster);
 }
 
 PastVuModelController::~PastVuModelController() = default;
@@ -70,13 +81,13 @@ PastVuModelController::~PastVuModelController() = default;
 QAbstractItemModel * PastVuModelController::GetModel()
 {
 	return GetNearestObjectsOnly()
-			 ? static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get())
-			 : static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get());
+			 ? static_cast<QAbstractItemModel *>(m_impl->clusterModelNearest.get())
+			 : static_cast<QAbstractItemModel *>(m_impl->clusterModelScreen.get());
 }
 
 QAbstractItemModel * PastVuModelController::GetHistoryNearModel()
 {
-	return GetHistoryNearModelType()
+	return GetHistoryNearModelType() // @TODO think on the function name
 			 ? static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get())
 			 : static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get());
 }

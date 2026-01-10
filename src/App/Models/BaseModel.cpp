@@ -101,8 +101,6 @@ BaseModel::~BaseModel() = default;
 
 int BaseModel::rowCount(const QModelIndex & parent) const
 {
-	if (parent.isValid())
-		return 0;
 	return static_cast<int>(m_impl->items.Size());
 }
 
@@ -127,6 +125,8 @@ QVariant BaseModel::data(const QModelIndex & index, int role) const
 	const auto item = m_impl->items.At(index.row());
 	switch (role)
 	{
+		case Roles::Cid:
+			return item.cid;
 		case Roles::Coordinate:
 			return QVariant::fromValue(item.coord);
 		case Roles::Title:
@@ -141,6 +141,8 @@ QVariant BaseModel::data(const QModelIndex & index, int role) const
 			return item.year;
 		case Roles::Selected:
 			return item.selected;
+		case Roles::ZoomLevel:
+			return m_impl->zoomLevel;
 		default:
 			assert(false && "Unexpected role");
 	}
@@ -197,6 +199,7 @@ QHash<int, QByteArray> BaseModel::roleNames() const
 		Roles::NAME, #NAME \
 	}
 	return {
+		ROLENAME(Cid),
 		ROLENAME(Coordinate),
 		ROLENAME(Title),
 		ROLENAME(Photo),

@@ -13,7 +13,6 @@
 #include <QUrlQuery>
 #include <QVariant>
 
-#include <QtCore/qabstractitemmodel.h>
 #include <cassert>
 #include <memory>
 
@@ -25,6 +24,7 @@
 struct ScreenObjectsModel::Impl
 {
 	std::unordered_set<int> belongsToTimeline;
+	QHash<int, int> cidToZoomToDecluster;
 	QSettings settings;
 	Range timeline {
 		settings.value("YEARS_FROM", 1800).toInt(),
@@ -65,17 +65,47 @@ void ScreenObjectsModel::OnUserSelectedTimelineRangeChanged(const Range & timeli
 	invalidateFilter();
 }
 
+void ScreenObjectsModel::UpdateZoomsToDecluster(const QHash<int, int> & cidsToZooms)
+{
+	m_impl->cidToZoomToDecluster = cidsToZooms;
+}
+
+QVariant ScreenObjectsModel::data(const QModelIndex & index, int role) const
+{
+	const auto sourceIndex = mapToSource(index);
+	switch (role)
+	{
+		case IsClustered:
+		{
+			const auto cid = sourceModel()->data(sourceIndex, BaseModel::Roles::Cid).toInt();
+			return m_impl->cidToZoomToDecluster.contains(cid);
+		}
+		case ZoomToDecluster:
+		{
+			const auto cid = sourceModel()->data(sourceIndex, BaseModel::Roles::Cid).toInt();
+			const auto it = m_impl->cidToZoomToDecluster.find(cid);
+			return it == m_impl->cidToZoomToDecluster.end() ? 0 : it.value();
+		}
+	}
+	return sourceModel()->data(sourceIndex, role);
+}
+
+QHash<int, QByteArray> ScreenObjectsModel::roleNames() const
+{
+	auto roles = sourceModel()->roleNames();
+#define ROLENAME(NAME) roles[NAME] = #NAME
+	ROLENAME(IsClustered);
+	ROLENAME(ZoomToDecluster);
+#undef ROLENAME
+	return roles;
+}
+
 bool ScreenObjectsModel::filterAcceptsRow(int source_row, const QModelIndex & source_parent) const
 {
 	if (source_parent.isValid())
 		return false;
 
 	return m_impl->belongsToTimeline.find(source_row) != m_impl->belongsToTimeline.cend();
-}
-
-bool ScreenObjectsModel::lessThan(const QModelIndex & left, const QModelIndex & right) const
-{
-	return true;
 }
 
 void ScreenObjectsModel::OnPositionUpdated(const QGeoPositionInfo & info)
@@ -92,9 +122,6 @@ void ScreenObjectsModel::UpdateAcceptedRows()
 {
 	m_impl->belongsToTimeline.clear();
 
-	// if (!m_impl->currentPosition.isValid())
-	// return;
-
 	const auto * sourceModel = this->sourceModel();
 	if (!sourceModel || sourceModel->rowCount() == 0)
 		return;
@@ -108,12 +135,5 @@ void ScreenObjectsModel::UpdateAcceptedRows()
 
 		if (year > m_impl->timeline.min && year <= m_impl->timeline.max)
 			m_impl->belongsToTimeline.insert(i);
-
-		// if (year.isValid())
-		// {
-		// const auto distance = m_impl->currentPosition.distanceTo(year);
-		// if (distance <= MAX_DISTANCE_METERS)
-		// m_impl->belongsToTimeline.insert(i);
-		// }
 	}
 }

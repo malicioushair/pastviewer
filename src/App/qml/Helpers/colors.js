@@ -11,4 +11,5 @@ const palette = {
     northNeedle:     "black",
     shadowSoft:      "#22000000",
     slider:          "#C2643F",
+    selected:        "#b7b2a7",
 }
