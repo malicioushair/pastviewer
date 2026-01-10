@@ -156,162 +156,187 @@ QHash<int, QByteArray> ClusterModel::roleNames() const
 	return roles;
 }
 
-std::vector<Node> ClusterModel::BuildClusters() const
+namespace {
+
+constexpr double CLUSTER_THRESHOLD_PIXELS = 20.0;
+constexpr double CLUSTER_THRESHOLD_SQUARED = CLUSTER_THRESHOLD_PIXELS * CLUSTER_THRESHOLD_PIXELS;
+constexpr int NEIGHBOR_RADIUS = 1; // Check 3x3 grid of cells
+
+struct ClusterItem
 {
-	std::vector<Node> nodes;
+	int sourceRowIndex;
+	QPersistentModelIndex sourceIndex;
+	QGeoCoordinate geoCoord;
+	QPointF screenPos;
+	int cellX;
+	int cellY;
+};
 
-	constexpr double CLUSTER_THRESHOLD = 20.0; // pixels
-	constexpr double CLUSTER_THRESHOLD_SQ = CLUSTER_THRESHOLD * CLUSTER_THRESHOLD;
-	constexpr double CELL_SIZE = CLUSTER_THRESHOLD; // Use threshold as cell size
+using CellKey = std::pair<int, int>;
 
-	struct Item
+struct CellKeyHash
+{
+	std::size_t operator()(const CellKey & key) const noexcept
 	{
-		int srcIndex; // mb cid?
-		QPersistentModelIndex sourceIndex;
-		QGeoCoordinate geoCoord;
-		QPointF screenPos;
-		int cellX;
-		int cellY;
-	};
+		// Simple hash combining for pair<int, int>
+		return std::hash<int> {}(key.first) ^ (std::hash<int> {}(key.second) << 1);
+	}
+};
 
-	// Step 1: Build list items[]
-	std::vector<Item> items;
-	items.reserve(m_impl->sourceModel.rowCount());
+using GridMap = std::unordered_map<CellKey, std::vector<int>, CellKeyHash>;
 
-	for (int i = 0, sz = m_impl->sourceModel.rowCount(); i < sz; ++i)
+std::vector<ClusterItem> BuildClusterItems(const QAbstractItemModel & sourceModel, const QGeoRectangle & viewport)
+{
+	std::vector<ClusterItem> items;
+	items.reserve(sourceModel.rowCount());
+
+	for (int i = 0; i < sourceModel.rowCount(); ++i)
 	{
-		const auto sourceIndex = m_impl->sourceModel.index(i, 0);
-		// auto itemData = m_impl->sourceModel.itemData(sourceIndex);
-		const auto coords = m_impl->sourceModel.data(sourceIndex, BaseModel::Coordinate).value<QGeoCoordinate>();
-		const auto zoomLevel = m_impl->sourceModel.data(sourceIndex, BaseModel::ZoomLevel).toInt();
-		const auto screenCoords = GeoToScreenCoords(m_impl->viewport, zoomLevel, coords);
+		const auto sourceIndex = sourceModel.index(i, 0);
+		const auto coords = sourceModel.data(sourceIndex, BaseModel::Coordinate).value<QGeoCoordinate>();
+		const auto zoomLevel = sourceModel.data(sourceIndex, BaseModel::ZoomLevel).toInt();
+		const auto screenCoords = GeoToScreenCoords(viewport, zoomLevel, coords);
 
-		const auto cellX = static_cast<int>(std::floor(screenCoords.x() / CELL_SIZE));
-		const auto cellY = static_cast<int>(std::floor(screenCoords.y() / CELL_SIZE));
+		const auto cellX = static_cast<int>(std::floor(screenCoords.x() / CLUSTER_THRESHOLD_PIXELS));
+		const auto cellY = static_cast<int>(std::floor(screenCoords.y() / CLUSTER_THRESHOLD_PIXELS));
 
-		// clang-format off
-		items.push_back({
-            .srcIndex = i,
+		items.push_back({ .sourceRowIndex = i,
 			.sourceIndex = QPersistentModelIndex(sourceIndex),
 			.geoCoord = coords,
 			.screenPos = screenCoords,
 			.cellX = cellX,
-			.cellY = cellY
-        });
-		// clang-format on
+			.cellY = cellY });
 	}
 
-	if (items.empty())
-		return nodes; // mb just return {} and do not create nodes beforehand ?
+	return items;
+}
 
-	// Step 2: Build grid map cell -> [item indices]
-	using CellKey = std::pair<int, int>; // {x, y}
-
-	struct CellKeyHash // use lambda instead?
-	{
-		std::size_t operator()(const CellKey & key) const
-		{
-			return std::hash<int>()(key.first) ^ (std::hash<int>()(key.second) << 1); // does it have to be that complecated? why not just use std::hash?
-		}
-	};
-
-	std::unordered_map<CellKey, std::vector<int>, CellKeyHash> gridMap;
+GridMap BuildGridMap(const std::vector<ClusterItem> & items)
+{
+	GridMap gridMap;
+	gridMap.reserve(items.size() / 4); // Heuristic: assume some clustering
 
 	for (size_t i = 0; i < items.size(); ++i)
 	{
-		CellKey key { items[i].cellX, items[i].cellY };
+		const CellKey key { items[i].cellX, items[i].cellY };
 		gridMap[key].push_back(static_cast<int>(i));
 	}
 
-	// Step 3: Visited array
-	std::vector<bool> visited(items.size(), false);
+	return gridMap;
+}
 
-	// Step 4: For each item not visited, start clustering
+double CalculateSquaredDistance(const QPointF & a, const QPointF & b) noexcept
+{
+	const double dx = b.x() - a.x();
+	const double dy = b.y() - a.y();
+	return dx * dx + dy * dy;
+}
+
+std::vector<int> FindClusterMembers(
+	const std::vector<ClusterItem> & items,
+	const GridMap & gridMap,
+	std::vector<bool> & visited,
+	int startIndex)
+{
+	std::vector<int> members;
+	std::queue<int> queue;
+
+	queue.push(startIndex);
+	members.push_back(startIndex);
+	visited[startIndex] = true;
+
+	while (!queue.empty())
+	{
+		const int currentIndex = queue.front();
+		queue.pop();
+
+		const auto & currentItem = items[currentIndex];
+		const int centerCellX = currentItem.cellX;
+		const int centerCellY = currentItem.cellY;
+
+		// Check neighboring cells in 3x3 grid
+		for (auto dx = -NEIGHBOR_RADIUS; dx <= NEIGHBOR_RADIUS; ++dx)
+		{
+			for (auto dy = -NEIGHBOR_RADIUS; dy <= NEIGHBOR_RADIUS; ++dy)
+			{
+				const CellKey neighborKey { centerCellX + dx, centerCellY + dy };
+				const auto it = gridMap.find(neighborKey);
+				if (it == gridMap.end())
+					continue;
+
+				for (const auto candidateIndex : it->second)
+				{
+					if (visited[candidateIndex])
+						continue;
+
+					const auto distanceSquared = CalculateSquaredDistance(currentItem.screenPos, items[candidateIndex].screenPos);
+
+					if (distanceSquared <= CLUSTER_THRESHOLD_SQUARED)
+					{
+						visited[candidateIndex] = true;
+						queue.push(candidateIndex);
+						members.push_back(candidateIndex);
+					}
+				}
+			}
+		}
+	}
+
+	return members;
+}
+
+QGeoCoordinate CalculateCentroid(const std::vector<ClusterItem> & items, const std::vector<int> & memberIndices)
+{
+	auto sumLat = 0.0;
+	auto sumLon = 0.0;
+
+	for (const auto index : memberIndices)
+	{
+		const auto & item = items[index];
+		sumLat += item.geoCoord.latitude();
+		sumLon += item.geoCoord.longitude();
+	}
+
+	const auto centroidLat = sumLat / memberIndices.size();
+	const auto centroidLon = sumLon / memberIndices.size();
+	return { centroidLat, centroidLon };
+}
+
+Node CreateNode(const std::vector<ClusterItem> & items, const std::vector<int> & memberIndices)
+{
+	if (memberIndices.size() == 1)
+		return IndividualNode { items[memberIndices[0]].sourceIndex };
+
+	QVector<QPersistentModelIndex> sourceIndices;
+	sourceIndices.reserve(memberIndices.size());
+
+	for (const auto index : memberIndices)
+		sourceIndices.push_back(items[index].sourceIndex);
+
+	const auto centroid = CalculateCentroid(items, memberIndices);
+	return ClusterNode { centroid, sourceIndices };
+}
+
+} // namespace
+
+std::vector<Node> ClusterModel::BuildClusters() const
+{
+	const auto items = BuildClusterItems(m_impl->sourceModel, m_impl->viewport);
+	if (items.empty())
+		return {};
+
+	const auto gridMap = BuildGridMap(items);
+	std::vector<bool> visited(items.size(), false);
+	std::vector<Node> nodes;
+	nodes.reserve(items.size() / 2); // Heuristic: assume some clustering
+
 	for (size_t i = 0; i < items.size(); ++i)
 	{
 		if (visited[i])
 			continue;
 
-		// Start a new cluster
-		std::queue<int> queue;
-		std::vector<int> members; // reserve ?
-
-		queue.push(static_cast<int>(i)); // do we realy need the queue?
-		members.push_back(static_cast<int>(i));
-		visited[i] = true;
-
-		// BFS: while queue not empty
-		while (!queue.empty())
-		{
-			const int current = queue.front();
-			queue.pop();
-
-			const auto & currentItem = items[current];
-			const int centerCellX = currentItem.cellX;
-			const int centerCellY = currentItem.cellY;
-
-			// Look at buckets in neighbor cells (9 cells: 3x3 grid)
-			for (int dx = -1; dx <= 1; ++dx)
-			{
-				for (int dy = -1; dy <= 1; ++dy)
-				{
-					const CellKey neighborKey { centerCellX + dx, centerCellY + dy };
-					const auto it = gridMap.find(neighborKey);
-					if (it == gridMap.end())
-						continue;
-
-					// For each candidate in this cell
-					const auto [_, itemIndices] = *it;
-					for (int candidateIdx : itemIndices)
-					{
-						if (visited[candidateIdx])
-							continue;
-
-						const auto & candidate = items[candidateIdx];
-						const double dx_px = candidate.screenPos.x() - currentItem.screenPos.x();
-						const double dy_px = candidate.screenPos.y() - currentItem.screenPos.y();
-						const double distSq = dx_px * dx_px + dy_px * dy_px;
-
-						// If distance² <= threshold²
-						if (distSq <= CLUSTER_THRESHOLD_SQ)
-						{
-							visited[candidateIdx] = true;
-							queue.push(candidateIdx);
-							members.push_back(candidateIdx);
-						}
-					}
-				}
-			}
-		}
-
-		// Output cluster or individual
-		if (members.size() == 1)
-		{
-			// Output individual
-			nodes.push_back(IndividualNode { items[members[0]].sourceIndex });
-		}
-		else
-		{
-			// Output cluster with centroid
-			double sumLat = 0.0;
-			double sumLon = 0.0;
-			QVector<QPersistentModelIndex> memberIndices;
-			memberIndices.reserve(members.size());
-
-			for (int memberIdx : members)
-			{
-				const auto & item = items[memberIdx];
-				sumLat += item.geoCoord.latitude();
-				sumLon += item.geoCoord.longitude();
-				memberIndices.push_back(item.sourceIndex);
-			}
-
-			const double centroidLat = sumLat / members.size();
-			const double centroidLon = sumLon / members.size();
-			const QGeoCoordinate centroid(centroidLat, centroidLon);
-
-			nodes.push_back(ClusterNode { centroid, memberIndices });
-		}
+		const auto members = FindClusterMembers(items, gridMap, visited, static_cast<int>(i));
+		nodes.push_back(CreateNode(items, members));
 	}
 
 	return nodes;
