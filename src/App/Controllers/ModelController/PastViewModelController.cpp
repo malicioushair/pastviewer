@@ -8,6 +8,7 @@
 #include <QString>
 #include <stdexcept>
 
+#include "App/Models/ClusterModel.h"
 #include "glog/logging.h"
 
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
@@ -30,6 +31,7 @@ struct PastVuModelController::Impl
 		, baseModel(std::make_unique<BaseModel>(source.get()))
 		, screenObjectsModel(std::make_unique<ScreenObjectsModel>(baseModel.get(), source.get()))
 		, nearestObjectsModel(std::make_unique<NearestObjectsModel>(screenObjectsModel.get(), source.get()))
+		, clusterModel(std::make_unique<ClusterModel>(*screenObjectsModel.get(), source.get()))
 		, positionSourceAdapter([&] {
 			if (!source)
 				throw std::runtime_error("POSITION SOURCE EMPTY!");
@@ -46,6 +48,7 @@ struct PastVuModelController::Impl
 	std::unique_ptr<BaseModel> baseModel;
 	std::unique_ptr<ScreenObjectsModel> screenObjectsModel;
 	std::unique_ptr<NearestObjectsModel> nearestObjectsModel;
+	std::unique_ptr<ClusterModel> clusterModel;
 	std::unique_ptr<PositionSourceAdapter> positionSourceAdapter;
 	QSettings & settings;
 	const Range defaultTimelineRange { YEAR_FROM_VALUE, QDate::currentDate().year() };
@@ -71,7 +74,7 @@ QAbstractItemModel * PastVuModelController::GetModel()
 {
 	return GetNearestObjectsOnly()
 			 ? static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get())
-			 : static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get());
+			 : static_cast<QAbstractItemModel *>(m_impl->clusterModel.get());
 }
 
 QAbstractItemModel * PastVuModelController::GetHistoryNearModel()
