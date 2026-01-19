@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 
+import "../Helpers/colors.js" as Colors
+
 Rectangle {
     id: rootID
 
@@ -9,7 +11,7 @@ Rectangle {
     radius: width/2
     color: "#66000000"
     border {
-        color: "#313233"
+        color: Colors.palette.border
         width: 1
     }
 

@@ -39,6 +39,7 @@ public:
 	{
 		// Getters
 		Bearing = Qt::UserRole + 1,
+		Cid,
 		Coordinate,
 		Photo,
 		Thumbnail,
@@ -48,6 +49,8 @@ public:
 
 		// Setters
 		Selected,
+
+		LastRole,
 	};
 
 	explicit BaseModel(QGeoPositionInfoSource * positionSource, QObject * parent = nullptr);
@@ -64,8 +67,7 @@ signals:
 	void ItemsLoaded();
 
 public:
-	int
-	rowCount(const QModelIndex & parent = QModelIndex()) const override;
+	int rowCount(const QModelIndex & parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 	bool setData(const QModelIndex & index, const QVariant & value, int role) override;
 	QHash<int, QByteArray> roleNames() const override;

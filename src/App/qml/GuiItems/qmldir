@@ -1,4 +1,5 @@
 module GuiItems
+ClusterMarker 1.0 ClusterMarker.qml
 Compass 1.0 Compass.qml
 PhotosNear 1.0 PhotosNear.qml
 PovDirection 1.0 PovDirection.qml

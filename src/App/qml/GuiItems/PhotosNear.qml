@@ -19,68 +19,17 @@ Rectangle {
     radius: 16
     color: Colors.palette.bg
 
-    property real animatedLat: 0
-    property real animatedLon: 0
-
-    function animateMapCenter(targetCoordinate) {
-        if (!map || !targetCoordinate || !targetCoordinate.isValid)
-            return
-
-        map.follow = false
-
-        animatedLat = map.center.latitude
-        animatedLon = map.center.longitude
-
-        mapCenterAnimationLat.from = map.center.latitude
-        mapCenterAnimationLat.to = targetCoordinate.latitude
-        mapCenterAnimationLon.from = map.center.longitude
-        mapCenterAnimationLon.to = targetCoordinate.longitude
-
-        mapCenterAnimationGroup.start()
-    }
-
-    ParallelAnimation {
-        id: mapCenterAnimationGroup
-
-        NumberAnimation {
-            id: mapCenterAnimationLat
-            target: rootID
-            property: "animatedLat"
-            duration: 500
-            easing.type: Easing.InOutCubic
-        }
-        NumberAnimation {
-            id: mapCenterAnimationLon
-            target: rootID
-            property: "animatedLon"
-            duration: 500
-            easing.type: Easing.InOutCubic
-        }
-    }
-
-    onAnimatedLatChanged: {
-        if (map && mapCenterAnimationGroup.running) {
-            map.center = QtPositioning.coordinate(animatedLat, animatedLon)
-        }
-    }
-
-    onAnimatedLonChanged: {
-        if (map && mapCenterAnimationGroup.running) {
-            map.center = QtPositioning.coordinate(animatedLat, animatedLon)
-        }
-    }
-
     Connections {
         target: pastVuModelController
         enabled: true
 
         function onLoadingItems() {
-            budyIndicatorID.visible = true
+            busyIndicatorID.visible = true
             imagesNearbyTextID.visible = false
         }
 
         function onItemsLoaded() {
-            budyIndicatorID.visible = false
+            busyIndicatorID.visible = false
             imagesNearbyTextID.visible = true
         }
     }
@@ -112,7 +61,7 @@ Rectangle {
         }
 
         BusyIndicator {
-            id: budyIndicatorID
+            id: busyIndicatorID
 
             anchors.centerIn: parent
             running: visible
@@ -128,7 +77,7 @@ Rectangle {
 
                     RotationAnimator {
                         target: item
-                        running: budyIndicatorID.visible && budyIndicatorID.running
+                        running: busyIndicatorID.visible && busyIndicatorID.running
                         from: 0
                         to: 360
                         loops: Animation.Infinite
@@ -235,12 +184,17 @@ Rectangle {
 
                         TapHandler {
                             onTapped: {
-                                Selected = true
-                                if (rootID.map && Coordinate && Coordinate.isValid) {
-                                    rootID.animateMapCenter(Coordinate)
-                                }
+                                model.Selected = true
+                                if (model.IsClustered)
+                                    mainWindowID.mapAnimationHelper.animateMapCenterAndZoom(
+                                        model.Coordinate,
+                                        model.ZoomToDecluster,
+                                        model.Coordinate
+                                    )
+                                else
+                                    mainWindowID.mapAnimationHelper.animateMapCenter(model.Coordinate)
                             }
-                            onDoubleTapped: stackViewID.openPhotoDetails(Photo, Title, Year)
+                            onDoubleTapped: mainWindowID.openPhotoDetails(Photo, Title, Year)
                         }
                     }
 

@@ -8,8 +8,6 @@
 #include <QObject>
 #include <QSettings>
 
-#include <QtCore/qsize.h>
-#include <QtCore/qtmetamacros.h>
 #include <memory>
 
 #include "App/Utils/Range.h"

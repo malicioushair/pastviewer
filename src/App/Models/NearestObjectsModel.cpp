@@ -55,10 +55,10 @@ NearestObjectsModel::NearestObjectsModel(QAbstractItemModel * sourceModel, QGeoP
 			}
 		}
 
-		// clang-format off
+	// clang-format off
 		if (!onlySelectedRole)
-		invalidate();
-}, Qt::DirectConnection);
+			invalidate();
+	}, Qt::DirectConnection);
 	// clang-format on
 	connect(sourceModel, &QAbstractListModel::rowsInserted, this, &NearestObjectsModel::OnSourceModelChanged);
 	connect(sourceModel, &QAbstractListModel::rowsRemoved, this, &NearestObjectsModel::OnSourceModelChanged);

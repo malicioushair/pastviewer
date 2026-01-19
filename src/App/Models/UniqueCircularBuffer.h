@@ -101,6 +101,26 @@ public:
 		m_keys.clear();
 	}
 
+	auto begin()
+	{
+		return m_data.begin();
+	}
+
+	auto cbegin() const
+	{
+		return m_data.cbegin();
+	}
+
+	auto end()
+	{
+		return m_data.end();
+	}
+
+	auto cend() const
+	{
+		return m_data.cend();
+	}
+
 private:
 	std::array<T, CAPACITY> m_data;
 	std::unordered_set<ID> m_keys;
