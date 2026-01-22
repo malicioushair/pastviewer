@@ -16,12 +16,13 @@
 #include <QUrl>
 #include <QUrlQuery>
 
-#include "App/Utils/PlatformUtils.h"
 #include "glog/logging.h"
 
 #include "App/Controllers/GuiController/platform/Logic.h"
+#include "App/Controllers/I18nController/I18nController.h"
 #include "App/Controllers/ModelController/PastViewModelController.h"
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
+#include "App/Utils/PlatformUtils.h"
 
 using namespace PastViewer;
 
@@ -73,6 +74,7 @@ private:
 struct GuiController::Impl
 {
 	QQmlApplicationEngine engine;
+	I18nController i18nController { engine };
 	QSettings settings;
 	QLocationPermission locationPermission { [] {
 		QLocationPermission p;
@@ -117,6 +119,7 @@ GuiController::GuiController(QObject * parent)
 	qRegisterMetaType<QGeoPositionInfo>();
 	m_impl->engine.rootContext()->setContextProperty("guiController", this);
 	m_impl->engine.rootContext()->setContextProperty("pastVuModelController", m_impl->pastVuModelController.get());
+	m_impl->engine.rootContext()->setContextProperty("i18nController", &m_impl->i18nController);
 	m_impl->engine.addImportPath("qrc:/qt/qml");
 	m_impl->engine.addUrlInterceptor(m_impl->interceptor.get());
 	m_impl->LoadQml();
