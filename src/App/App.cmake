@@ -12,7 +12,18 @@ if(NOT ANDROID)
     find_package(sentry CONFIG REQUIRED)
 endif()
 
-find_package(Qt6 COMPONENTS Core Gui Quick QuickLayouts QuickControls2 Location Positioning PositioningQuick Multimedia REQUIRED)
+find_package(Qt6 COMPONENTS
+    Core
+    Gui
+    Quick
+    QuickLayouts
+    QuickControls2
+    Location
+    Positioning
+    PositioningQuick
+    Multimedia
+    LinguistTools
+REQUIRED)
 qt_standard_project_setup()
 
 if(QT_KNOWN_POLICY_QTP0004)
@@ -120,4 +131,27 @@ qt_add_qml_module(${PROJECT_NAME}
         "src/App/qml/Helpers/utils.js"
     QML_FILES
         ${REL_QML}
+)
+
+qt_add_translations(${PROJECT_NAME}
+    TS_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_de.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_en.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_es.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_fr.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_it.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_ja.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_ko.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_pt.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_ru.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_sr.ts
+        ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_zh_CN.ts
+    RESOURCE_PREFIX
+        /i18n
+    LUPDATE_OPTIONS
+        -no-obsolete
+    LRELEASE_OPTIONS
+        -compress
+        -nounfinished
+        -removeidentical
 )
