@@ -4,54 +4,23 @@ import QtQuick.Layouts
 
 import "../Helpers/colors.js" as Colors
 import "../GuiItems"
+import "Helpers"
 
-Page {
+
+BasePage {
     id: rootID
 
     title: qsTr("Settings")
 
-    background: Rectangle {
-        color: Colors.palette.bg
-    }
-
-    header: ToolBar {
-        background: Rectangle {
-            color: Colors.palette.toolbar
-        }
-        RowLayout {
-            anchors.fill: parent
-            ToolButton {
-                text: "←"
-                onClicked: rootID.StackView.view.pop()
-                background: Rectangle {
-                    color: Colors.palette.accent
-                }
-            }
-            Label {
-                Layout.fillWidth: true
-                text: rootID.title
-                color: Colors.palette.text
-                wrapMode: Text.Wrap
-                font {
-                    bold: true
-                    pixelSize: 16
-                }
-            }
+    header: Header {
+        label.font {
+            bold: true
+            pixelSize: 16
         }
     }
 
-    footer: ToolBar {
-        background: Rectangle {
-            color: Colors.palette.toolbar
-        }
-        ColumnLayout {
-            Label {
-                Layout.leftMargin: 10
-                text: qsTr("Version: ") + guiController.GetAppVersion()
-                color: Colors.palette.text
-                wrapMode: Text.WordWrap
-            }
-        }
+    footer: Footer {
+        text: qsTr("Version: ") + guiController.GetAppVersion()
     }
 
     ColumnLayout {
