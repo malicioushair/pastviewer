@@ -43,6 +43,7 @@ Rectangle {
         id: stackViewID
 
         anchors.fill: parent
+        focus: true
 
         initialItem: MapPage {
             id: mapPageInstance

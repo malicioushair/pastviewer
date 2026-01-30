@@ -6,8 +6,9 @@ import QtCore
 
 import "../Helpers/colors.js" as Colors
 import "../Helpers/utils.js" as Utils
+import "Helpers"
 
-Page {
+BasePage {
     id: rootID
 
     required property string imageSource
@@ -15,10 +16,6 @@ Page {
 
     function triggerShutterEffect() {
         shutterAnimationID.restart()
-    }
-
-    background: Rectangle {
-        color: Colors.palette.bg
     }
 
     CaptureSession {
@@ -44,48 +41,12 @@ Page {
         videoOutput: videoOutputID
     }
 
-    header: ToolBar {
-        background: Rectangle {
-            color: Colors.palette.toolbar
-        }
-        RowLayout {
-            anchors.fill: parent
-            ToolButton {
-                text: "←"
-                onClicked: rootID.StackView.view.pop()
-                background: Rectangle {
-                    color: Colors.palette.accent
-                }
-            }
-            Label {
-                Layout.fillWidth: true
-                text: qsTr("Back")
-                color: Colors.palette.text
-                wrapMode: Text.Wrap
-            }
-        }
+    header: Header {
+        label.text: qsTr("Back")
     }
 
-    footer: ToolBar {
-        background: Rectangle {
-            color: Colors.palette.toolbar
-        }
-        RowLayout {
-            anchors.fill: parent
-            Label {
-                Layout.leftMargin: 10
-                text: qsTr("Camera Mode")
-                color: Colors.palette.text
-                font {
-                    bold: true
-                    pixelSize: 16
-                }
-                wrapMode: Text.WordWrap
-            }
-            Item {
-                Layout.fillWidth: true
-            }
-        }
+    footer: Footer {
+        text: qsTr("Camera Mode")
     }
 
     ColumnLayout {

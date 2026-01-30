@@ -4,70 +4,30 @@ import QtQuick.Layouts
 import QtCore
 
 import "../Helpers/colors.js" as Colors
+import "Helpers"
 
-Page {
-    id: rootID
+BasePage {
+    id: photoDetailsPageID
 
     required property string imageSource
     required property int year
 
-    background: Rectangle {
-        color: Colors.palette.bg
-    }
-
-    header: ToolBar {
-        background: Rectangle {
-            color: Colors.palette.toolbar
-        }
-        RowLayout {
-            anchors.fill: parent
-            ToolButton {
-                text: "←"
-                onClicked: rootID.StackView.view.pop()
-                background: Rectangle {
-                    color: Colors.palette.accent
-                }
-            }
-            Label {
-                Layout.fillWidth: true
-                text: rootID.title
-                color: Colors.palette.text
-                wrapMode: Text.Wrap
-            }
-            ToolButton {
-                text: "📸"
-                onClicked: rootID.StackView.view.push("CameraMode.qml", {
-                    imageSource: imageSource,
-                    title: title,
-                    year: year
-                })
-                background: Rectangle {
-                    color: Colors.palette.accent
-                }
+    header: Header {
+        secondaryButton: ToolButton {
+            text: "📸"
+            onClicked: photoDetailsPageID.StackView.view.push("CameraMode.qml", {
+                imageSource: imageSource,
+                title: title,
+                year: year
+            })
+            background: Rectangle {
+                color: Colors.palette.accent
             }
         }
     }
 
-    footer: ToolBar {
-        background: Rectangle {
-            color: Colors.palette.toolbar
-        }
-        RowLayout {
-            anchors.fill: parent
-            Label {
-                Layout.leftMargin: 10
-                text: qsTr("Year: ") + rootID.year
-                color: Colors.palette.text
-                font {
-                    bold: true
-                    pixelSize: 16
-                }
-                wrapMode: Text.WordWrap
-            }
-            Item {
-                Layout.fillWidth: true
-            }
-        }
+    footer: Footer {
+        text: qsTr("Year: ") + photoDetailsPageID.year
     }
 
     ColumnLayout {
@@ -103,7 +63,7 @@ Page {
                     anchors.fill: parent
                     anchors.centerIn: parent
 
-                    source: rootID.imageSource
+                    source: photoDetailsPageID.imageSource
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     antialiasing: true
