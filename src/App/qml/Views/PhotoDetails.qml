@@ -14,6 +14,7 @@ BasePage {
 
     header: Header {
         secondaryButton: ToolButton {
+            visible: guiController.IsDebug() // @TODO: enable, when feature is 100% ready
             text: "📸"
             onClicked: photoDetailsPageID.StackView.view.push("CameraMode.qml", {
                 imageSource: imageSource,
