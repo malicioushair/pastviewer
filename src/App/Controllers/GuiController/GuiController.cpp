@@ -115,6 +115,7 @@ GuiController::GuiController(QObject * parent)
 
 	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
 	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
+	qmlRegisterUncreatableMetaObject(ModelType::staticMetaObject, "PastViewer", 1, 0, "ModelType", "ModelType is an enum namespace");
 	qRegisterMetaType<QGeoCoordinate>();
 	qRegisterMetaType<QGeoPositionInfo>();
 	m_impl->engine.rootContext()->setContextProperty("guiController", this);

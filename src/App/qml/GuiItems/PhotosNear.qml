@@ -5,6 +5,8 @@ import QtQuick.Effects
 import QtLocation
 import QtPositioning
 
+import PastViewer 1.0
+
 import "../Helpers/colors.js" as Colors
 import "../Helpers/utils.js" as Utils
 
@@ -132,7 +134,7 @@ Rectangle {
             Layout.fillHeight: true
 
 
-            model: pastVuModelController.historyNearModel
+            model: pastVuModelController.GetModel(ModelType.Raw)
             orientation: ListView.Horizontal
             spacing: 10
 

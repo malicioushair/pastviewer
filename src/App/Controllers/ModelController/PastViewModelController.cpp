@@ -78,18 +78,20 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 
 PastVuModelController::~PastVuModelController() = default;
 
-QAbstractItemModel * PastVuModelController::GetModel()
+QAbstractItemModel * PastVuModelController::GetModel(ModelType::Type modelType)
 {
-	return GetNearestObjectsOnly()
-			 ? static_cast<QAbstractItemModel *>(m_impl->clusterModelNearest.get())
-			 : static_cast<QAbstractItemModel *>(m_impl->clusterModelScreen.get());
-}
-
-QAbstractItemModel * PastVuModelController::GetHistoryNearModel()
-{
-	return GetHistoryNearModelType() // @TODO think on the function name
-			 ? static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get())
-			 : static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get());
+	switch (modelType)
+	{
+		case ModelType::Raw:
+			return GetHistoryNearModelType() // @TODO think on the function name
+					 ? static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get())
+					 : static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get());
+		case ModelType::Clustered:
+			return GetNearestObjectsOnly()
+					 ? static_cast<QAbstractItemModel *>(m_impl->clusterModelNearest.get())
+					 : static_cast<QAbstractItemModel *>(m_impl->clusterModelScreen.get());
+	}
+	assert(false && "Unknown model type");
 }
 
 QString PastVuModelController::GetMapHostApiKey()

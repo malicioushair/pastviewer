@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <QAbstractItemModel>
 #include <QGeoPositionInfoSource>
 #include <QGeoRectangle>
@@ -8,11 +10,21 @@
 #include <QObject>
 #include <QSettings>
 
-#include <memory>
-
 #include "App/Utils/Range.h"
 
 class PositionSourceAdapter;
+
+namespace ModelType {
+Q_NAMESPACE
+
+enum Type
+{
+	Clustered,
+	Raw,
+};
+Q_ENUM_NS(Type)
+
+}
 
 class PastVuModelController
 	: public QObject
@@ -38,8 +50,6 @@ public:
 	~PastVuModelController();
 
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjectsOnlyChanged);
-	Q_PROPERTY(QAbstractItemModel * model READ GetModel NOTIFY ModelChanged);
-	Q_PROPERTY(QAbstractItemModel * historyNearModel READ GetHistoryNearModel NOTIFY HistoryNearModelChanged); // @TODO: merge with model property (DRY)
 	Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
 	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
 	Q_PROPERTY(Range timelineRange READ GetTimelineRange);
@@ -54,8 +64,7 @@ public:
 
 	void OnPositionPermissionGranted();
 
-	QAbstractItemModel * GetModel();
-	QAbstractItemModel * GetHistoryNearModel();
+	Q_INVOKABLE QAbstractItemModel * GetModel(ModelType::Type modelType);
 
 private:
 	bool GetNearestObjectsOnly();

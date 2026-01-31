@@ -176,7 +176,7 @@ ColumnLayout {
             MapItemView {
                 id: mapItemViewID
 
-                model: pastVuModelController.model
+                model: pastVuModelController.GetModel(ModelType.Clustered)
                 delegate: delegateID
             }
 
