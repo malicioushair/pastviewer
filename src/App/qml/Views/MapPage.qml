@@ -135,6 +135,7 @@ ColumnLayout {
             }
 
             activeMapType: supportedMapTypes.find((map) => { return map.style === MapType.CustomMap })
+            onZoomLevelChanged: pastVuModelController.zoomLevel = zoomLevel
 
             Component.onCompleted: scheduleViewUpdate()
 
@@ -152,8 +153,7 @@ ColumnLayout {
                     mapID.center =  QtPositioning.coordinate(mainWindowID.mapAnimationHelper.animatedLat, mainWindowID.mapAnimationHelper.animatedLon)
                 }
                 function onAnimatedZoomChanged() {
-                    mapID.zoomLevel = mainWindowID.mapAnimationHelper.animatedZoom // @TODO: think on DRY
-                    pastVuModelController.zoomLevel = mainWindowID.mapAnimationHelper.animatedZoom
+                    mapID.zoomLevel = mainWindowID.mapAnimationHelper.animatedZoom
                 }
             }
 
@@ -292,8 +292,6 @@ ColumnLayout {
                 }
                 onScaleChanged: (delta) => {
                     mapID.zoomLevel += Math.log2(delta)
-                    pastVuModelController.zoomLevel = mapID.zoomLevel // @TODO think on removing the repetirion
-
                     mapID.alignCoordinateToPoint(mapID.startCentroid, pinchHandlerID.centroid.position)
                 }
                 onRotationChanged: (delta) => {
