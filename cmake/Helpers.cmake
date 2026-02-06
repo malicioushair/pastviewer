@@ -39,11 +39,11 @@ fi
 cp \"\$BUILD_GRADLE\" \"\$BUILD_GRADLE.bak\"
 
 # Add Sentry dependency after androidx.core:core line
-# Use a more careful sed command that preserves the file structure
-sed -i.tmp '/implementation.*androidx.core:core/a\\
+# Use double quotes for sed so single quotes are literal
+sed -i.tmp \"/implementation.*androidx.core:core/a\\
     // Sentry Android SDK\\
-    implementation '\''io.sentry:sentry-android:7.15.0'\''
-' \"\$BUILD_GRADLE\"
+    implementation 'io.sentry:sentry-android:7.15.0'
+\" \"\$BUILD_GRADLE\"
 
 # Verify the file is still valid (has android block)
 if ! grep -q \"^android {\" \"\$BUILD_GRADLE\"; then
