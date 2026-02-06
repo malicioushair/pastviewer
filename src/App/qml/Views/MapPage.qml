@@ -11,6 +11,7 @@ import "../GuiItems"
 import "../Helpers"
 
 import "../Helpers/colors.js" as Colors
+import "../Helpers/utils.js" as Utils
 
 ColumnLayout {
     id: columnLayoutID
@@ -104,10 +105,6 @@ ColumnLayout {
             property geoCoordinate startCentroid
             property bool follow: true
 
-            function scheduleViewUpdate() {
-                mapMovementTimerID.restart()
-            }
-
             function updateViewCoordinates() {
                 if (mapID.width <= 0 || mapID.height <= 0)
                     return
@@ -120,8 +117,7 @@ ColumnLayout {
             anchors.fill: parent
 
             copyrightsVisible: false
-            zoomLevel: pastVuModelController.zoomLevel
-            onBearingChanged: scheduleViewUpdate()
+            onBearingChanged: updateViewCoordinates()
 
             plugin: Plugin {
                 id: mapPluginID
@@ -136,7 +132,11 @@ ColumnLayout {
 
             activeMapType: supportedMapTypes.find((map) => { return map.style === MapType.CustomMap })
 
-            Component.onCompleted: scheduleViewUpdate()
+            onZoomLevelChanged: (zoomLevel) => { pastVuModelController.zoomLevel = zoomLevel }
+            Component.onCompleted: {
+                zoomLevel = pastVuModelController.zoomLevel
+                Utils.setTimeout(updateViewCoordinates, 300) // delaying the call to update to allow some time for the map to load (otherwise we'll get a bad reply)
+            }
 
             Connections {
                 target: mainWindowID.mapAnimationHelper
@@ -152,15 +152,8 @@ ColumnLayout {
                     mapID.center =  QtPositioning.coordinate(mainWindowID.mapAnimationHelper.animatedLat, mainWindowID.mapAnimationHelper.animatedLon)
                 }
                 function onAnimatedZoomChanged() {
-                    mapID.zoomLevel = mainWindowID.mapAnimationHelper.animatedZoom // @TODO: think on DRY
-                    pastVuModelController.zoomLevel = mainWindowID.mapAnimationHelper.animatedZoom
+                    mapID.zoomLevel = mainWindowID.mapAnimationHelper.animatedZoom
                 }
-            }
-
-            Timer {
-                id: mapMovementTimerID
-                interval: 300  // Wait 300ms after map stops moving // @TODO figure out how to know when the pan is stopped
-                onTriggered: mapID.updateViewCoordinates()
             }
 
             Binding {
@@ -184,16 +177,19 @@ ColumnLayout {
                 id: delegateID
 
                 MapQuickItem {
+                    id: mapItemID
+
+                    readonly property int itemSize: 20
+
                     z: Selected ? 1 : 0
                     coordinate: model.Coordinate
                     anchorPoint: {
-                        const itemSize = 20
                         if (model.IsCluster) {
                             // Center anchor for clusters
-                            return Qt.point(itemSize / 2, itemSize / 2)
+                            return Qt.point(mapItemID.itemSize / 2, mapItemID.itemSize / 2)
                         } else {
                             // Bottom center anchor for individual markers (arrow points up)
-                            return Qt.point(itemSize / 2, itemSize)
+                            return Qt.point(mapItemID.itemSize / 2, mapItemID.itemSize)
                         }
                     }
 
@@ -201,10 +197,9 @@ ColumnLayout {
                         id: itemLoaderID
 
                         property bool isCluster: model.IsCluster
-                        property int itemSize: 20 // @TODO: make size a static constant
 
-                        width: itemSize
-                        height: itemSize
+                        width: mapItemID.itemSize
+                        height: mapItemID.itemSize
 
                         sourceComponent: isCluster ? clusterMarkerID : individualMarkerID
 
@@ -214,7 +209,7 @@ ColumnLayout {
                             PovDirection {
                                 id: povDirectionID
 
-                                size: itemLoaderID.itemSize
+                                size: mapItemID.itemSize
                                 bearing: model.Bearing - compassID.bearing
                                 mapBearing: mapID.bearing
                                 selected: model.Selected
@@ -229,7 +224,7 @@ ColumnLayout {
                             ClusterMarker {
                                 id: clusterMarkerIDInstance
 
-                                size: itemLoaderID.itemSize
+                                size: mapItemID.itemSize
                                 clusterCount: model.ClusterCount
                                 selected: model.Selected
 
@@ -274,7 +269,7 @@ ColumnLayout {
                     if (active)
                         mapID.follow = false
                      else
-                        mapID.scheduleViewUpdate()
+                        mapID.updateViewCoordinates()
                 }
             }
 
@@ -286,14 +281,12 @@ ColumnLayout {
                     if (active)
                         mapID.follow = false
                     else
-                        mapID.scheduleViewUpdate()
+                        mapID.updateViewCoordinates()
 
                     mapID.startCentroid = mapID.toCoordinate(pinchHandlerID.centroid.position, false)
                 }
                 onScaleChanged: (delta) => {
                     mapID.zoomLevel += Math.log2(delta)
-                    pastVuModelController.zoomLevel = mapID.zoomLevel // @TODO think on removing the repetirion
-
                     mapID.alignCoordinateToPoint(mapID.startCentroid, pinchHandlerID.centroid.position)
                 }
                 onRotationChanged: (delta) => {
