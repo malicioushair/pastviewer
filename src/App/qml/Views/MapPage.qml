@@ -11,6 +11,7 @@ import "../GuiItems"
 import "../Helpers"
 
 import "../Helpers/colors.js" as Colors
+import "../Helpers/utils.js" as Utils
 
 ColumnLayout {
     id: columnLayoutID
@@ -104,10 +105,6 @@ ColumnLayout {
             property geoCoordinate startCentroid
             property bool follow: true
 
-            function scheduleViewUpdate() {
-                mapMovementTimerID.restart()
-            }
-
             function updateViewCoordinates() {
                 if (mapID.width <= 0 || mapID.height <= 0)
                     return
@@ -120,8 +117,7 @@ ColumnLayout {
             anchors.fill: parent
 
             copyrightsVisible: false
-            zoomLevel: pastVuModelController.zoomLevel
-            onBearingChanged: scheduleViewUpdate()
+            onBearingChanged: updateViewCoordinates()
 
             plugin: Plugin {
                 id: mapPluginID
@@ -135,9 +131,12 @@ ColumnLayout {
             }
 
             activeMapType: supportedMapTypes.find((map) => { return map.style === MapType.CustomMap })
-            onZoomLevelChanged: pastVuModelController.zoomLevel = zoomLevel
 
-            Component.onCompleted: scheduleViewUpdate()
+            onZoomLevelChanged: (zoomLevel) => { pastVuModelController.zoomLevel = zoomLevel }
+            Component.onCompleted: {
+                zoomLevel = pastVuModelController.zoomLevel
+                Utils.setTimeout(updateViewCoordinates, 300) // delaying the call to update to allow some time for the map to load (otherwise we'll get a bad reply)
+            }
 
             Connections {
                 target: mainWindowID.mapAnimationHelper
@@ -155,12 +154,6 @@ ColumnLayout {
                 function onAnimatedZoomChanged() {
                     mapID.zoomLevel = mainWindowID.mapAnimationHelper.animatedZoom
                 }
-            }
-
-            Timer {
-                id: mapMovementTimerID
-                interval: 300  // Wait 300ms after map stops moving // @TODO figure out how to know when the pan is stopped // emit signal mb?
-                onTriggered: mapID.updateViewCoordinates()
             }
 
             Binding {
@@ -276,7 +269,7 @@ ColumnLayout {
                     if (active)
                         mapID.follow = false
                      else
-                        mapID.scheduleViewUpdate()
+                        mapID.updateViewCoordinates()
                 }
             }
 
@@ -288,7 +281,7 @@ ColumnLayout {
                     if (active)
                         mapID.follow = false
                     else
-                        mapID.scheduleViewUpdate()
+                        mapID.updateViewCoordinates()
 
                     mapID.startCentroid = mapID.toCoordinate(pinchHandlerID.centroid.position, false)
                 }
