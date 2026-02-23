@@ -79,8 +79,6 @@ elseif(ANDROID)
         QT_ANDROID_VERSION_NAME "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"
     )
 
-    add_sentry_android_dependency(${PROJECT_NAME})
-    
     # Link against libc++_shared to provide backtrace symbol for glog
     # This is needed because glog uses backtrace for stack traces on Android
     find_library(ANDROID_CPP_SHARED_LIB c++_shared PATHS ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${ANDROID_ABI} NO_DEFAULT_PATH)

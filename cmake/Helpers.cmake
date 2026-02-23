@@ -11,60 +11,6 @@ function(AbsToRelPath OUT_VAR BASE_DIR)
     set(${OUT_VAR} "${result}" PARENT_SCOPE)
 endfunction()
 
-# Add Sentry Android SDK dependency to build.gradle automatically
-# Qt regenerates build.gradle during build, so we inject it via a custom command
-# Usage: add_sentry_android_dependency(<target_name>)
-function(add_sentry_android_dependency TARGET_NAME)
-    if (NOT ANDROID)
-        return()
-    endif()
-
-    set(ANDROID_BUILD_DIR "${CMAKE_BINARY_DIR}/android-build")
-    set(BUILD_GRADLE_FILE "${ANDROID_BUILD_DIR}/build.gradle")
-
-    # Create a script that adds Sentry dependency to build.gradle
-    set(ADD_SENTRY_SCRIPT "${CMAKE_BINARY_DIR}/add_sentry_to_gradle.sh")
-    file(WRITE ${ADD_SENTRY_SCRIPT} "#!/bin/bash
-# This script adds Sentry Android SDK dependency to the generated build.gradle
-BUILD_GRADLE=\"${BUILD_GRADLE_FILE}\"
-if [ ! -f \"\$BUILD_GRADLE\" ]; then
-    exit 0  # File doesn't exist yet, will be created by Qt
-fi
-
-if grep -q \"io.sentry:sentry-android\" \"\$BUILD_GRADLE\"; then
-    exit 0  # Already added
-fi
-
-# Create backup
-cp \"\$BUILD_GRADLE\" \"\$BUILD_GRADLE.bak\"
-
-# Add Sentry dependency after androidx.core:core line
-# Use double quotes for sed so single quotes are literal
-sed -i.tmp \"/implementation.*androidx.core:core/a\\
-    // Sentry Android SDK\\
-    implementation 'io.sentry:sentry-android:7.15.0'
-\" \"\$BUILD_GRADLE\"
-
-# Verify the file is still valid (has android block)
-if ! grep -q \"^android {\" \"\$BUILD_GRADLE\"; then
-    echo \"Error: build.gradle structure corrupted, restoring from backup\"
-    mv \"\$BUILD_GRADLE.bak\" \"\$BUILD_GRADLE\"
-    exit 1
-fi
-
-# Clean up temp file
-rm -f \"\$BUILD_GRADLE.tmp\"
-")
-    file(COPY ${ADD_SENTRY_SCRIPT} DESTINATION ${CMAKE_BINARY_DIR} FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Checking for Sentry dependency in build.gradle..."
-        COMMAND bash -c "if [ -f '${BUILD_GRADLE_FILE}' ] && ! grep -q 'io.sentry:sentry-android' '${BUILD_GRADLE_FILE}'; then bash '${ADD_SENTRY_SCRIPT}'; fi"
-        COMMENT "Ensuring Sentry dependency is in build.gradle"
-        VERBATIM
-    )
-endfunction()
-
 # Function: include_sources
 # Usage: include_sources(OUT_VAR GLOB_PATTERN1 [GLOB_PATTERN2 ...])
 # This function will GLOB_RECURSE sources using the given patterns,
