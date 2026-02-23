@@ -1,0 +1,14 @@
+--- a/qtbase/src/corelib/QtCompressMimeDatabase.cmake
++++ b/qtbase/src/corelib/QtCompressMimeDatabase.cmake
+@@ -35,6 +35,12 @@ endfunction()
+
+ unset(archive_command)
++# macOS workaround: CMake's file(ARCHIVE_CREATE) can fail with "Could not open extended attribute file"
++# when reading files that have or inherit xattrs. Use external gzip instead.
++if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
++    set(ARCHIVING_API "External")
++endif()
++
+ if(COMPRESSION_TYPE STREQUAL "none")
+     try_minify_xml(qmimeprovider_db_data_file "${INPUT_FILE}" "${output_directory}")
+ else()

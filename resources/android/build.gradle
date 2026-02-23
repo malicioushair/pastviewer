@@ -21,7 +21,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     //noinspection GradleDependency
     implementation 'androidx.core:core:1.16.0'
-    implementation 'io.sentry:sentry-android:7.15.0'
+    implementation 'io.sentry:sentry-android:8.0.0'
 }
 
 android {
