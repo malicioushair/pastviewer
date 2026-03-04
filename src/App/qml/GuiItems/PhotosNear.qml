@@ -196,7 +196,7 @@ Rectangle {
                                 else
                                     mainWindowID.mapAnimationHelper.animateMapCenter(model.Coordinate)
                             }
-                            onDoubleTapped: mainWindowID.openPhotoDetails(Photo, Title, Year)
+                            onDoubleTapped: mainWindowID.openPhotoDetails(Photo, Thumbnail, Title, Year)
                         }
                     }
 

@@ -19,9 +19,10 @@ Rectangle {
 
     property alias mapAnimationHelper: mapAnimationHelperID
 
-    function openPhotoDetails(photo, title, year) {
+    function openPhotoDetails(photo, thumbnail, title, year) {
         stackViewID.push("Views/PhotoDetails.qml", {
             imageSource: photo,
+            thumbnailSource: thumbnail,
             title: title,
             year: year
         })

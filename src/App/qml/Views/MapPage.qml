@@ -214,7 +214,7 @@ ColumnLayout {
                                 mapBearing: mapID.bearing
                                 selected: model.Selected
 
-                                onClicked: mainWindowID.openPhotoDetails(model.Photo, model.Title, model.Year)
+                                onClicked: mainWindowID.openPhotoDetails(model.Photo, model.Thumbnail, model.Title, model.Year)
                             }
                         }
 

@@ -10,6 +10,7 @@ BasePage {
     id: photoDetailsPageID
 
     required property string imageSource
+    required property string thumbnailSource
     required property int year
 
     header: Header {
@@ -53,12 +54,26 @@ BasePage {
                 transformOrigin: Item.Center
 
                 Image {
-                    id: imageID
+                    id: thumbnailImageID
+
+                    anchors.fill: parent
+                    anchors.centerIn: parent
+
+                    source: photoDetailsPageID.thumbnailSource
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    antialiasing: true
+
+                    visible: fullImageID.status !== Image.Ready
+                }
+
+                Image {
+                    id: fullImageID
 
                     readonly property bool fitsViewPort: true
-                            && imageID.status == Image.Ready
-                            && imageID.paintedWidth * pinchHandlerID.scaleAxis.activeValue <= canvasID.width
-                            && imageID.paintedHeight * pinchHandlerID.scaleAxis.activeValue <= canvasID.height
+                            && fullImageID.status == Image.Ready
+                            && fullImageID.paintedWidth * pinchHandlerID.scaleAxis.activeValue <= canvasID.width
+                            && fullImageID.paintedHeight * pinchHandlerID.scaleAxis.activeValue <= canvasID.height
 
                     anchors.fill: parent
                     anchors.centerIn: parent
@@ -67,6 +82,8 @@ BasePage {
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     antialiasing: true
+
+                    visible: status == Image.Ready
                 }
 
                 PinchHandler {
@@ -84,7 +101,7 @@ BasePage {
                         canvasID.scale = canvasID.scale * delta < 1.0 ? 1.0 : canvasID.scale * delta
                     }
 
-                    onActiveChanged: canvasID.anchors.centerIn = !active && imageID.fitsViewPort ? viewportID : undefined
+                    onActiveChanged: canvasID.anchors.centerIn = !active && fullImageID.fitsViewPort ? viewportID : undefined
                 }
                 DragHandler {
                     id: dragHandlerID
@@ -92,11 +109,11 @@ BasePage {
                     target: null
 
                     xAxis.onActiveValueChanged: (delta) => {
-                        if (!imageID.fitsViewPort)
+                        if (!fullImageID.fitsViewPort)
                             canvasID.x += delta
                     }
                     yAxis.onActiveValueChanged: (delta) => {
-                        if (!imageID.fitsViewPort)
+                        if (!fullImageID.fitsViewPort)
                             canvasID.y += delta
                     }
                 }
