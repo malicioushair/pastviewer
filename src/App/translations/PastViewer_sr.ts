@@ -58,6 +58,10 @@
         <source>Year: </source>
         <translation>Година: </translation>
     </message>
+    <message>
+        <source>Recreate this view</source>
+        <translation>Поново креирај овај приказ</translation>
+    </message>
 </context>
 <context>
     <name>CameraMode</name>

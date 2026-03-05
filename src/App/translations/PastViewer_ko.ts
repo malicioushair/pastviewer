@@ -58,6 +58,10 @@
         <source>Year: </source>
         <translation>연도: </translation>
     </message>
+    <message>
+        <source>Recreate this view</source>
+        <translation>이 장면 다시 찍기</translation>
+    </message>
 </context>
 <context>
     <name>CameraMode</name>

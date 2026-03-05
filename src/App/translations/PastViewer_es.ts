@@ -58,6 +58,10 @@
         <source>Year: </source>
         <translation>Año: </translation>
     </message>
+    <message>
+        <source>Recreate this view</source>
+        <translation>Recrear esta vista</translation>
+    </message>
 </context>
 <context>
     <name>CameraMode</name>

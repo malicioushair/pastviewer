@@ -13,19 +13,7 @@ BasePage {
     required property string thumbnailSource
     required property int year
 
-    header: Header {
-        secondaryButton: ToolButton {
-            text: "📸"
-            onClicked: photoDetailsPageID.StackView.view.push("CameraMode.qml", {
-                imageSource: imageSource,
-                title: title,
-                year: year
-            })
-            background: Rectangle {
-                color: Colors.palette.accent
-            }
-        }
-    }
+    header: Header {}
 
     footer: Footer {
         text: qsTr("Year: ") + photoDetailsPageID.year
@@ -118,6 +106,45 @@ BasePage {
                     }
                 }
             }
+        }
+
+        Button {
+            id: cameraCtaID
+
+            Layout.fillWidth: true
+            Layout.topMargin: 10
+
+            text: "📸 " + qsTr("Recreate this view")
+
+            background: Rectangle {
+                radius: 10
+                color: cameraCtaID.pressed ? Colors.palette.accentAlt : Colors.palette.accent
+                border.color: Colors.palette.border
+                border.width: 2
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
+            }
+
+            contentItem: Text {
+                text: cameraCtaID.text
+                color: "white"
+                font.pixelSize: 16
+                font.bold: true
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            padding: 12
+            implicitHeight: 48
+
+            onClicked: photoDetailsPageID.StackView.view.push("CameraMode.qml", {
+                imageSource: imageSource,
+                title: title,
+                year: year
+            })
         }
     }
 }
