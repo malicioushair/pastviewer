@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import "../Helpers/colors.js" as Colors
+
 Dialog {
     id: errorDialogID
 
@@ -20,7 +22,7 @@ Dialog {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 Layout.alignment: Qt.AlignVCenter
-                color: "#d32f2f"
+                color: Colors.palette.error
                 radius: 20
 
                 Text {

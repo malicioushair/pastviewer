@@ -1,3 +1,5 @@
 module Helpers
 MapAnimationHelper 1.0 MapAnimationHelper.qml
+OnboardingOverlay 1.0 OnboardingOverlay.qml
+RectangleWithHoles 1.0 RectangleWithHoles.qml
 
