@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import "colors.js" as Colors
+import "../GuiItems"
 
 Item {
     id: rootID
@@ -164,7 +165,7 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                Button {
+                StyledButton {
                     id: skipButtonID
 
                     visible: steps.length > 1
@@ -176,7 +177,7 @@ Item {
                     }
                 }
 
-                Button {
+                StyledButton {
                     id: nextButtonID
 
                     text: currentIndex < steps.length - 1 ? qsTr("Next") : qsTr("Got it")
