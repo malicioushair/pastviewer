@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 import "../Helpers/colors.js" as Colors
 import "../GuiItems"
+import "../Helpers"
 import "Helpers"
 
 
@@ -125,7 +126,6 @@ BasePage {
 
                     Component.onCompleted: currentValue = i18nController.GetCurrentLanguage()
 
-
                     Connections {
                         target: i18nController
                         function onLanguageChanged() {
@@ -161,40 +161,17 @@ BasePage {
                 onSelectedMaxChanged: pastVuModelController.userSelectedTimelineRange.max = selectedMax
             }
 
-            Button {
+            StyledButton {
+                id: resetOnboardingID
+
+                text: qsTr("Reset onboarding")
+                onClicked: guiController.ResetOnboarding()
+            }
+
+            StyledButton {
                 id: reloadButtonID
 
                 text: qsTr("Reload map items")
-
-                background: Rectangle {
-                    color: reloadButtonID.pressed ? Colors.palette.accentAlt : Colors.palette.accent
-                    radius: 8
-                    border {
-                        color: Colors.palette.border
-                        width: 2
-                    }
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-
-                contentItem: Text {
-                    text: reloadButtonID.text
-                    font {
-                        pixelSize: 16
-                        bold: true
-                    }
-                    color: "white"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-
-                padding: 12
-                implicitHeight: 44
-
                 onClicked: pastVuModelController.ReloadItems()
             }
         }

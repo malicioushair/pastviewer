@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtCore
 
 import "../Helpers/colors.js" as Colors
+import "../Helpers"
 import "Helpers"
 
 BasePage {
@@ -146,5 +147,26 @@ BasePage {
                 year: year
             })
         }
+    }
+
+    // Lightweight, one-time hint for zoom/pan and the recreate CTA
+    OnboardingOverlay {
+        id: photoDetailsOnboardingID
+
+        anchors.fill: parent
+
+        completionKey: "PhotoDetailsIntro"
+        active: !guiController.IsOnboardingStepCompleted(completionKey)
+
+        steps: [
+            {
+                "title": qsTr("Explore the photo"),
+                "body": qsTr("Pinch to zoom and drag to pan the historical photo. Use it to study the details of the past scene.")
+            },
+            {
+                "title": qsTr("Recreate this view"),
+                "body": qsTr("When you are ready, tap “Recreate this view” to open the camera and line up today’s scene with this photo.")
+            }
+        ]
     }
 }

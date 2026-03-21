@@ -22,6 +22,7 @@
 #include "App/Controllers/I18nController/I18nController.h"
 #include "App/Controllers/ModelController/PastViewModelController.h"
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
+#include "App/Utils/HoleItem.h"
 #include "App/Utils/PlatformUtils.h"
 
 using namespace PastViewer;
@@ -113,6 +114,7 @@ GuiController::GuiController(QObject * parent)
 		});
 	}
 
+	qmlRegisterType<HoleItem>("PastViewer", 1, 0, "HoleItem");
 	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
 	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
 	qmlRegisterUncreatableMetaObject(ModelType::staticMetaObject, "PastViewer", 1, 0, "ModelType", "ModelType is an enum namespace");
@@ -162,6 +164,27 @@ bool GuiController::IsDebug()
 QString GuiController::GetAppVersion()
 {
 	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+}
+
+bool GuiController::IsOnboardingStepCompleted(const QString & key)
+{
+	m_impl->settings.beginGroup("Onboarding");
+	const auto res = m_impl->settings.value(key, false).toBool();
+	m_impl->settings.endGroup();
+	return res;
+}
+
+void GuiController::SetOnboardingStepCompleted(const QString & key)
+{
+	m_impl->settings.beginGroup("Onboarding");
+	m_impl->settings.setValue(key, true);
+	m_impl->settings.endGroup();
+}
+
+void GuiController::ResetOnboarding()
+{
+	m_impl->settings.remove("Onboarding");
+	emit onboardingReset();
 }
 
 void GuiController::RequestCameraPermission()

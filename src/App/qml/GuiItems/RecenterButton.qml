@@ -9,7 +9,7 @@ Rectangle {
     signal tapped()
 
     radius: width/2
-    color: "#66000000"
+    color: Colors.palette.seeThroughBlack
     border {
         color: Colors.palette.border
         width: 1

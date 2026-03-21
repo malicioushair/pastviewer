@@ -6,6 +6,7 @@ import QtCore
 
 import "../Helpers/colors.js" as Colors
 import "../Helpers/utils.js" as Utils
+import "../Helpers"
 import "Helpers"
 
 BasePage {
