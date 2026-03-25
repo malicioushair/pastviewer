@@ -47,7 +47,7 @@ BasePage {
     }
 
     footer: Footer {
-        text: qsTr("Camera Mode")
+        text: "PastViewer"
     }
 
     ColumnLayout {
