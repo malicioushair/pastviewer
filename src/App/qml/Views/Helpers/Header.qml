@@ -12,12 +12,16 @@ ToolBar {
     property alias label: labelID
 
     background: Rectangle {
+        implicitHeight: 50
         color: Colors.palette.toolbar
     }
     RowLayout {
         anchors.fill: parent
         ToolButton {
+            implicitHeight: rootID.height
+            implicitWidth: implicitHeight
             text: "←"
+            font.pointSize: 20
             onClicked: rootID.parent.StackView.view.pop()
             background: Rectangle {
                 color: Colors.palette.accent
