@@ -72,7 +72,7 @@ BaseModel::BaseModel(QGeoPositionInfoSource * positionSource, QObject * parent)
 
 		emit LoadingItems();
 		m_impl->lastKnownViewport = viewport;
-		const auto paramsJson = QString(R"({"z":16,"geometry":{"type":"Polygon","coordinates":[[[%1,%2],[%3,%4],[%5,%6],[%7,%8],[%9,%10]]]},"localWork":0})")
+		const auto paramsJson = QString(R"({"z":17,"geometry":{"type":"Polygon","coordinates":[[[%1,%2],[%3,%4],[%5,%6],[%7,%8],[%9,%10]]]},"localWork":1})")
 									.arg(QString::number(viewport.topLeft().longitude(), 'f', 15))
 									.arg(QString::number(viewport.topLeft().latitude(), 'f', 15))
 									.arg(QString::number(viewport.bottomLeft().longitude(), 'f', 15))
