@@ -1,11 +1,13 @@
 #include "NearestObjectsModel.h"
 
+#include <algorithm>
+#include <cmath>
 #include <QGeoCoordinate>
 #include <QGeoPositionInfoSource>
+#include <QMetaObject>
 #include <QModelIndex>
 #include <QVariant>
 
-#include <limits>
 #include <unordered_set>
 
 #include "App/Models/BaseModel.h"
@@ -42,24 +44,15 @@ NearestObjectsModel::NearestObjectsModel(QAbstractItemModel * sourceModel, QGeoP
 
 	setSourceModel(sourceModel);
 	setDynamicSortFilter(false);
-	sort(0);
 
-	connect(sourceModel, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex & topLeft, const QModelIndex & bottomRight, const QVector<int> & roles) {
-		auto onlySelectedRole = true;
-		for (int role : roles)
-		{
-			if (role != BaseModel::Roles::Selected)
-			{
-				onlySelectedRole = false;
-				break;
-			}
-		}
-
-	// clang-format off
+	connect(sourceModel, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> & roles) {
+		const bool onlySelectedRole = !roles.isEmpty()
+								   && std::all_of(roles.cbegin(), roles.cend(), [](int role) {
+										return role == BaseModel::Roles::Selected;
+									});
 		if (!onlySelectedRole)
-			invalidate();
-	}, Qt::DirectConnection);
-	// clang-format on
+			OnSourceModelChanged();
+	});
 	connect(sourceModel, &QAbstractListModel::rowsInserted, this, &NearestObjectsModel::OnSourceModelChanged);
 	connect(sourceModel, &QAbstractListModel::rowsRemoved, this, &NearestObjectsModel::OnSourceModelChanged);
 	connect(sourceModel, &QAbstractListModel::modelReset, this, &NearestObjectsModel::OnSourceModelChanged);
@@ -71,8 +64,7 @@ NearestObjectsModel::NearestObjectsModel(QAbstractItemModel * sourceModel, QGeoP
 	connect(this, &QSortFilterProxyModel::rowsRemoved, this, [this] { emit CountChanged(); });
 	connect(this, &QSortFilterProxyModel::modelReset, this, [this] { emit CountChanged(); });
 
-	UpdateAcceptedRows();
-	invalidateFilter();
+	OnSourceModelChanged();
 }
 
 NearestObjectsModel::~NearestObjectsModel() = default;
@@ -85,28 +77,32 @@ bool NearestObjectsModel::filterAcceptsRow(int source_row, const QModelIndex & s
 	return m_impl->withinDistanceIndices.find(source_row) != m_impl->withinDistanceIndices.cend();
 }
 
-bool NearestObjectsModel::lessThan(const QModelIndex & left, const QModelIndex & right) const
-{
-	const auto leftDistance = GetDistance(left.row());
-	const auto rightDistance = GetDistance(right.row());
-	return leftDistance < rightDistance;
-}
-
 void NearestObjectsModel::OnPositionUpdated(const QGeoPositionInfo & info)
 {
 	const auto newPosition = info.coordinate();
 	if (newPosition.isValid() && newPosition != m_impl->currentPosition)
 	{
 		m_impl->currentPosition = newPosition;
-		UpdateAcceptedRows();
-		invalidateFilter();
+		OnSourceModelChanged();
 	}
 }
 
 void NearestObjectsModel::OnSourceModelChanged()
 {
+	if (m_rebuildScheduled)
+		return;
+
+	m_rebuildScheduled = true;
+	QMetaObject::invokeMethod(this, &NearestObjectsModel::RebuildProxyModel, Qt::QueuedConnection);
+}
+
+void NearestObjectsModel::RebuildProxyModel()
+{
+	m_rebuildScheduled = false;
 	UpdateAcceptedRows();
 	invalidateFilter();
+	// Keep this proxy unsorted: sorting on top of another proxy model has caused
+	// recursive create_mapping/sort_source_rows stack overflows in production.
 }
 
 void NearestObjectsModel::UpdateAcceptedRows()
@@ -129,22 +125,11 @@ void NearestObjectsModel::UpdateAcceptedRows()
 		if (coord.isValid())
 		{
 			const auto distance = m_impl->currentPosition.distanceTo(coord);
+			if (!std::isfinite(distance))
+				continue;
+
 			if (distance <= MAX_DISTANCE_METERS)
 				m_impl->withinDistanceIndices.insert(i);
 		}
 	}
-}
-
-double NearestObjectsModel::GetDistance(int sourceRow) const
-{
-	const auto * sourceModel = this->sourceModel();
-	if (!sourceModel || !m_impl->currentPosition.isValid())
-		return std::numeric_limits<double>::max();
-
-	const auto sourceIndex = sourceModel->index(sourceRow, 0);
-	const auto coord = sourceModel->data(sourceIndex, BaseModel::Roles::Coordinate).value<QGeoCoordinate>();
-	if (!coord.isValid())
-		return std::numeric_limits<double>::max();
-
-	return m_impl->currentPosition.distanceTo(coord);
 }

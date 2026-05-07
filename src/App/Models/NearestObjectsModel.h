@@ -28,16 +28,16 @@ signals:
 
 protected:
 	bool filterAcceptsRow(int source_row, const QModelIndex & source_parent) const override;
-	bool lessThan(const QModelIndex & left, const QModelIndex & right) const override;
 
 private slots:
 	void OnPositionUpdated(const QGeoPositionInfo & info);
 	void OnSourceModelChanged();
+	void RebuildProxyModel();
 
 private:
 	void UpdateAcceptedRows();
-	double GetDistance(int sourceRow) const;
 
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
+	bool m_rebuildScheduled { false };
 };

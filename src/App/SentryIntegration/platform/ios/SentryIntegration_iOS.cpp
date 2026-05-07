@@ -1,17 +1,16 @@
 #include "../../SentryIntegration.h"
 
 #include <cstdlib>
-#include <cstring>
 #include <execinfo.h>
 #include <mach-o/dyld.h>
 #include <sentry.h>
 #include <sstream>
-#include <string>
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
-#include <QScopeGuard>
 #include <QStandardPaths>
+#include <QStringList>
 
 #include "glog/logging.h"
 
@@ -33,7 +32,31 @@ std::string ResolveExecutablePath()
 	return path;
 }
 
-class SentryMacOS : public ISentry
+QString ResolveCaBundlePath(const QString & executableDir)
+{
+	if (executableDir.isEmpty())
+		return {};
+
+	const QStringList candidates = {
+		QDir(executableDir).absoluteFilePath("certs/curl/cacert.pem"),
+		QDir(executableDir).absoluteFilePath("Resources/certs/curl/cacert.pem"),
+		QDir(executableDir).absoluteFilePath("cacert.pem"),
+		QDir(executableDir).absoluteFilePath("Resources/cacert.pem"),
+		QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("certs/curl/cacert.pem"),
+		QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("Resources/certs/curl/cacert.pem")
+	};
+
+	for (const auto & path : candidates)
+	{
+		const QFileInfo info(path);
+		if (info.exists() && info.isFile() && info.isReadable())
+			return path;
+	}
+
+	return {};
+}
+
+class SentryIOS : public ISentry
 {
 private:
 	int m_initResult = -1;
@@ -44,7 +67,6 @@ public:
 		const auto appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 		const auto sentryDbPath = QDir(appDataDir).absoluteFilePath(".sentry-native");
 
-		// Ensure the directory exists
 		QDir().mkpath(appDataDir);
 
 		auto * options = sentry_options_new();
@@ -53,10 +75,16 @@ public:
 		sentry_options_set_release(options, release.toUtf8().constData());
 		sentry_options_set_sample_rate(options, 1.0);
 		sentry_options_set_debug(options, 1);
+
 		const auto executablePath = ResolveExecutablePath();
 		const auto executableDir = executablePath.empty()
 									 ? QString()
 									 : QFileInfo(QString::fromStdString(executablePath)).absolutePath();
+		const auto caBundlePath = ResolveCaBundlePath(executableDir);
+		if (!caBundlePath.isEmpty())
+			sentry_options_set_ca_certs(options, caBundlePath.toUtf8().constData());
+		else
+			LOG(WARNING) << "Sentry CA bundle not found in app bundle; HTTPS event upload may fail";
 		const auto handlerPath = executableDir.isEmpty()
 								   ? QString()
 								   : QDir(executableDir).absoluteFilePath("crashpad_handler");
@@ -81,6 +109,8 @@ public:
 
 		LOG(INFO) << "Sentry initialized successfully";
 		LOG(INFO) << "Sentry database path: " << sentryDbPath.toStdString();
+		if (!caBundlePath.isEmpty())
+			LOG(INFO) << "Sentry CA bundle path: " << caBundlePath.toStdString();
 		return true;
 	}
 
@@ -104,14 +134,10 @@ public:
 	{
 		LOG(INFO) << "CaptureException called - Message: " << message.toStdString() << ", Type: " << type.toStdString();
 
-		// Use sentry_value_new_exception to create an exception with proper structure
-		// This creates an exception object that Sentry can properly symbolicate
 		const auto exc = sentry_value_new_exception(
 			type.toUtf8().constData(),
 			message.toUtf8().constData());
 
-		// Capture the current stack trace using backtrace()
-		// We need to get the actual instruction pointers first
 		static constexpr auto max_frames = 128;
 		void * stack_addrs[max_frames];
 		const auto frame_count = backtrace(stack_addrs, max_frames);
@@ -120,8 +146,6 @@ public:
 
 		if (frame_count > 0)
 		{
-			// Pass the captured addresses to Sentry
-			// Skip 1 frame to exclude this function itself
 			const auto stacktrace = sentry_value_new_stacktrace(
 				stack_addrs + 1,
 				static_cast<size_t>(frame_count - 1));
@@ -136,11 +160,9 @@ public:
 				sentry_value_decref(stacktrace);
 			}
 
-			// Get symbol names for breadcrumb logging
 			char ** symbols = backtrace_symbols(stack_addrs + 1, frame_count - 1);
 			if (symbols != nullptr)
 			{
-				// Format the full stack trace into a single message
 				std::ostringstream stackTraceStream;
 				stackTraceStream << "C++ Stack trace (" << (frame_count - 1) << " frames):\n";
 				for (int i = 0; i < frame_count - 1; ++i)
@@ -148,7 +170,6 @@ public:
 
 				const auto stackTraceStr = stackTraceStream.str();
 
-				// Explicitly add stacktrace it as a breadcrumb to ensure it's captured
 				const auto stackTraceBreadcrumb = sentry_value_new_breadcrumb("default", stackTraceStr.c_str());
 				const auto level_val = sentry_value_new_string("info");
 				sentry_value_set_by_key(stackTraceBreadcrumb, LEVEL, level_val);
@@ -183,13 +204,13 @@ public:
 	}
 };
 
-SentryMacOS g_macOSPlatform;
+SentryIOS g_iOSPlatform;
 
 } // namespace
 
 ISentry & GetPlatform()
 {
-	return g_macOSPlatform;
+	return g_iOSPlatform;
 }
 
 } // namespace SentryIntegration

@@ -12,6 +12,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QVariant>
+#include <QMetaObject>
 
 #include <cassert>
 #include <memory>
@@ -52,8 +53,7 @@ ScreenObjectsModel::ScreenObjectsModel(QAbstractListModel * sourceModel, QObject
 	connect(this, &QSortFilterProxyModel::rowsRemoved, this, [this] { emit CountChanged(); });
 	connect(this, &QSortFilterProxyModel::modelReset, this, [this] { emit CountChanged(); });
 
-	UpdateAcceptedRows();
-	invalidateFilter();
+	OnSourceModelChanged();
 }
 
 ScreenObjectsModel::~ScreenObjectsModel() = default;
@@ -61,8 +61,7 @@ ScreenObjectsModel::~ScreenObjectsModel() = default;
 void ScreenObjectsModel::OnUserSelectedTimelineRangeChanged(const Range & timeline)
 {
 	m_impl->timeline = timeline;
-	UpdateAcceptedRows();
-	invalidateFilter();
+	OnSourceModelChanged();
 }
 
 void ScreenObjectsModel::UpdateZoomsToDecluster(const QHash<int, int> & cidsToZooms)
@@ -114,6 +113,16 @@ void ScreenObjectsModel::OnPositionUpdated(const QGeoPositionInfo & info)
 
 void ScreenObjectsModel::OnSourceModelChanged()
 {
+	if (m_rebuildScheduled)
+		return;
+
+	m_rebuildScheduled = true;
+	QMetaObject::invokeMethod(this, &ScreenObjectsModel::RebuildProxyModel, Qt::QueuedConnection);
+}
+
+void ScreenObjectsModel::RebuildProxyModel()
+{
+	m_rebuildScheduled = false;
 	UpdateAcceptedRows();
 	invalidateFilter();
 }
