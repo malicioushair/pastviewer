@@ -3,6 +3,7 @@
 #include <QQuickStyle>
 #include <QScopeGuard>
 #include <QStandardPaths>
+#include <stdexcept>
 
 #include "Controllers/GuiController/GuiController.h"
 #include "SentryIntegration/SentryIntegration.h"
@@ -36,10 +37,13 @@ void InitLogging(const std::string & execName)
 int main(int argc, char * argv[])
 {
 	// Initialize Sentry prior to everything
-	SentryIntegration::InitSentry(QString("PastViewer@%1.%2.%3")
+	const auto success = SentryIntegration::InitSentry(QString("PastViewer@%1.%2.%3")
 			.arg(VERSION_MAJOR)
 			.arg(VERSION_MINOR)
 			.arg(VERSION_PATCH));
+
+	if (!success)
+		throw std::runtime_error("Sentry is not initialized!");
 
 	auto sentryShutdown = qScopeGuard([] {
 		SentryIntegration::GetPlatform().Shutdown();

@@ -1,11 +1,15 @@
 #include "../../SentryIntegration.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <execinfo.h>
+#include <mach-o/dyld.h>
 #include <sentry.h>
 #include <sstream>
+#include <string>
 
 #include <QDir>
+#include <QFileInfo>
 #include <QScopeGuard>
 #include <QStandardPaths>
 
@@ -16,6 +20,18 @@ namespace SentryIntegration {
 namespace {
 
 constexpr auto LEVEL = "level";
+
+std::string ResolveExecutablePath()
+{
+	uint32_t size = 0;
+	if (_NSGetExecutablePath(nullptr, &size) != -1 || size == 0)
+		return {};
+	std::string path(size, '\0');
+	if (_NSGetExecutablePath(path.data(), &size) != 0)
+		return {};
+	path.resize(std::strlen(path.c_str()));
+	return path;
+}
 
 class SentryMacOS : public ISentry
 {
@@ -37,6 +53,22 @@ public:
 		sentry_options_set_release(options, release.toUtf8().constData());
 		sentry_options_set_sample_rate(options, 1.0);
 		sentry_options_set_debug(options, 1);
+		const auto executablePath = ResolveExecutablePath();
+		const auto executableDir = executablePath.empty()
+									 ? QString()
+									 : QFileInfo(QString::fromStdString(executablePath)).absolutePath();
+		const auto handlerPath = executableDir.isEmpty()
+								   ? QString()
+								   : QDir(executableDir).absoluteFilePath("crashpad_handler");
+		const QFileInfo handlerInfo(handlerPath);
+		const auto handlerExists = !handlerPath.isEmpty()
+								&& handlerInfo.exists()
+								&& handlerInfo.isFile()
+								&& handlerInfo.isExecutable();
+		if (handlerExists)
+			sentry_options_set_handler_path(options, handlerPath.toUtf8().constData());
+		else
+			sentry_options_set_backend(options, nullptr);
 
 		m_initResult = sentry_init(options);
 

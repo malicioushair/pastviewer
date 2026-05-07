@@ -68,6 +68,14 @@ if(IOS)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon"
     )
+    set(_pastviewer_ios_cacert "${CMAKE_SOURCE_DIR}/resources/ios/certs/curl/cacert.pem")
+    if(NOT EXISTS "${_pastviewer_ios_cacert}")
+        message(FATAL_ERROR "iOS CA bundle not found at ${_pastviewer_ios_cacert}")
+    endif()
+    target_sources(${PROJECT_NAME} PRIVATE "${_pastviewer_ios_cacert}")
+    set_source_files_properties("${_pastviewer_ios_cacert}" PROPERTIES
+        MACOSX_PACKAGE_LOCATION "Resources/certs/curl"
+    )
 endif()
 
 # Add Android backtrace stub to prevent UnsatisfiedLinkError

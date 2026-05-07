@@ -2,11 +2,15 @@
 
 #include <cstdlib>
 #include <execinfo.h>
+#include <mach-o/dyld.h>
 #include <sentry.h>
 #include <sstream>
 
+#include <QCoreApplication>
 #include <QDir>
+#include <QFileInfo>
 #include <QStandardPaths>
+#include <QStringList>
 
 #include "glog/logging.h"
 
@@ -15,6 +19,42 @@ namespace SentryIntegration {
 namespace {
 
 constexpr auto LEVEL = "level";
+
+std::string ResolveExecutablePath()
+{
+	uint32_t size = 0;
+	if (_NSGetExecutablePath(nullptr, &size) != -1 || size == 0)
+		return {};
+	std::string path(size, '\0');
+	if (_NSGetExecutablePath(path.data(), &size) != 0)
+		return {};
+	path.resize(std::strlen(path.c_str()));
+	return path;
+}
+
+QString ResolveCaBundlePath(const QString & executableDir)
+{
+	if (executableDir.isEmpty())
+		return {};
+
+	const QStringList candidates = {
+		QDir(executableDir).absoluteFilePath("certs/curl/cacert.pem"),
+		QDir(executableDir).absoluteFilePath("Resources/certs/curl/cacert.pem"),
+		QDir(executableDir).absoluteFilePath("cacert.pem"),
+		QDir(executableDir).absoluteFilePath("Resources/cacert.pem"),
+		QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("certs/curl/cacert.pem"),
+		QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("Resources/certs/curl/cacert.pem")
+	};
+
+	for (const auto & path : candidates)
+	{
+		const QFileInfo info(path);
+		if (info.exists() && info.isFile() && info.isReadable())
+			return path;
+	}
+
+	return {};
+}
 
 class SentryIOS : public ISentry
 {
@@ -34,11 +74,29 @@ public:
 		sentry_options_set_database_path(options, sentryDbPath.toUtf8().constData());
 		sentry_options_set_release(options, release.toUtf8().constData());
 		sentry_options_set_sample_rate(options, 1.0);
-#ifdef NDEBUG
-		sentry_options_set_debug(options, 0);
-#else
 		sentry_options_set_debug(options, 1);
-#endif
+
+		const auto executablePath = ResolveExecutablePath();
+		const auto executableDir = executablePath.empty()
+									 ? QString()
+									 : QFileInfo(QString::fromStdString(executablePath)).absolutePath();
+		const auto caBundlePath = ResolveCaBundlePath(executableDir);
+		if (!caBundlePath.isEmpty())
+			sentry_options_set_ca_certs(options, caBundlePath.toUtf8().constData());
+		else
+			LOG(WARNING) << "Sentry CA bundle not found in app bundle; HTTPS event upload may fail";
+		const auto handlerPath = executableDir.isEmpty()
+								   ? QString()
+								   : QDir(executableDir).absoluteFilePath("crashpad_handler");
+		const QFileInfo handlerInfo(handlerPath);
+		const auto handlerExists = !handlerPath.isEmpty()
+								&& handlerInfo.exists()
+								&& handlerInfo.isFile()
+								&& handlerInfo.isExecutable();
+		if (handlerExists)
+			sentry_options_set_handler_path(options, handlerPath.toUtf8().constData());
+		else
+			sentry_options_set_backend(options, nullptr);
 
 		m_initResult = sentry_init(options);
 
@@ -51,6 +109,8 @@ public:
 
 		LOG(INFO) << "Sentry initialized successfully";
 		LOG(INFO) << "Sentry database path: " << sentryDbPath.toStdString();
+		if (!caBundlePath.isEmpty())
+			LOG(INFO) << "Sentry CA bundle path: " << caBundlePath.toStdString();
 		return true;
 	}
 
