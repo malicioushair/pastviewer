@@ -10,7 +10,7 @@
 	<key>CFBundleName</key>
 	<string>PastViewer</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.ab0d2faa.PastViewer</string>
+	<string>@APPLE_APP_REVERSED_DOMAIN@</string>
 	<key>CFBundleExecutable</key>
 	<string>PastViewer</string>
 

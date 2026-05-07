@@ -1,4 +1,5 @@
 build
+build-ios-*
 .vscode
 .cache
 ext/android_openssl

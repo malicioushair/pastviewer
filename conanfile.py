@@ -11,6 +11,6 @@ class PastViewerConan(ConanFile):
         self.requires("gflags/2.2.2")
         self.requires("gtest/1.14.0")
 
-        # Only add sentry-native for macOS builds. Android uses Sentry via Gradle.
-        if self.settings.get_safe("os") == "Macos":
+        # sentry-native on Apple desktop and iOS. Android uses Sentry via Gradle.
+        if self.settings.get_safe("os") in ("Macos", "iOS"):
             self.requires("sentry-native/0.12.1")

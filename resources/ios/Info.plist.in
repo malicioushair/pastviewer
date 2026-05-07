@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+
+	<key>CFBundleName</key>
+	<string>PastViewer</string>
+	<key>CFBundleIdentifier</key>
+	<string>@APPLE_APP_REVERSED_DOMAIN@</string>
+	<key>CFBundleExecutable</key>
+	<string>PastViewer</string>
+
+	<key>CFBundleVersion</key>
+	<string>@CMAKE_PROJECT_VERSION_MAJOR@.@CMAKE_PROJECT_VERSION_MINOR@.@CMAKE_PROJECT_VERSION_PATCH@</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@CMAKE_PROJECT_VERSION_MAJOR@.@CMAKE_PROJECT_VERSION_MINOR@</string>
+
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
+
+	<!-- iPhone / iPod: loose PNGs in the app root (AppIcon60x60@2x.png from actool POST_BUILD for Ninja). -->
+	<key>CFBundleIcons</key>
+	<dict>
+		<key>CFBundlePrimaryIcon</key>
+		<dict>
+			<key>CFBundleIconFiles</key>
+			<array>
+				<string>AppIcon60x60</string>
+			</array>
+		</dict>
+	</dict>
+	<!-- iPad -->
+	<key>CFBundleIcons~ipad</key>
+	<dict>
+		<key>CFBundlePrimaryIcon</key>
+		<dict>
+			<key>CFBundleIconFiles</key>
+			<array>
+				<string>AppIcon76x76</string>
+			</array>
+		</dict>
+	</dict>
+
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+
+	<!-- Injected by Qt CMake from QT_IOS_LAUNCH_SCREEN / default storyboard basename -->
+	<key>UILaunchStoryboardName</key>
+	<string>@qt_ios_launch_screen_plist_entry@</string>
+
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app shows your position on the map.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app shows your position on the map.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>This app shows your position on the map.</string>
+
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to your camera to take photos.</string>
+</dict>
+</plist>
