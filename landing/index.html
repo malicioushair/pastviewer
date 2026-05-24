@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Past Viewer brings geotagged historical photographs to an interactive map. Explore what places looked like in the past—from your phone." />
+  <meta name="theme-color" content="#1a2233" />
+
+  <!-- Replace with your public URL once hosted (helps App Store / social previews). -->
+  <meta property="og:title" content="Past Viewer — historical photos on the map" />
+  <meta property="og:description" content="Explore geotagged archival photos around the world, filter by era, compare then and now." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/screenshot-map.jpg" />
+
+  <link rel="icon" href="assets/app-icon.png" type="image/png" sizes="1024x1024" />
+  <link rel="apple-touch-icon" href="assets/app-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet"
+  />
+
+  <title>Past Viewer — historical photographs on an interactive map</title>
+
+  <style>
+    :root {
+      --bg-deep: #121826;
+      --bg-card: #1a2233;
+      --text: #f6f8fc;
+      --muted: #d7dde9;
+      --accent: #f0cfa0;
+      --accent-soft: rgba(240, 207, 160, 0.18);
+      --line: rgba(255, 255, 255, 0.1);
+      --radius: 14px;
+      --font-sans: "Atkinson Hyperlegible", Verdana, "Segoe UI", system-ui, sans-serif;
+      --readable-line-height: 1.7;
+      --heading-line-height: 1.25;
+      --fluid-nav: clamp(1rem, 0.96rem + 0.22vw, 1.0625rem);
+    }
+
+
+    * {
+      box-sizing: border-box;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 5px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 1.125rem;
+      background: var(--bg-deep);
+      color: var(--text);
+      line-height: var(--readable-line-height);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 0.2em;
+    }
+
+    a:hover {
+      opacity: 0.92;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(18, 24, 38, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 4rem;
+    }
+
+    .nav-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .nav-brand:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 6px;
+      border-radius: 8px;
+    }
+
+    .nav-brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 22%;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .site-title {
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      font-size: 1.1875rem;
+    }
+
+    .hero-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero-brand img {
+      width: 52px;
+      height: 52px;
+      border-radius: 22%;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.35rem;
+      font-size: var(--fluid-nav);
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .nav-links a:focus-visible {
+      outline-offset: 6px;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .hero {
+      padding: 3rem 0 4rem;
+      border-bottom: 1px solid var(--line);
+      background:
+        radial-gradient(ellipse 80% 55% at 50% -20%, rgba(232, 184, 109, 0.18), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 20%, rgba(74, 122, 184, 0.12), transparent);
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    @media (min-width: 820px) {
+      .hero-grid {
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 3rem;
+      }
+    }
+
+    h1 {
+      font-size: clamp(2.125rem, 1.95rem + 0.95vw, 3rem);
+      line-height: var(--heading-line-height);
+      letter-spacing: -0.015em;
+      margin: 0 0 1.25rem;
+      font-weight: 700;
+    }
+
+    .tagline {
+      font-size: clamp(1.125rem, 1.06rem + 0.38vw, 1.3125rem);
+      line-height: var(--readable-line-height);
+      color: var(--muted);
+      margin: 0 0 1.85rem;
+      max-width: 40rem;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .store-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .store-badge {
+      display: inline-flex;
+      align-items: center;
+      height: 56px;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+    }
+
+    .store-badge img {
+      display: block;
+      width: auto;
+    }
+
+    /* Google’s badge PNG includes more transparent padding than Apple’s; match visual weight by height. */
+    .store-badge--apple img {
+      height: 44px;
+    }
+
+    .store-badge--google img {
+      height: 56px;
+    }
+
+    .secondary-link {
+      font-size: 1rem;
+      line-height: var(--readable-line-height);
+      color: var(--muted);
+    }
+
+    .hero-card {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) + 4px);
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+    }
+
+    .hero-card img {
+      width: 100%;
+      height: auto;
+      vertical-align: middle;
+      /* aspect-ratio: 9 / 17; */
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    section {
+      padding: 4rem 0;
+    }
+
+    section h2 {
+      font-size: clamp(1.5rem, 1.35rem + 0.45vw, 1.8125rem);
+      line-height: var(--heading-line-height);
+      margin: 0 0 1rem;
+      letter-spacing: -0.015em;
+      font-weight: 700;
+      max-width: 40rem;
+    }
+
+    .section-lead {
+      color: var(--muted);
+      max-width: 42rem;
+      margin: 0 0 2rem;
+      line-height: var(--readable-line-height);
+      font-size: clamp(1.0625rem, 1rem + 0.2vw, 1.1875rem);
+    }
+
+    .features {
+      display: grid;
+      gap: 1rem;
+    }
+
+    @media (min-width: 600px) {
+      .features {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.35rem 1.35rem 1.4rem;
+    }
+
+    .feature-card h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1.1875rem;
+      letter-spacing: 0;
+      font-weight: 700;
+      line-height: var(--heading-line-height);
+    }
+
+    .feature-card p {
+      margin: 0;
+      font-size: 1.0625rem;
+      color: var(--muted);
+      line-height: var(--readable-line-height);
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+    }
+
+    .shots {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 680px) {
+      .shots {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1000px) {
+      .shots {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    figure {
+      margin: 0;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    figure img {
+      width: 100%;
+      display: block;
+      vertical-align: middle;
+    }
+
+    figcaption {
+      padding: 1rem 1.1rem 1.15rem;
+      font-size: 1rem;
+      line-height: var(--readable-line-height);
+      color: var(--muted);
+    }
+
+    .legal-band {
+      background: var(--bg-card);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .legal-band ul {
+      margin: 0;
+      padding-left: 1.4rem;
+      color: var(--muted);
+      font-size: 1.0625rem;
+      line-height: var(--readable-line-height);
+    }
+
+    .legal-band li + li {
+      margin-top: 0.75rem;
+    }
+
+    footer {
+      padding: 2.75rem 0 3rem;
+      font-size: 1rem;
+      line-height: var(--readable-line-height);
+      color: var(--muted);
+    }
+
+    footer .inner > * + * {
+      margin-top: 0.75rem;
+    }
+
+    .fine-print {
+      font-size: 0.9375rem;
+      line-height: var(--readable-line-height);
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner nav">
+      <a class="nav-brand" href="#" aria-label="Past Viewer — top of page">
+        <img class="nav-brand-mark" src="assets/app-icon.png" width="38" height="38" alt="" decoding="async" />
+        <span class="site-title">Past Viewer</span>
+      </a>
+      <nav class="nav-links" aria-label="Page">
+        <a href="#features">Features</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#support">Support</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="inner hero-grid">
+        <div>
+          <div class="hero-brand" aria-hidden="true">
+            <img src="assets/app-icon.png" width="52" height="52" alt="" decoding="async" />
+          </div>
+          <h1>See the past on the map</h1>
+          <p class="tagline">
+            Past Viewer is a map-first app for exploring geotagged historical photographs from the
+            <a href="https://pastvu.com/" rel="noopener noreferrer">PastVu</a> community archive.
+            Pan the world, pick an era, open full images, and compare <em>then</em> with <em>now</em>.
+          </p>
+          <div class="cta-row">
+            <div class="store-badge-group">
+              <!-- After your app is live, replace href with your App Store product URL. -->
+              <a class="store-badge store-badge--apple" id="app-store-link" href="#" aria-label="Download on the App Store">
+                <img
+                  src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83"
+                  alt="Download on the App Store"
+                  width="134"
+                  height="44"
+                  loading="lazy"
+                />
+              </a>
+              <a
+                class="store-badge store-badge--google"
+                href="https://play.google.com/store/apps/details?id=org.qtproject.PastViewer"
+                rel="noopener noreferrer"
+                aria-label="Get it on Google Play"
+              >
+                <img
+                  src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                  alt="Get it on Google Play"
+                  width="189"
+                  height="56"
+                  loading="lazy"
+                />
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="hero-card" aria-hidden="true">
+          <img src="assets/simulator-01.png" alt="" width="600" height="1200" />
+        </div>
+      </div>
+    </div>
+
+    <section id="features">
+      <div class="inner">
+        <h2>What you can do</h2>
+        <p class="section-lead">
+          Each map marker is a window into how streets, buildings, and landscapes used to look.
+        </p>
+        <div class="features">
+          <article class="feature-card">
+            <span class="pill">Map</span>
+            <h3>Explore by place</h3>
+            <p>
+              Move around an interactive map with clustering. Discover archival photos for the area in view—whether you are planning a trip or standing on the same corner today.
+            </p>
+          </article>
+          <article class="feature-card">
+            <span class="pill">Time</span>
+            <h3>Filter the timeline</h3>
+            <p>
+              Narrow the years to match the period you care about, then reload the scene to focus on that slice of history.
+            </p>
+          </article>
+          <article class="feature-card">
+            <span class="pill">Detail</span>
+            <h3>Study each photo</h3>
+            <p>
+              Open a photo to see title and year, then pinch to zoom and pan the high-resolution historical image.
+            </p>
+          </article>
+          <article class="feature-card">
+            <span class="pill">Then &amp; now</span>
+            <h3>Compare with your camera</h3>
+            <p>
+              Use camera mode to line up archival shots with live video—perfect for imagining the same vantage point today.
+            </p>
+          </article>
+          <article class="feature-card">
+            <span class="pill">Nearby</span>
+            <h3>Around you</h3>
+            <p>
+              Optional location lets the map show where you are. Settings include modes tuned to what is near you versus the broader map view.
+            </p>
+          </article>
+          <article class="feature-card">
+            <span class="pill">Languages</span>
+            <h3>In your language</h3>
+            <p>
+              The interface is localized for multiple locales so captions and onboarding match your preferred language where available.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="screenshots" class="legal-band">
+      <div class="inner">
+        <h2>Screenshots</h2>
+        <p class="section-lead">Representative in-app screens:</p>
+        <div class="shots">
+          <figure>
+            <img src="assets/simulator-01.png" alt="Past Viewer showing historical photo markers clustered on a map." width="600" loading="lazy" />
+            <figcaption>Map view with clustered historical photo markers.</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/screenshot-details.jpg" alt="Past Viewer showing a historical photograph with caption and zoomed detail." width="600" loading="lazy" />
+            <figcaption>Photo details with archival image and metadata.</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/simulator-02.png" alt="Settings." width="600" loading="lazy" />
+            <figcaption>Settings</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/simulator-06.png" alt="Past Viewer on iPhone 16 Pro simulator." width="600" loading="lazy" />
+            <figcaption>Onboarding map</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/simulator-04.png" alt="Onboarding." width="600" loading="lazy" />
+            <figcaption>Onboarding image</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="privacy">
+      <div class="inner">
+        <h2>Privacy &amp; data</h2>
+        <p class="section-lead">
+          Past Viewer loads open community content over the network.
+        </p>
+        <ul>
+          <li>
+            <strong>Photos and metadata</strong> are retrieved from PastVu (<a href="https://pastvu.com/" rel="noopener noreferrer">pastvu.com</a>) APIs; viewing content is subject to their terms and licensing.
+          </li>
+          <li>
+            <strong>Map tiles</strong> are provided by third-party map hosts. Requests include standard parameters required by that provider.
+          </li>
+          <li>
+            <strong>Location</strong>, when permitted, is used to show your position on the map and contextualize nearby history.
+          </li>
+          <li>
+            <strong>Camera</strong> access supports the then-and-now comparison experience; capture behavior follows the permissions you grant on device.
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <section id="support">
+      <div class="inner">
+        <h2>Support</h2>
+        <p class="section-lead">
+          For questions, feedback, or rights requests about this app build, contact:
+          <a href="mailto:pastviewer.service@protonmail.com">pastviewer.service@protonmail.com</a>
+        </p>
+      </div>
+    </section>
+  </footer>
+</body>
+</html>
