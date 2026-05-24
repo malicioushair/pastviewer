@@ -63,13 +63,22 @@
 	</array>
 
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app shows your position on the map.</string>
+	<string>PastViewer uses your location to show your position on the map and find historical photos near you. For example, when you walk through a neighborhood, the app highlights archival photos taken at nearby street corners.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app shows your position on the map.</string>
+	<string>PastViewer uses your location to show your position on the map and find historical photos near you. For example, when you walk through a neighborhood, the app highlights archival photos taken at nearby street corners.</string>
 	<key>NSLocationUsageDescription</key>
-	<string>This app shows your position on the map.</string>
+	<string>PastViewer uses your location to show your position on the map and find historical photos near you. For example, when you walk through a neighborhood, the app highlights archival photos taken at nearby street corners.</string>
 
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to your camera to take photos.</string>
+	<string>PastViewer uses your camera to display a live view next to a historical photo so you can compare then and now. For example, when you tap "Recreate this view," the camera helps you align today's scene with the archival image.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>PastViewer saves then-and-now comparison images to your photo library so you can keep and share them. For example, when you capture a recreation in Camera Mode, the combined image is saved to Photos.</string>
+
+	<key>UIDeviceFamily</key>
+	<array>
+		<integer>1</integer>
+		<integer>2</integer>
+	</array>
 </dict>
 </plist>
