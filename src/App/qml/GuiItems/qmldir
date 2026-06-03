@@ -5,4 +5,6 @@ PhotosNear 1.0 PhotosNear.qml
 PovDirection 1.0 PovDirection.qml
 RecenterButton 1.0 RecenterButton.qml
 StyledCheckBox 1.0 StyledCheckBox.qml
+SettingHelpHint 1.0 SettingHelpHint.qml
+SettingWithHint 1.0 SettingWithHint.qml
 UserPosition 1.0 UserPosition.qml
