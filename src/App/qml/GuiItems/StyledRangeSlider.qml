@@ -32,12 +32,11 @@ ColumnLayout {
         first.onMoved: selectedMin = Math.round(first.value)
         second.onMoved: selectedMax = Math.round(second.value)
 
-        background: Item {
-            implicitHeight: 8
+        background: Rectangle {
+            height: 8
+            radius: 4
+            color: Colors.palette.sliderAlt
             Rectangle {
-                anchors.left: parent.left
-                anchors.right: parent.right
-
                 x: timelineSliderID.first.visualPosition * parent.width
                 width: (timelineSliderID.second.visualPosition - timelineSliderID.first.visualPosition) * parent.width
                 height: 8

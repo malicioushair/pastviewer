@@ -4,7 +4,6 @@ import QtQuick.Layouts
 
 import "../Helpers/colors.js" as Colors
 import "../GuiItems"
-import "../Helpers"
 import "Helpers"
 
 
@@ -38,6 +37,7 @@ BasePage {
             ColumnLayout {
                 id: i18nBlockID
 
+                Layout.rightMargin: 13
                 Layout.fillWidth: true
                 spacing: 5
 
@@ -54,7 +54,6 @@ BasePage {
                     id: languageComboBoxID
 
                     Layout.fillWidth: true
-
                     model: i18nController.languageModel
                     textRole: "NameRole"
                     valueRole: "CodeRole"
@@ -137,20 +136,35 @@ BasePage {
                 }
             }
 
-            StyledCheckBox {
-                checked: pastVuModelController.nearestObjectsOnly
-                text: qsTr("Show only nearest objects")
-                onClicked: pastVuModelController.ToggleOnlyNearestObjects();
+            SettingWithHint {
+                Layout.leftMargin: -7
+
+                description: qsTr("When enabled, the map shows only historical photos near your current location.")
+
+                StyledCheckBox {
+                    checked: pastVuModelController.nearestObjectsOnly
+                    text: qsTr("Show only nearest objects")
+                    onClicked: pastVuModelController.ToggleOnlyNearestObjects();
+                }
             }
 
-            StyledCheckBox {
-                checked: pastVuModelController.historyNearModelType
-                text: qsTr('Show all objects in "History near you"')
-                onClicked: pastVuModelController.ToggleHistoryNearYouModel();
+            SettingWithHint {
+                Layout.leftMargin: -7
+
+                description: qsTr('When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.')
+
+                StyledCheckBox {
+                    checked: pastVuModelController.historyNearModelType
+                    text: qsTr('Show all objects in "History near you"')
+                    onClicked: pastVuModelController.ToggleHistoryNearYouModel();
+                }
             }
+
 
             StyledRangeSlider {
                 id: timelineSettingID
+
+                Layout.rightMargin: 18
 
                 rangeMin: pastVuModelController.timelineRange.min
                 rangeMax: pastVuModelController.timelineRange.max
@@ -161,18 +175,26 @@ BasePage {
                 onSelectedMaxChanged: pastVuModelController.userSelectedTimelineRange.max = selectedMax
             }
 
-            StyledButton {
-                id: resetOnboardingID
+            SettingWithHint {
+                description: qsTr("Show the introductory tips on the map and photo screens again.")
 
-                text: qsTr("Reset onboarding")
-                onClicked: guiController.ResetOnboarding()
+                StyledButton {
+                    id: resetOnboardingID
+
+                    text: qsTr("Reset onboarding")
+                    onClicked: guiController.ResetOnboarding()
+                }
             }
 
-            StyledButton {
-                id: reloadButtonID
+            SettingWithHint {
+                description: qsTr("Load historical photos again for the current map view using your current filters.")
 
-                text: qsTr("Reload map items")
-                onClicked: pastVuModelController.ReloadItems()
+                StyledButton {
+                    id: reloadButtonID
+
+                    text: qsTr("Reload map items")
+                    onClicked: pastVuModelController.ReloadItems()
+                }
             }
         }
     }
