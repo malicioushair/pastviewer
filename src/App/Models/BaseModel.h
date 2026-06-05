@@ -1,13 +1,11 @@
 #pragma once
+#include <memory>
 
 #include <QAbstractListModel>
 #include <QGeoCoordinate>
 #include <QGeoPositionInfoSource>
 #include <QGeoRectangle>
 #include <QVariant>
-
-#include <memory>
-#include <vector>
 
 #include "App/Models/UniqueCircularBuffer.h"
 #include "App/Utils/NonCopyMovable.h"
@@ -74,6 +72,7 @@ public:
 
 	void OnPositionPermissionGranted();
 	void ReloadItems();
+	QGeoRectangle GetLastKnownViewport() const;
 
 private slots:
 	void OnNetworkReplyFinished(QNetworkReply * reply);

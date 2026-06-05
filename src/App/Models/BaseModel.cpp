@@ -224,6 +224,11 @@ void BaseModel::ReloadItems()
 	emit UpdateCoords(m_impl->lastKnownViewport);
 }
 
+QGeoRectangle BaseModel::GetLastKnownViewport() const
+{
+	return m_impl->lastKnownViewport;
+}
+
 void BaseModel::OnNetworkReplyFinished(QNetworkReply * reply)
 {
 	const auto requestNumber = reply->property("requestNumber").toInt();
