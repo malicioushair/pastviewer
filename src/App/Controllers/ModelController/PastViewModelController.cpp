@@ -1,11 +1,11 @@
 #include "PastViewModelController.h"
 
 #include <memory>
+#include <stdexcept>
 
 #include <QGuiApplication>
 #include <QLocationPermission>
 #include <QString>
-#include <stdexcept>
 
 #include "App/Models/ClusterModel.h"
 #include "glog/logging.h"
@@ -71,8 +71,12 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 		m_impl->clusterModelScreen->OnViewportChanged(m_impl->viewPort);
 		m_impl->clusterModelNearest->OnViewportChanged(m_impl->viewPort);
 	});
-	connect(m_impl->baseModel.get(), &BaseModel::UpdateCoords, m_impl->clusterModelScreen.get(), &ClusterModel::OnViewportChanged);
-	connect(m_impl->baseModel.get(), &BaseModel::UpdateCoords, m_impl->clusterModelNearest.get(), &ClusterModel::OnViewportChanged);
+	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, m_impl->clusterModelScreen.get(), [&]() {
+		m_impl->clusterModelScreen->OnViewportChanged(m_impl->baseModel->GetLastKnownViewport());
+	});
+	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, m_impl->clusterModelNearest.get(), [&]() {
+		m_impl->clusterModelScreen->OnViewportChanged(m_impl->baseModel->GetLastKnownViewport());
+	});
 	connect(m_impl->clusterModelScreen.get(), &ClusterModel::ZoomsToDecluster, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::UpdateZoomsToDecluster);
 }
 
