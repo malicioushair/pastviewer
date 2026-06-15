@@ -9,7 +9,8 @@ class PastViewerConan(ConanFile):
     def requirements(self):
         self.requires("glog/0.7.1")
         self.requires("gflags/2.2.2")
-        self.requires("gtest/1.14.0")
+        if self.settings.get_safe("os") not in ("Android", "iOS"):
+            self.requires("gtest/1.14.0")
 
         # sentry-native on Apple desktop and iOS. Android uses Sentry via Gradle.
         if self.settings.get_safe("os") in ("Macos", "iOS"):

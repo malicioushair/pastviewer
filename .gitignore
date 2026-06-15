@@ -1,6 +1,10 @@
 .*
 build
 build-ios-*
+!build-ios-xcode/
+build-ios-xcode/*
+!build-ios-xcode/ci_scripts/
+!build-ios-xcode/ci_scripts/**
 .vscode
 .cache
 ext/android_openssl

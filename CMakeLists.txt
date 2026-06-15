@@ -21,6 +21,10 @@ if (NOT ANDROID AND NOT IOS)
     endif()
 endif()
 
+if (IOS)
+    configure_file(${CMAKE_SOURCE_DIR}/ci/XcodeCloud/ci_post_clone.sh ${CMAKE_BINARY_DIR}/ci_scripts/ci_post_clone.sh @ONLY)
+endif()
+
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 
 
