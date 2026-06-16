@@ -1,10 +1,9 @@
 name: CI
 
-# Debug branch — change `ci_github_actions` to `master` when CI is ready.
 on:
   push:
     branches:
-      - ci_github_actions
+      - master
   workflow_dispatch:
 
 concurrency:
