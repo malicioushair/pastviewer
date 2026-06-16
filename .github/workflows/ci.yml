@@ -1,0 +1,96 @@
+name: CI
+
+# Debug branch — change `ci_github_actions` to `master` when CI is ready.
+on:
+  push:
+    branches:
+      - ci_github_actions
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QT_VERSION: "6.10.2"
+  BUILD_TYPE: Release
+  BUILD_DIR: build
+
+jobs:
+  macos-build:
+    name: macOS Build & Test
+    runs-on: macos-15
+    timeout-minutes: 120
+
+    steps:
+      - name: Use HTTPS for SSH submodule URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build tools
+        run: brew install cmake ninja protobuf
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan
+        run: pip install conan
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          cache: true
+
+      - name: Configure Conan profile
+        run: conan profile detect --force
+
+      - name: Install Conan dependencies
+        run: |
+          conan install . \
+            -pr:b=default \
+            -of "${{ env.BUILD_DIR }}" \
+            -s build_type=${{ env.BUILD_TYPE }} \
+            --build=missing
+
+      - name: Configure CMake
+        env:
+          OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          if [ -z "$OSM_API_KEY" ]; then
+            echo "::error::OSM_API_KEY secret is not set. Add it in repository Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::error::SENTRY_DSN secret is not set. Add it in repository Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+          cmake -G Ninja -S . -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_PREFIX_PATH="${QT_ROOT_DIR}" \
+            -DQT_HOST_PATH="${QT_ROOT_DIR}" \
+            -DOSM_API_KEY="$OSM_API_KEY" \
+            -DSENTRY_DSN="$SENTRY_DSN" \
+            -DAPPLE_APP_REVERSED_DOMAIN=com.dv.pastviewer \
+            -Dglog_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -Dgflags_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -DGTest_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -Dsentry_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}"
+
+      - name: Build
+        run: cmake --build "${{ env.BUILD_DIR }}" --parallel
+
+      - name: Run tests
+        run: ctest --test-dir "${{ env.BUILD_DIR }}" --output-on-failure
