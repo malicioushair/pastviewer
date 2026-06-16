@@ -1,0 +1,391 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QT_VERSION: "6.10.2"
+  BUILD_TYPE: Release
+  BUILD_DIR: build
+
+jobs:
+  macos-build:
+    name: macOS Build & Test
+    runs-on: macos-15
+    timeout-minutes: 120
+    environment: default
+
+    steps:
+      - name: Use HTTPS for SSH submodule URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install build tools
+        run: brew install cmake ninja protobuf
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan
+        run: pip install conan
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          cache: true
+
+      - name: Configure Conan profile
+        run: conan profile detect --force
+
+      - name: Install Conan dependencies
+        run: |
+          conan install . \
+            -pr:b=default \
+            -of "${{ env.BUILD_DIR }}" \
+            -s build_type=${{ env.BUILD_TYPE }} \
+            --build=missing
+
+      - name: Configure CMake
+        env:
+          OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          if [ -z "$OSM_API_KEY" ]; then
+            echo "::error::OSM_API_KEY secret is not set. Add it in repository Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::error::SENTRY_DSN secret is not set. Add it in repository Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+          cmake -G Ninja -S . -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_PREFIX_PATH="${QT_ROOT_DIR}" \
+            -DQT_HOST_PATH="${QT_ROOT_DIR}" \
+            -DOSM_API_KEY="$OSM_API_KEY" \
+            -DSENTRY_DSN="$SENTRY_DSN" \
+            -DAPPLE_APP_REVERSED_DOMAIN=com.dv.pastviewer \
+            -Dglog_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -Dgflags_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -DGTest_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -Dsentry_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}"
+
+      - name: Build
+        run: cmake --build "${{ env.BUILD_DIR }}" --parallel
+
+      - name: Run tests
+        run: ctest --test-dir "${{ env.BUILD_DIR }}" --output-on-failure
+
+  android-build:
+    name: Android Build
+    runs-on: macos-15
+    timeout-minutes: 360
+    environment: default
+    env:
+      BUILD_DIR: build-android-release
+      ANDROID_API_LEVEL: 33
+      ANDROID_NDK_VERSION: 29.0.14206865
+
+    steps:
+      - name: Use HTTPS for SSH submodule URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Set build paths
+        run: |
+          echo "QT_ANDROID_PREFIX=$RUNNER_TEMP/Qt/6.10.2/android_arm64_v8a_openssl_16kb" >> "$GITHUB_ENV"
+          echo "QT_SOURCE_DIR=$RUNNER_TEMP/qt6-src" >> "$GITHUB_ENV"
+          echo "QT_HOST_BUILD=$RUNNER_TEMP/qt6-host-build" >> "$GITHUB_ENV"
+          echo "QT_ANDROID_BUILD=$RUNNER_TEMP/qt6-android-build" >> "$GITHUB_ENV"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK/NDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platforms;android-${{ env.ANDROID_API_LEVEL }} build-tools;35.0.0 ndk;${{ env.ANDROID_NDK_VERSION }}
+
+      - name: Set Android NDK path
+        run: echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/${{ env.ANDROID_NDK_VERSION }}" >> "$GITHUB_ENV"
+
+      - name: Install build tools
+        run: brew install cmake ninja
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan
+        run: pip install conan
+
+      - name: Install Qt (macOS host)
+        uses: jurplel/install-qt-action@v4.3.1
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          cache: true
+
+      - name: Cache custom Qt Android
+        uses: actions/cache@v5
+        id: qt-android-cache
+        with:
+          path: |
+            ${{ env.QT_SOURCE_DIR }}
+            ${{ env.QT_HOST_BUILD }}
+            ${{ env.QT_ANDROID_BUILD }}
+            ${{ env.QT_ANDROID_PREFIX }}
+          key: qt-android-${{ env.QT_VERSION }}-${{ hashFiles('deployScripts/android/build_qt_android_openssl_16kb.sh', 'deployScripts/android/qt6-macos-mime-db-workaround.patch') }}
+
+      - name: Build custom Qt for Android (OpenSSL + 16 KB)
+        if: steps.qt-android-cache.outputs.cache-hit != 'true'
+        env:
+          INSTALL_PREFIX: ${{ env.QT_ANDROID_PREFIX }}
+        run: |
+          export ANDROID_NDK="$ANDROID_NDK_ROOT"
+          export ANDROID_SDK="$ANDROID_SDK_ROOT"
+          ./deployScripts/android/build_qt_android_openssl_16kb.sh
+
+      - name: Verify custom Qt Android install
+        run: |
+          if [ ! -f "${{ env.QT_ANDROID_PREFIX }}/lib/cmake/Qt6/qt.toolchain.cmake" ]; then
+            echo "::error::Custom Qt Android install is missing at ${{ env.QT_ANDROID_PREFIX }}"
+            exit 1
+          fi
+
+      - name: Configure Conan profile
+        run: conan profile detect --force
+
+      - name: Install Conan dependencies (Android)
+        run: |
+          if [ -z "$ANDROID_NDK_ROOT" ] || [ ! -d "$ANDROID_NDK_ROOT" ]; then
+            echo "::error::ANDROID_NDK_ROOT is not set or does not exist: '$ANDROID_NDK_ROOT'"
+            exit 1
+          fi
+          echo "Using ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
+
+          conan install . \
+            -pr:h=profiles/android-release \
+            -pr:b=default \
+            -of "${{ env.BUILD_DIR }}" \
+            -s build_type=${{ env.BUILD_TYPE }} \
+            -c:h "tools.android:ndk_path=$ANDROID_NDK_ROOT" \
+            --build=missing
+
+      - name: Configure CMake
+        env:
+          OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          QT_ANDROID_ARM64: ${{ env.QT_ANDROID_PREFIX }}
+        run: |
+          if [ -z "$OSM_API_KEY" ]; then
+            echo "::error::OSM_API_KEY secret is not set. Add it in repository Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::error::SENTRY_DSN secret is not set. Add it in repository Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          if [ -z "$QT_ROOT_DIR" ]; then
+            echo "::error::QT_ROOT_DIR is not set. The macOS host Qt install step may have failed."
+            exit 1
+          fi
+
+          cmake -G Ninja -S . -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_TOOLCHAIN_FILE="$QT_ANDROID_ARM64/lib/cmake/Qt6/qt.toolchain.cmake" \
+            -DQT_HOST_PATH="$QT_ROOT_DIR" \
+            -DCMAKE_PREFIX_PATH="$QT_ANDROID_ARM64;$QT_ROOT_DIR;${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -DANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
+            -DANDROID_NDK_ROOT="$ANDROID_NDK_ROOT" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-${{ env.ANDROID_API_LEVEL }} \
+            -DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON \
+            -DOSM_API_KEY="$OSM_API_KEY" \
+            -DSENTRY_DSN="$SENTRY_DSN" \
+            -DOpenSSL_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -DZLIB_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -Dglog_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -Dgflags_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -DGTest_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}"
+
+      - name: Build
+        run: cmake --build "${{ env.BUILD_DIR }}" --parallel
+
+      - name: Package APK
+        run: cmake --build "${{ env.BUILD_DIR }}" --target apk
+
+  ios-build:
+    name: iOS Device Build
+    runs-on: macos-15
+    timeout-minutes: 180
+    environment: default
+    env:
+      BUILD_DIR: build-ios-xcode
+
+    steps:
+      - name: Use HTTPS for SSH submodule URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Set Qt install paths
+        run: |
+          echo "QT_BASE=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "QT_MACOS_PREFIX=$RUNNER_TEMP/Qt/6.10.2/macos" >> "$GITHUB_ENV"
+          echo "QT_IOS_PREFIX=$RUNNER_TEMP/Qt/6.10.2/ios" >> "$GITHUB_ENV"
+
+      - name: Install build tools
+        run: brew install cmake ninja protobuf
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan
+        run: pip install conan
+
+      - name: Install Qt (macOS host)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          dir: ${{ env.QT_BASE }}
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          cache: true
+
+      - name: Install Qt (iOS)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: ios
+          dir: ${{ env.QT_BASE }}
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          cache: true
+
+      - name: Install code signing certificate and provisioning profile
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          if [ -z "$BUILD_CERTIFICATE_BASE64" ] || [ -z "$P12_PASSWORD" ] || \
+             [ -z "$BUILD_PROVISION_PROFILE_BASE64" ] || [ -z "$KEYCHAIN_PASSWORD" ]; then
+            echo "::error::iOS device signing requires secrets: BUILD_CERTIFICATE_BASE64, P12_PASSWORD, BUILD_PROVISION_PROFILE_BASE64, KEYCHAIN_PASSWORD"
+            exit 1
+          fi
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
+          PP_PATH="$RUNNER_TEMP/profile.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Configure Conan profile
+        run: conan profile detect --force
+
+      - name: Install Conan dependencies (iOS Device)
+        run: |
+          conan install . \
+            -pr:h=profiles/ios-device \
+            -pr:b=default \
+            -of "${{ env.BUILD_DIR }}" \
+            -s build_type=${{ env.BUILD_TYPE }} \
+            --build=missing
+
+      - name: Configure CMake
+        env:
+          OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_PROVISION_PROFILE_NAME: ${{ secrets.APPLE_PROVISION_PROFILE_NAME }}
+          APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -z "$OSM_API_KEY" ]; then
+            echo "::error::OSM_API_KEY secret is not set."
+            exit 1
+          fi
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::error::SENTRY_DSN secret is not set."
+            exit 1
+          fi
+          if [ -z "$APPLE_TEAM_ID" ]; then
+            echo "::error::APPLE_TEAM_ID secret is not set."
+            exit 1
+          fi
+          if [ -z "$APPLE_PROVISION_PROFILE_NAME" ]; then
+            echo "::error::APPLE_PROVISION_PROFILE_NAME secret is not set."
+            exit 1
+          fi
+          if [ ! -f "${{ env.QT_IOS_PREFIX }}/lib/cmake/Qt6/qt.toolchain.cmake" ]; then
+            echo "::error::Qt iOS install is missing at ${{ env.QT_IOS_PREFIX }}"
+            exit 1
+          fi
+
+          export PATH="$(brew --prefix protobuf)/bin:$PATH"
+
+          cmake -G Xcode -S . -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_TOOLCHAIN_FILE="${{ env.QT_IOS_PREFIX }}/lib/cmake/Qt6/qt.toolchain.cmake" \
+            -DQT_HOST_PATH="${{ env.QT_MACOS_PREFIX }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \
+            -DOSM_API_KEY="$OSM_API_KEY" \
+            -DSENTRY_DSN="$SENTRY_DSN" \
+            -DAPPLE_TEAM_ID="$APPLE_TEAM_ID" \
+            -DAPPLE_APP_REVERSED_DOMAIN=com.dv.pastviewer \
+            -DAPPLE_PROVISION_PROFILE_NAME="$APPLE_PROVISION_PROFILE_NAME"
+
+      - name: Build
+        env:
+          APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          cmake --build "${{ env.BUILD_DIR }}" --config "${{ env.BUILD_TYPE }}" --target PastViewer -- -allowProvisioningUpdates
