@@ -145,7 +145,53 @@ BasePage {
                 }
             }
         }
+
     }
+
+    Component {
+        id: imageSavedMessageID
+        
+        Rectangle {
+            implicitWidth: messageLayoutID.implicitWidth + 24
+            implicitHeight: messageLayoutID.implicitHeight + 16
+            
+            radius: 8
+            color: Colors.palette.toolbar
+            border {
+                color: Colors.palette.border
+                width: 1
+            }
+
+            RowLayout {
+                id: messageLayoutID
+
+                anchors.centerIn: parent
+                spacing: 0
+
+                Text {
+                    text: qsTr("Image saved to Gallery")
+                    color: Colors.palette.text
+                    font {
+                        pixelSize: 14
+                        bold: true
+                    }
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+    }
+
+    Loader {
+        id: imageSavedMessageLoaderID
+
+        anchors {
+            bottom: captureButtonID.top
+            horizontalCenter: parent.horizontalCenter
+            bottomMargin: 16
+        }
+    }
+
     Rectangle {
         id: captureButtonID
 
@@ -195,6 +241,9 @@ BasePage {
                 imageCaptureID.capture()
                 // Make the capture button visible after the image has been grabbed
                 Utils.setTimeout(() => { captureButtonID.visible = true }, 1)
+
+                Utils.setTimeout(() => { imageSavedMessageLoaderID.sourceComponent = imageSavedMessageID }, 500)
+                Utils.setTimeout(() => { imageSavedMessageLoaderID.sourceComponent = undefined }, 2000)
             }
         }
     }
