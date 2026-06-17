@@ -113,16 +113,11 @@ void ScreenObjectsModel::OnPositionUpdated(const QGeoPositionInfo & info)
 
 void ScreenObjectsModel::OnSourceModelChanged()
 {
-	if (m_rebuildScheduled)
-		return;
-
-	m_rebuildScheduled = true;
-	QMetaObject::invokeMethod(this, &ScreenObjectsModel::RebuildProxyModel, Qt::QueuedConnection);
+	RebuildProxyModel();
 }
 
 void ScreenObjectsModel::RebuildProxyModel()
 {
-	m_rebuildScheduled = false;
 	UpdateAcceptedRows();
 	invalidateFilter();
 }

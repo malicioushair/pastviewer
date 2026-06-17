@@ -61,5 +61,4 @@ private:
 
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
-	bool m_rebuildScheduled { false };
 };

@@ -10,6 +10,8 @@
 
 class ScreenObjectsModel;
 
+// Keep this proxy unsorted: sorting on top of another proxy model has caused
+// recursive create_mapping/sort_source_rows stack overflows in production.
 class NearestObjectsModel
 	: public QSortFilterProxyModel
 {
@@ -39,5 +41,4 @@ private:
 
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
-	bool m_rebuildScheduled { false };
 };

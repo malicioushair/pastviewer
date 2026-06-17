@@ -89,20 +89,13 @@ void NearestObjectsModel::OnPositionUpdated(const QGeoPositionInfo & info)
 
 void NearestObjectsModel::OnSourceModelChanged()
 {
-	if (m_rebuildScheduled)
-		return;
-
-	m_rebuildScheduled = true;
-	QMetaObject::invokeMethod(this, &NearestObjectsModel::RebuildProxyModel, Qt::QueuedConnection);
+	RebuildProxyModel();
 }
 
 void NearestObjectsModel::RebuildProxyModel()
 {
-	m_rebuildScheduled = false;
 	UpdateAcceptedRows();
 	invalidateFilter();
-	// Keep this proxy unsorted: sorting on top of another proxy model has caused
-	// recursive create_mapping/sort_source_rows stack overflows in production.
 }
 
 void NearestObjectsModel::UpdateAcceptedRows()
