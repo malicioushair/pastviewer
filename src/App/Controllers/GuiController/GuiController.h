@@ -26,7 +26,8 @@ public:
 	Q_INVOKABLE QString GetAppVersion();
 	Q_INVOKABLE void RequestCameraPermission();
 	Q_INVOKABLE bool SaveScreenshotToGallery(const QString & filePath);
-	Q_INVOKABLE void SaveImage(const QQuickItemGrabResult * grabResult);
+	Q_INVOKABLE QString SaveImage(const QQuickItemGrabResult * grabResult);
+	Q_INVOKABLE bool ShareImage();
 
 	Q_INVOKABLE bool IsOnboardingStepCompleted(const QString & key);
 	Q_INVOKABLE void SetOnboardingStepCompleted(const QString & key);

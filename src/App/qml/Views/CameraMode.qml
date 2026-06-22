@@ -14,9 +14,27 @@ BasePage {
 
     required property string imageSource
     required property int year
+    
+    property string thumbnailSource: ""
+    property bool thumbnailVisible: false
+    property bool thumbnailAnimationVisible: false
+    property bool controlsHidden: false
+    property double thumbnailScale: 0.2
 
     function triggerShutterEffect() {
         shutterAnimationID.restart()
+    }
+
+    function animateThumbnail(savedImageUrl) {
+        thumbnailSource = savedImageUrl
+        thumbnailVisible = false
+        thumbnailAnimationVisible = true
+        thumbnailAnimationID.x = 0
+        thumbnailAnimationID.y = 0
+        thumbnailAnimationID.width = rootID.width
+        thumbnailAnimationID.height = rootID.height
+        thumbnailAnimationID.radius = 0
+        thumbnailShrinkAnimationID.restart()
     }
 
     CaptureSession {
@@ -25,18 +43,6 @@ BasePage {
         camera: Camera {
             id: cameraID
             active: true
-        }
-
-        imageCapture: ImageCapture {
-            id: imageCaptureID
-
-            onImageSaved: (id, path) => {
-                console.log("Image saved to:", path)
-            }
-
-            onImageCaptured: (id, preview) => {
-                console.log("Image captured:", id)
-            }
         }
 
         videoOutput: videoOutputID
@@ -115,80 +121,175 @@ BasePage {
             text: qsTr("Now")
             horizontalAlignment: Text.AlignRight
         }
-
-        // Camera shutter flash effect
-        Rectangle {
-            id: shutterFlashID
-            anchors.fill: parent
-            color: "white"
-            opacity: 0
-            visible: opacity > 0
-            z: 1000
-
-            SequentialAnimation {
-                id: shutterAnimationID
-                running: false
-
-                NumberAnimation {
-                    target: shutterFlashID
-                    property: "opacity"
-                    from: 0
-                    to: 1
-                    duration: 50
-                }
-                NumberAnimation {
-                    target: shutterFlashID
-                    property: "opacity"
-                    from: 1
-                    to: 0
-                    duration: 150
-                }
-            }
-        }
-
     }
 
-    Component {
-        id: imageSavedMessageID
-        
+    // Camera shutter flash effect
+    Rectangle {
+        id: shutterFlashID
+        anchors.fill: parent
+        color: "white"
+        opacity: 0
+        visible: opacity > 0
+        z: 1000
+
+        SequentialAnimation {
+            id: shutterAnimationID
+            running: false
+
+            NumberAnimation {
+                target: shutterFlashID
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: 50
+            }
+            NumberAnimation {
+                target: shutterFlashID
+                property: "opacity"
+                from: 1
+                to: 0
+                duration: 150
+            }
+        }
+    }
+
+    Rectangle {
+        id: thumbnailAnimationID
+
+        visible: rootID.thumbnailAnimationVisible
+        z: 999
+        clip: true
+        color: Colors.palette.toolbar
+        border {
+            color: Colors.palette.border
+            width: visible ? 1 : 0
+        }
+
+        Image {
+            anchors.fill: parent
+            anchors.margins: parent.radius > 0 ? 3 : 0
+            source: rootID.thumbnailSource
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: false
+            cache: false
+        }
+    }
+
+    ParallelAnimation {
+        id: thumbnailShrinkAnimationID
+
+        NumberAnimation {
+            target: thumbnailAnimationID
+            property: "x"
+            to: thumbnailButtonID.x
+            duration: 450
+            easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            target: thumbnailAnimationID
+            property: "y"
+            to: thumbnailButtonID.y
+            duration: 450
+            easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            target: thumbnailAnimationID
+            property: "width"
+            to: rootID.width * rootID.thumbnailScale
+            duration: 450
+            easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            target: thumbnailAnimationID
+            property: "height"
+            to: rootID.height * rootID.thumbnailScale
+            duration: 450
+            easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            target: thumbnailAnimationID
+            property: "radius"
+            to: thumbnailButtonID.radius
+            duration: 450
+            easing.type: Easing.OutCubic
+        }
+
+        onFinished: {
+            rootID.controlsHidden = false
+            rootID.thumbnailAnimationVisible = false
+            rootID.thumbnailVisible = true
+            Utils.setTimeout(() => { rootID.thumbnailVisible = false }, 3000)
+        }
+    }
+
+    Rectangle {
+        id: thumbnailButtonID
+
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+            margins: 20
+        }
+
+        width: rootID.width * rootID.thumbnailScale
+        height: rootID.height * rootID.thumbnailScale
+        radius: 10
+        visible: rootID.thumbnailVisible && !rootID.controlsHidden
+        clip: true
+        color: Colors.palette.toolbar
+        border {
+            color: Colors.palette.border
+            width: 1
+        }
+
+        Image {
+            anchors.fill: parent
+            anchors.margins: 3
+            source: rootID.thumbnailSource
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: false
+            cache: false
+        }
+
         Rectangle {
-            implicitWidth: messageLayoutID.implicitWidth + 24
-            implicitHeight: messageLayoutID.implicitHeight + 16
-            
-            radius: 8
+            id: shareBadgeID
+
+            anchors {
+                top: parent.top
+                right: parent.right
+                margins: 6
+            }
+
+            width: 28
+            height: 28
+            radius: width / 4
             color: Colors.palette.toolbar
+            opacity: 0.92
             border {
                 color: Colors.palette.border
                 width: 1
             }
 
-            RowLayout {
-                id: messageLayoutID
-
-                anchors.centerIn: parent
-                spacing: 0
-
-                Text {
-                    text: qsTr("Image saved to Gallery")
-                    color: Colors.palette.text
-                    font {
-                        pixelSize: 14
-                        bold: true
-                    }
-                    wrapMode: Text.WordWrap
-                    horizontalAlignment: Text.AlignHCenter
+            Image {
+                anchors.fill: parent
+                anchors {
+                    leftMargin: 5
+                    topMargin: 6
+                    rightMargin: 7
+                    bottomMargin: 6
                 }
+                source: "../resources/share.png"
+                fillMode: Image.PreserveAspectFit
             }
         }
-    }
 
-    Loader {
-        id: imageSavedMessageLoaderID
-
-        anchors {
-            bottom: captureButtonID.top
-            horizontalCenter: parent.horizontalCenter
-            bottomMargin: 16
+        MouseArea {
+            anchors.fill: parent
+            onClicked: guiController.ShareImage()
         }
     }
 
@@ -204,6 +305,7 @@ BasePage {
         width: 72
         height: 72
         radius: width / 2
+        visible: !rootID.controlsHidden
         color: "transparent"
         border.color: "white"
         border.width: 4
@@ -229,21 +331,19 @@ BasePage {
                     window = window.parent
                 }
 
-                captureButtonID.visible = false
+                rootID.controlsHidden = true
                 if (!window) {
                     console.error("Could not find window to capture")
+                    rootID.controlsHidden = false
                 } else {
                     window.grabToImage((result) => {
-                        guiController.SaveImage(result)
+                        const savedImageUrl = guiController.SaveImage(result)
+                        if (savedImageUrl.length > 0) 
+                            rootID.animateThumbnail(savedImageUrl)
+                         else 
+                            rootID.controlsHidden = false
                     })
                 }
-
-                imageCaptureID.capture()
-                // Make the capture button visible after the image has been grabbed
-                Utils.setTimeout(() => { captureButtonID.visible = true }, 1)
-
-                Utils.setTimeout(() => { imageSavedMessageLoaderID.sourceComponent = imageSavedMessageID }, 500)
-                Utils.setTimeout(() => { imageSavedMessageLoaderID.sourceComponent = undefined }, 2000)
             }
         }
     }
