@@ -19,8 +19,16 @@
         <translation>Верзија: </translation>
     </message>
     <message>
+        <source>When enabled, the map shows only historical photos near your current location.</source>
+        <translation>Када је укључено, мапа приказује само историјске фотографије близу ваше тренутне локације.</translation>
+    </message>
+    <message>
         <source>Show only nearest objects</source>
         <translation>Само у близини</translation>
+    </message>
+    <message>
+        <source>When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.</source>
+        <translation>Када је укључено, ред „Историја у близини“ приказује све фотографије у области мапе у оквиру временске линије. Када је искључено, приказују се само оближње фотографије.</translation>
     </message>
     <message>
         <source>Show all objects in "History near you"</source>
@@ -33,6 +41,14 @@
     <message>
         <source>Reset onboarding</source>
         <translation>Ресет увода</translation>
+    </message>
+    <message>
+        <source>Show the introductory tips on the map and photo screens again.</source>
+        <translation>Поново прикажи уводне савете на мапи и екранима са фотографијама.</translation>
+    </message>
+    <message>
+        <source>Load historical photos again for the current map view using your current filters.</source>
+        <translation>Поново учитај историјске фотографије за тренутни приказ мапе користећи тренутне филтере.</translation>
     </message>
 </context>
 <context>

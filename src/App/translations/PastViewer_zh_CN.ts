@@ -19,8 +19,16 @@
         <translation>版本：</translation>
     </message>
     <message>
+        <source>When enabled, the map shows only historical photos near your current location.</source>
+        <translation>启用后，地图仅显示当前位置附近的历史照片。</translation>
+    </message>
+    <message>
         <source>Show only nearest objects</source>
         <translation>仅显示最近的</translation>
+    </message>
+    <message>
+        <source>When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.</source>
+        <translation>启用后，“附近历史”列表会显示时间线范围内当前地图区域的所有照片。禁用后，仅显示附近的照片。</translation>
     </message>
     <message>
         <source>Show all objects in "History near you"</source>
@@ -33,6 +41,14 @@
     <message>
         <source>Reset onboarding</source>
         <translation>重置引导</translation>
+    </message>
+    <message>
+        <source>Show the introductory tips on the map and photo screens again.</source>
+        <translation>再次显示地图和照片页面上的入门提示。</translation>
+    </message>
+    <message>
+        <source>Load historical photos again for the current map view using your current filters.</source>
+        <translation>使用当前筛选条件重新加载当前地图视图的历史照片。</translation>
     </message>
 </context>
 <context>

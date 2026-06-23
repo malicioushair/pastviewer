@@ -19,8 +19,16 @@
         <translation>バージョン：</translation>
     </message>
     <message>
+        <source>When enabled, the map shows only historical photos near your current location.</source>
+        <translation>有効にすると、地図には現在地付近の歴史写真のみが表示されます。</translation>
+    </message>
+    <message>
         <source>Show only nearest objects</source>
         <translation>最も近いのみ表示</translation>
+    </message>
+    <message>
+        <source>When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.</source>
+        <translation>有効にすると、「近くの履歴」行には、タイムライン内で地図範囲にあるすべての写真が表示されます。無効にすると、近くの写真のみが表示されます。</translation>
     </message>
     <message>
         <source>Show all objects in "History near you"</source>
@@ -33,6 +41,14 @@
     <message>
         <source>Reset onboarding</source>
         <translation>紹介をリセット</translation>
+    </message>
+    <message>
+        <source>Show the introductory tips on the map and photo screens again.</source>
+        <translation>地図画面と写真画面の紹介ヒントをもう一度表示します。</translation>
+    </message>
+    <message>
+        <source>Load historical photos again for the current map view using your current filters.</source>
+        <translation>現在のフィルターを使って、現在の地図表示の歴史写真を再読み込みします。</translation>
     </message>
 </context>
 <context>

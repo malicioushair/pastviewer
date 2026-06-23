@@ -19,8 +19,16 @@
         <translation>Version : </translation>
     </message>
     <message>
+        <source>When enabled, the map shows only historical photos near your current location.</source>
+        <translation>Lorsque cette option est activée, la carte affiche uniquement les photos historiques proches de votre position actuelle.</translation>
+    </message>
+    <message>
         <source>Show only nearest objects</source>
         <translation>Afficher seulement proches</translation>
+    </message>
+    <message>
+        <source>When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.</source>
+        <translation>Lorsque cette option est activée, la ligne « Histoire près de vous » liste toutes les photos de la zone de carte dans la période sélectionnée. Lorsqu'elle est désactivée, seules les photos à proximité sont affichées.</translation>
     </message>
     <message>
         <source>Show all objects in "History near you"</source>
@@ -33,6 +41,14 @@
     <message>
         <source>Reset onboarding</source>
         <translation>Réinitialiser l'introduction</translation>
+    </message>
+    <message>
+        <source>Show the introductory tips on the map and photo screens again.</source>
+        <translation>Afficher à nouveau les conseils d'introduction sur la carte et les écrans photo.</translation>
+    </message>
+    <message>
+        <source>Load historical photos again for the current map view using your current filters.</source>
+        <translation>Recharger les photos historiques pour la vue actuelle de la carte avec vos filtres actuels.</translation>
     </message>
 </context>
 <context>
