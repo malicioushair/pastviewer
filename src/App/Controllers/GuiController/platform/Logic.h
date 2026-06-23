@@ -5,5 +5,6 @@
 namespace PlatformDependentLogic {
 
 bool SaveScreenshotToGallery(const QString & filePath);
+bool ShareImage(const QString & filePath);
 
 }

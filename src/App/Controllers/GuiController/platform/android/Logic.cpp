@@ -121,11 +121,6 @@ bool SaveScreenshotToGallery(const QString & filePath)
 		env->DeleteLocalRef(byteArray);
 
 		LOG(INFO) << "Successfully saved screenshot to gallery via MediaStore: " << uri.toString().toStdString();
-		if (!QFile::remove(filePath))
-			LOG(WARNING) << "Failed to delete original file after saving to gallery: " << filePath.toStdString();
-		else
-			LOG(INFO) << "Successfully removed the original image file: " << filePath.toStdString();
-
 		return true;
 	}
 	catch (...)
@@ -133,6 +128,37 @@ bool SaveScreenshotToGallery(const QString & filePath)
 		LOG(ERROR) << "Exception while saving to MediaStore";
 		return false;
 	}
+}
+
+bool ShareImage(const QString & filePath)
+{
+	QFileInfo fileInfo(filePath);
+	if (!fileInfo.exists())
+	{
+		LOG(ERROR) << "File does not exist: " << filePath.toStdString();
+		return false;
+	}
+
+	const auto activity = QJniObject::callStaticObjectMethod(
+		"org/qtproject/qt/android/QtNative",
+		"activity",
+		"()Landroid/app/Activity;");
+	if (!activity.isValid())
+	{
+		LOG(ERROR) << "Failed to get Android activity";
+		return false;
+	}
+
+	const auto ok = QJniObject::callStaticMethod<jboolean>(
+		"org/qtproject/PastViewer/ShareHelper",
+		"shareImage",
+		"(Landroid/app/Activity;Ljava/lang/String;)Z",
+		activity.object(),
+		QJniObject::fromString(filePath).object());
+	if (!ok)
+		LOG(ERROR) << "Failed to share image: " << filePath.toStdString();
+
+	return ok;
 }
 
 } // namespace PlatformDependentLogic

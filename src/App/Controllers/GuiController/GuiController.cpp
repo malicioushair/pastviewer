@@ -85,6 +85,7 @@ struct GuiController::Impl
 	QCameraPermission cameraPermission {};
 	std::unique_ptr<PastVuModelController> pastVuModelController;
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
+	QString lastSavedImagePath;
 
 	void LoadQml()
 	{
@@ -204,29 +205,48 @@ bool GuiController::SaveScreenshotToGallery(const QString & filePath)
 	return PlatformDependentLogic::SaveScreenshotToGallery(filePath);
 }
 
-void GuiController::SaveImage(const QQuickItemGrabResult * grabResult)
+QString GuiController::SaveImage(const QQuickItemGrabResult * grabResult)
 {
 	if (!grabResult)
 	{
 		LOG(WARNING) << "SaveImage called with null grabResult";
-		return;
+		return {};
 	}
 
 	const auto timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
 	const auto filename = QString("pastviewer_%1.png").arg(timestamp);
-
-	const auto screenshotsPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
-	const auto filePath = QString("%1/%2").arg(screenshotsPath, filename);
-	if (const auto saved = grabResult->saveToFile(filePath); saved)
+	const auto capturesPath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).absoluteFilePath(qApp->applicationName());
+	if (!QDir().mkpath(capturesPath))
 	{
-		LOG(INFO) << "Screenshot saved to:" << filePath.toStdString();
-		if (Utils::IsMobile())
-			SaveScreenshotToGallery(filePath);
+		LOG(WARNING) << "Failed to create captures directory: " << capturesPath.toStdString();
+		return {};
 	}
-	else
+
+	const auto filePath = QDir(capturesPath).absoluteFilePath(filename);
+	if (!grabResult->saveToFile(filePath))
 	{
 		LOG(WARNING) << "Failed to save screenshot to:" << filePath.toStdString();
+		return {};
 	}
+
+	m_impl->lastSavedImagePath = filePath;
+	LOG(INFO) << "Screenshot saved to:" << filePath.toStdString();
+
+	if (Utils::IsMobile() && !SaveScreenshotToGallery(filePath))
+		LOG(WARNING) << "Failed to save screenshot to gallery: " << filePath.toStdString();
+
+	return QUrl::fromLocalFile(filePath).toString();
+}
+
+bool GuiController::ShareImage()
+{
+	if (m_impl->lastSavedImagePath.isEmpty())
+	{
+		LOG(WARNING) << "ShareImage called with no saved image";
+		return false;
+	}
+
+	return PlatformDependentLogic::ShareImage(m_impl->lastSavedImagePath);
 }
 
 void GuiController::RequestPermission(const QPermission & permission)

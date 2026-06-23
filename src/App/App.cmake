@@ -43,6 +43,7 @@ endif()
 include_sources(SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/*.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/*.h"
+    "${CMAKE_CURRENT_LIST_DIR}/*.mm"
 )
 include(ext/android_openssl/android_openssl.cmake)
 qt_add_executable(${PROJECT_NAME} ${SOURCES} ${QT_RESOURCES})
@@ -180,6 +181,7 @@ endif()
 
 # Qt 6 static FFmpeg media plugin does not pull in libav*; link Qt's bundled xcframeworks.
 if(IOS)
+    enable_language(OBJCXX)
     qt_add_ios_ffmpeg_libraries(${PROJECT_NAME})
 endif()
 
@@ -196,6 +198,7 @@ qt_add_qml_module(${PROJECT_NAME}
     RESOURCES
         "src/App/qml/Helpers/colors.js"
         "src/App/qml/Helpers/utils.js"
+        "src/App/qml/resources/share.png"
     QML_FILES
         ${REL_QML}
 )
