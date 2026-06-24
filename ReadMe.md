@@ -1,182 +1,163 @@
 # PastViewer
 
-A cross-platform mobile application for viewing historical photographs on an interactive map. Built with Qt 6 and QML, PastViewer allows you to explore geotagged historical images with an intuitive map interface.
+<p align="center">
+  <img src="landing/assets/app-icon.png" width="160" alt="PastViewer logo"/>
+</p>
+
+<p align="center">
+  <strong>A pocket time machine for the places around you.</strong>
+</p>
+
+<p align="center">
+  Explore geotagged historical photos on a live map, filter them by year, and recreate the same view with your camera.
+</p>
+
+<p align="center">
+  <a href="https://apps.apple.com/rs/app/pastviewer/id6761183383">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="56"/>
+  </a>
+  <a href="https://play.google.com/store/apps/details?id=org.qtproject.PastViewer">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="66"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="#experience">Experience</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#developer-setup">Developer Setup</a>
+</p>
+
+## Experience
+
+PastViewer turns a walk through a city into a visual archive. Open the map, follow your current position, and discover historical photos from the streets, squares, and buildings nearby.
+
+When a photo catches your eye, open it full screen, inspect the details, then switch into camera mode to line up the past with the present and share the result.
 
 ## Screenshots
 
 <p align="center">
-  <img src="resources/repo/photo_2025-10-10_23-38-19.jpg" width="300" alt="PastViewer Main Screen"/>
-  <img src="resources/repo/photo_2025-10-10_23-38-24.jpg" width="300" alt="PastViewer Photo Details"/>
+  <img src="landing/assets/simulator-01.png" width="260" alt="PastViewer map screen"/>
+  <img src="landing/assets/simulator-05.png" width="260" alt="PastViewer photo details screen"/>
 </p>
 
-## Requirements
+## Features
 
-### All Platforms
-- **CMake** 3.28 or later
-- **Qt 6.9.2** or later with the following modules:
-  - Qt6::Core
-  - Qt6::Quick
-  - Qt6::QuickControls2
-  - Qt6::QuickLayouts
-  - Qt6::Location
-  - Qt6::Positioning
-  - Qt6::PositioningQuick
-- **Conan** package manager
-- **C++20** compatible compiler
+| Discover | Compare | Tune |
+| --- | --- | --- |
+| Browse historical photos on an interactive map. | Pinch, pan, and study full-size historical photos before recreating the view. | Filter by timeline, nearby items, and current map area. |
+| Follow your location, recenter instantly, and explore clustered markers. | Use camera mode to capture a present-day match and share it from the app. | Replay onboarding tips and reload map items without restarting the app. |
 
-### Android Specific
-- **Android SDK** (API level 26+)
-- **Android NDK** 26.3 or later
-- **Java JDK** 17 or later
+## Built For
 
-## Configuration
+- Curious walkers who want to see what stood here before.
+- Travelers looking for historical context without leaving the map.
+- Local historians and photographers recreating archival viewpoints.
+- Mobile-first exploration across Android, iOS, and desktop builds.
 
-### 1. Get a StadiaMaps API Key
+The app currently includes translations for English, German, Spanish, French, Italian, Japanese, Korean, Portuguese, Russian, Serbian, and Simplified Chinese.
 
-PastViewer uses StadiaMaps for map tiles. You need a free API key:
+## Developer Setup
 
-1. Visit [StadiaMaps](https://stadiamaps.com/)
-2. Sign up for a free account
-3. Create an API key
+### Requirements
 
-### 2. Set the API Key
+- CMake 3.28 or later
+- Qt 6.10.2 or later
+- Conan
+- C++20-compatible compiler
+- Stadia Maps API key
+- Sentry DSN
 
-Pass the API key as a cmake option **before** building:
+For Android builds, install Android SDK API 26+, Android NDK 26.3 or later, and JDK 17 or later. For iOS builds, configure a valid Apple team and provisioning profile through CMake options.
+
+### Configure Keys
 
 ```bash
--DOSM_API_KEY=your-stadiamaps-api-key-here
+-DOSM_API_KEY=your-stadiamaps-api-key
+-DSENTRY_DSN=your-sentry-dsn
 ```
 
-> **Note:** The API key is compiled into the binary at build time via CMake. Make sure to set it before running CMake configuration.
+Create a Stadia Maps key at [stadiamaps.com](https://stadiamaps.com/). Use a private or environment-specific Sentry project for `SENTRY_DSN`.
 
-## How to Build
+### macOS Build
 
-### Building for macOS
+```bash
+pip install conan
+mkdir -p build
+cd build
 
-1. **Install dependencies:**
-   ```bash
-   # Install Conan (if not already installed)
-   pip install conan
-   ```
-   Install Qt 6.9.2 (or use official Qt installer)
+conan install .. --output-folder=. --build=missing \
+  -s build_type=Debug \
+  -s compiler.cppstd=20
 
-2. **Configure and build:**
-   ```bash
-   
-   # Create build directory
-   mkdir -p build
-   cd build
-   
-   # Install Conan dependencies
-   conan install .. --output-folder=. --build=missing -s build_type=Debug -s compiler.cppstd=20
-   
-   # Configure with CMake
-   cmake .. -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_PREFIX_PATH=/path/to/Qt/6.9.2/macos \
-            -DOSM_API_KEY=your-api-key-here
-   
-   # Build
-   cmake --build . --config Debug
-   ```
+cmake .. \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_PREFIX_PATH=/path/to/Qt/6.9.2/macos \
+  -DOSM_API_KEY=your-stadiamaps-api-key \
+  -DSENTRY_DSN=your-sentry-dsn
 
-### Building for Android
-
-1. **Prerequisites:**
-   ```bash
-   # Set environment variables
-   export ANDROID_SDK_ROOT="/path/to/Android/sdk"
-   export ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/26.3.11579264"
-   export JAVA_HOME="/path/to/java/jdk-17"
-   export OSM_API_KEY="your-api-key-here"
-   ```
-
-2. **Configure and build:**
-   ```bash
-   # Create Android build directory
-   mkdir -p build-android-release
-   cd build-android-release
-   
-   # Install Conan dependencies for Android
-   conan install .. \
-       --output-folder=. \
-       --build=missing \
-       -s build_type=Release \
-       -s os=Android \
-       -s os.api_level=26 \
-       -s arch=armv8 \
-       -s compiler.cppstd=20
-   
-   # Configure with CMake
-   cmake .. \
-       -DCMAKE_BUILD_TYPE=Release \
-       -DCMAKE_TOOLCHAIN_FILE=/path/to/Qt/6.9.2/android_arm64_v8a/lib/cmake/Qt6/qt.toolchain.cmake \
-       -DANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
-       -DANDROID_NDK="${ANDROID_NDK_ROOT}" \
-       -DQT_HOST_PATH=/path/to/Qt/6.9.2/macos \
-       -DOSM_API_KEY=your-api-key-here
-   
-   # Build
-   cmake --build build-android-release
-   ```
-
-3. **Install APK:**
-   ```bash
-   # APK location
-   # build-android-release/android-build/build/outputs/apk/release/android-build-release-unsigned.apk
-   
-   # Install via adb
-   adb install -r build-android-release/android-build/build/outputs/apk/release/android-build-release-unsigned.apk
-   ```
-
-### Quick Build Scripts
-
-You can also use the VSCode tasks (`.vscode/tasks.json`) for one-click building.
-
-## Project Structure
-
-```
-pastviewer/
-├── src/
-│   └── App/
-│       ├── Controllers/         # Application controllers
-│       │   └── GuiController/   # GUI controller
-│       │   └── ModelController/ # Model controller
-│       ├── Models/              # Data models
-│       ├── qml/                 # QML UI components
-│       └── main.cpp             # Application entry point
-├── resources/
-│   ├── android/                 # Android-specific resources
-│   │   └── res/                 # Icons and manifest
-│   ├── mac/                     # macOS-specific resources
-│   └── repo/                    # Repository assets (screenshots)
-├── ext/
-│   └── android_openssl/         # OpenSSL for Android
-├── cmake/                       # CMake helper scripts
-└── CMakeLists.txt               # Main build configuration
+cmake --build . --config Debug
 ```
 
-## Dependencies
+### iOS Build
 
-The project uses **Conan** for C++ dependency management:
+Install Xcode, the Qt iOS package, and the matching Qt macOS host package. You also need an Apple Developer team, a provisioning profile, and the app bundle identifier you want to sign.
 
-- **glog** 0.7.1 - Logging library
-- **gflags** - Command-line flags processing
+```bash
+mkdir -p build-ios-release
+cd build-ios-release
 
-Qt modules are managed separately through the Qt installation.
+conan install .. --output-folder=. --build=missing \
+  --profile:host=../profiles/ios-device \
+  --profile:build=default
 
-## Troubleshooting
+cmake .. \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE=/path/to/Qt/6.10.2/ios/lib/cmake/Qt6/qt.toolchain.cmake \
+  -DQT_HOST_PATH=/path/to/Qt/6.10.2/macos \
+  -DAPPLE_TEAM_ID=your-apple-team-id \
+  -DAPPLE_PROVISION_PROFILE_NAME="Your Provisioning Profile" \
+  -DAPPLE_APP_REVERSED_DOMAIN=com.example.pastviewer \
+  -DOSM_API_KEY=your-stadiamaps-api-key \
+  -DSENTRY_DSN=your-sentry-dsn
 
-### Android Map Not Loading
+cmake --build .
+```
 
-If the map appears empty on Android:
+### Android Build
 
-1. **Check API key:** Ensure `OSM_API_KEY` is set when building
-2. **Verify compilation:** Run `grep "API_KEY" build-android-release/build.ninja` to verify the key is compiled in
-3. **Check logcat:** Look for "Host requires authentication" errors
-4. **Test with hardcoded key:** Temporarily hardcode the API key in `MainWindow.qml` line 102 to verify network connectivity
+```bash
+export ANDROID_SDK_ROOT="/path/to/Android/sdk"
+export ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/26.3.11579264"
+export JAVA_HOME="/path/to/jdk-17"
 
-### Build Errors
+mkdir -p build-android-release
+cd build-android-release
 
-- **"OSM_API_KEY has to be set":** Pass ` -DOSM_API_KEY` when configuring CMake
-- **Qt not found:** Ensure `CMAKE_PREFIX_PATH` or `CMAKE_TOOLCHAIN_FILE` points to Qt installation
-- **Conan errors:** Update Conan profile and try `--build=missing`
+conan install .. --output-folder=. --build=missing \
+  -s build_type=Release \
+  -s os=Android \
+  -s os.api_level=26 \
+  -s arch=armv8 \
+  -s compiler.cppstd=20
+
+cmake .. \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE=/path/to/Qt/6.9.2/android_arm64_v8a/lib/cmake/Qt6/qt.toolchain.cmake \
+  -DANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+  -DANDROID_NDK="${ANDROID_NDK_ROOT}" \
+  -DQT_HOST_PATH=/path/to/Qt/6.9.2/macos \
+  -DOSM_API_KEY=your-stadiamaps-api-key \
+  -DSENTRY_DSN=your-sentry-dsn
+
+cmake --build .
+```
+
+Install the generated APK with:
+
+```bash
+adb install -r android-build/build/outputs/apk/release/android-build-release-unsigned.apk
+```
+
+VS Code users can also run the project tasks from `.vscode/tasks.json`.
+
