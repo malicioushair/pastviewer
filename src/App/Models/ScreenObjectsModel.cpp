@@ -85,6 +85,8 @@ QVariant ScreenObjectsModel::data(const QModelIndex & index, int role) const
 			const auto it = m_impl->cidToZoomToDecluster.find(cid);
 			return it == m_impl->cidToZoomToDecluster.end() ? 0 : it.value();
 		}
+		default:
+			break;
 	}
 	return sourceModel()->data(sourceIndex, role);
 }

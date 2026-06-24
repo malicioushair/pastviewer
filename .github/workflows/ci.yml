@@ -19,6 +19,82 @@ env:
   BUILD_DIR: build
 
 jobs:
+  clang-tidy:
+    name: clang-tidy
+    runs-on: macos-15
+    timeout-minutes: 120
+    env:
+      BUILD_DIR: build-clang-tidy
+
+    steps:
+      - name: Use HTTPS for SSH submodule URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install build tools
+        run: brew install cmake ninja protobuf llvm
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan
+        run: pip install conan
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          cache: true
+
+      - name: Configure Conan profile
+        run: conan profile detect --force
+
+      - name: Install Conan dependencies
+        run: |
+          conan install . \
+            -pr:b=default \
+            -of "${{ env.BUILD_DIR }}" \
+            -s build_type=${{ env.BUILD_TYPE }} \
+            --build=missing
+
+      - name: Configure CMake
+        run: |
+          MACOS_SDK="$(xcrun --sdk macosx --show-sdk-path)"
+          MACOS_CXX_INCLUDE="$MACOS_SDK/usr/include/c++/v1"
+
+          cmake -G Ninja -S . -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_OSX_SYSROOT="$MACOS_SDK" \
+            -DCMAKE_CXX_FLAGS="-isystem $MACOS_CXX_INCLUDE" \
+            -DCMAKE_PREFIX_PATH="${QT_ROOT_DIR}" \
+            -DQT_HOST_PATH="${QT_ROOT_DIR}" \
+            -DOSM_API_KEY="clang-tidy" \
+            -DSENTRY_DSN="https://example.invalid/1" \
+            -DAPPLE_APP_REVERSED_DOMAIN=com.dv.pastviewer \
+            -Dglog_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -Dgflags_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -DGTest_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -Dsentry_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}"
+
+      - name: Generate Qt moc files
+        run: cmake --build "${{ env.BUILD_DIR }}" --target PastViewer_autogen PastViewerTests_autogen
+
+      - name: Run clang-tidy
+        env:
+          CLANG_TIDY: /opt/homebrew/opt/llvm/bin/clang-tidy
+        run: python3 scripts/run-clang-tidy.py --build-dir "${{ env.BUILD_DIR }}"
+
   macos-build:
     name: macOS Build & Test
     runs-on: macos-15

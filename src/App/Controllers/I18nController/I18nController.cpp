@@ -4,6 +4,8 @@
 #include <QSettings>
 #include <QTranslator>
 
+#include <iterator>
+
 #include <glog/logging.h>
 
 namespace {
@@ -79,7 +81,7 @@ int I18nController::GetIndexOf(const QString & code) const
 	if (it == languages.cend())
 		return -1; // not found
 
-	return it - languages.cbegin();
+	return static_cast<int>(std::distance(languages.cbegin(), it));
 }
 
 I18nModel * I18nController::GetLanguageModel()

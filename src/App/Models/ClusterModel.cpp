@@ -232,8 +232,9 @@ QGeoCoordinate CalculateCentroid(const std::vector<ClusterItem> & items, const s
 	}
 
 	assert(!memberIndices.empty());
-	const auto centroidLat = sumLat / memberIndices.size();
-	const auto centroidLon = sumLon / memberIndices.size();
+	const auto memberCount = static_cast<double>(memberIndices.size());
+	const auto centroidLat = sumLat / memberCount;
+	const auto centroidLon = sumLon / memberCount;
 	return { centroidLat, centroidLon };
 }
 
@@ -243,7 +244,7 @@ Node CreateNode(const std::vector<ClusterItem> & items, const std::vector<int> &
 		return IndividualNode { items[memberIndices[0]].sourceIndex };
 
 	QVector<QPersistentModelIndex> sourceIndices;
-	sourceIndices.reserve(memberIndices.size());
+	sourceIndices.reserve(static_cast<qsizetype>(memberIndices.size()));
 
 	for (const auto index : memberIndices)
 		sourceIndices.push_back(items[index].sourceIndex);
@@ -316,7 +317,7 @@ ClusterModel::~ClusterModel() = default;
 
 int ClusterModel::rowCount(const QModelIndex & parent) const
 {
-	return m_impl->nodes.size();
+	return static_cast<int>(m_impl->nodes.size());
 }
 
 QVariant ClusterModel::data(const QModelIndex & index, int role) const
@@ -350,6 +351,8 @@ QVariant ClusterModel::data(const QModelIndex & index, int role) const
 
 			return cids;
 		}
+		default:
+			break;
 	}
 
 	if (std::holds_alternative<IndividualNode>(node))

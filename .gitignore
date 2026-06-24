@@ -1,5 +1,6 @@
 .*
 !.github/
+!.clang-tidy
 build
 build-ios-*
 .vscode
