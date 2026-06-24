@@ -3,6 +3,8 @@
 #include <QQuickStyle>
 #include <QScopeGuard>
 #include <QStandardPaths>
+#include <exception>
+#include <iostream>
 #include <stdexcept>
 
 #include "Controllers/GuiController/GuiController.h"
@@ -34,7 +36,7 @@ void InitLogging(const std::string & execName)
 	google::InstallFailureSignalHandler();
 }
 
-int main(int argc, char * argv[])
+int RunApplication(int argc, char * argv[])
 {
 	// Initialize Sentry prior to everything
 	const auto success = SentryIntegration::InitSentry(QString("PastViewer@%1.%2.%3")
@@ -67,4 +69,22 @@ int main(int argc, char * argv[])
 
 	LOG(INFO) << "Starting PastViewer application";
 	return QGuiApplication::exec();
+}
+
+int main(int argc, char * argv[]) noexcept
+{
+	try
+	{
+		return RunApplication(argc, argv);
+	}
+	catch (const std::exception & error)
+	{
+		std::cerr << "PastViewer failed to start: " << error.what() << '\n';
+		return 1;
+	}
+	catch (...)
+	{
+		std::cerr << "PastViewer failed to start with an unknown error\n";
+		return 1;
+	}
 }

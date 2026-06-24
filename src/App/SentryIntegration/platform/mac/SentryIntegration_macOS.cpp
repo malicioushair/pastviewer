@@ -156,7 +156,7 @@ public:
 				sentry_value_set_by_key(stackTraceBreadcrumb, "category", category);
 				sentry_add_breadcrumb(stackTraceBreadcrumb);
 
-				free(symbols);
+				free(static_cast<void *>(symbols));
 			}
 			else
 			{
