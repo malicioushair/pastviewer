@@ -5,6 +5,8 @@ import QtQuick.Window
 import QtLocation
 import QtPositioning
 
+import "Helpers/colors.js" as Colors
+
 ApplicationWindow {
     id: mainWindowID
 
@@ -12,11 +14,18 @@ ApplicationWindow {
 
     width: isMobile ? Screen.width : 1080 / 3
     height: isMobile ? Screen.height : 1920 / 3
-    flags: Qt.Window
+    flags: isMobile
+        ? Qt.Window | Qt.ExpandedClientAreaHint
+        : Qt.Window
     visibility: Window.AutomaticVisibility
     visible: true
 
+    color: Colors.palette.bg
     title: "Past Viewer"
+
+    Component.onCompleted: {
+        Qt.styleHints.colorScheme = Qt.ColorScheme.Light
+    }
 
     Shortcut {
         sequences: ["Ctrl+R"]
