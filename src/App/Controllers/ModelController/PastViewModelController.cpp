@@ -1,6 +1,7 @@
 #include "PastViewModelController.h"
 
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <vector>
 
@@ -55,6 +56,7 @@ struct PastVuModelController::Impl
 	std::unique_ptr<ClusterModel> clusterModelNearest;
 	std::unique_ptr<PositionSourceAdapter> positionSourceAdapter;
 	PhotoProximityTracker photoProximityTracker;
+	std::optional<int> pendingPhotoSelectionId;
 	QGeoCoordinate currentCoordinate;
 	QSettings & settings;
 	const Range defaultTimelineRange { YEAR_FROM_VALUE, QDate::currentDate().year() };
@@ -83,6 +85,13 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 		m_impl->clusterModelScreen->OnViewportChanged(m_impl->baseModel->GetLastKnownViewport());
 	});
 	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, &PastVuModelController::EvaluatePhotoProximity);
+	const auto retryPendingPhotoSelection = [this] {
+		if (m_impl->pendingPhotoSelectionId)
+			SelectPhoto(*m_impl->pendingPhotoSelectionId);
+	};
+	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, retryPendingPhotoSelection);
+	connect(m_impl->screenObjectsModel.get(), &QAbstractItemModel::modelReset, this, retryPendingPhotoSelection);
+	connect(m_impl->nearestObjectsModel.get(), &QAbstractItemModel::modelReset, this, retryPendingPhotoSelection);
 	connect(m_impl->source.get(), &QGeoPositionInfoSource::positionUpdated, this, [this](const QGeoPositionInfo & info) {
 		m_impl->currentCoordinate = info.coordinate();
 		EvaluatePhotoProximity();
@@ -139,6 +148,43 @@ QAbstractItemModel * PastVuModelController::GetModel(ModelType::Type modelType)
 					 : static_cast<QAbstractItemModel *>(m_impl->clusterModelScreen.get());
 	}
 	assert(false && "Unknown model type");
+}
+
+bool PastVuModelController::SelectPhoto(int photoId)
+{
+	auto * model = GetModel(ModelType::Raw);
+	if (!model || model->rowCount() == 0)
+	{
+		m_impl->pendingPhotoSelectionId = photoId;
+		return false;
+	}
+
+	const auto matches = model->match(
+		model->index(0, 0),
+		BaseModel::Roles::Cid,
+		photoId,
+		1,
+		Qt::MatchExactly);
+	if (matches.isEmpty())
+	{
+		m_impl->pendingPhotoSelectionId = photoId;
+		return false;
+	}
+
+	const auto index = matches.front();
+	if (!model->setData(index, true, BaseModel::Roles::Selected))
+	{
+		LOG(WARNING) << "Failed to select photo: " << photoId;
+		return false;
+	}
+
+	m_impl->pendingPhotoSelectionId.reset();
+	emit photoSelected(
+		index.row(),
+		model->data(index, BaseModel::Roles::Coordinate).value<QGeoCoordinate>(),
+		model->data(index, ScreenObjectsModel::Roles::IsClustered).toBool(),
+		model->data(index, ScreenObjectsModel::Roles::ZoomToDecluster).toInt());
+	return true;
 }
 
 QString PastVuModelController::GetMapHostApiKey()

@@ -37,6 +37,7 @@ signals:
 	void ModelChanged();
 	void HistoryNearModelChanged();
 	void PhotoAreaApproached(const QString & title, int photoId);
+	void photoSelected(int modelIndex, const QGeoCoordinate & coordinate, bool isClustered, int zoomToDecluster);
 	void ZoomLevelChanged();
 	void YearFromChanged();
 	void YearToChanged();
@@ -62,6 +63,7 @@ public:
 	Q_INVOKABLE void ToggleOnlyNearestObjects();
 	Q_INVOKABLE void ToggleHistoryNearYouModel();
 	Q_INVOKABLE void ReloadItems();
+	Q_INVOKABLE bool SelectPhoto(int photoId);
 
 	void OnPositionPermissionGranted();
 

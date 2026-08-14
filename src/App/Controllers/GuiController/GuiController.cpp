@@ -7,6 +7,7 @@
 #include <QLocationPermission>
 #include <QMediaDevices>
 #include <QPermissions>
+#include <QPointer>
 #include <QQmlAbstractUrlInterceptor>
 #include <QQmlContext>
 #include <QSettings>
@@ -139,10 +140,15 @@ GuiController::GuiController(QObject * parent)
 			m_impl->pastVuModelController->OnPositionPermissionGranted();
 	});
 	connect(m_impl->pastVuModelController.get(), &PastVuModelController::PhotoAreaApproached, this, [](const QString & photoTitle, int photoId) {
-		PlatformDependentLogic::ShowPhotoProximityNotification(GuiController::tr("Historical photo nearby"), GuiController::tr("You are within 10 m of \"%1\".").arg(photoTitle), photoId);
+		PlatformDependentLogic::ShowPhotoProximityNotification(GuiController::tr("Historical photo nearby"), GuiController::tr("You are near \"%1\".").arg(photoTitle), photoId);
 	});
 
-	PlatformDependentLogic::InitializeNotifications();
+	PlatformDependentLogic::InitializeNotifications([&](int photoId) {
+		if (!m_impl->pastVuModelController)
+			return;
+
+		m_impl->pastVuModelController->SelectPhoto(photoId);
+	});
 	RequestPermission(m_impl->locationPermission);
 	RequestCameraPermission();
 }

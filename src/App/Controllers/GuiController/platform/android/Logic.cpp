@@ -1,5 +1,7 @@
 #include "App/Controllers/GuiController/platform/Logic.h"
 
+#include <utility>
+
 #include <QDir>
 #include <QFileInfo>
 #include <QJniEnvironment>
@@ -16,6 +18,7 @@ constexpr auto QT_NATIVE = "org/qtproject/qt/android/QtNative";
 constexpr auto ACTIVITY = "activity";
 constexpr auto NOTIFICATION_HELPER = "org/qtproject/PastViewer/NotificationHelper";
 constexpr auto SHARE_HELPER = "org/qtproject/PastViewer/ShareHelper";
+NotificationTappedHandler notificationTappedHandler;
 
 QJniObject Activity()
 {
@@ -27,8 +30,16 @@ QJniObject Activity()
 
 }
 
-void InitializeNotifications()
+extern "C" JNIEXPORT void JNICALL Java_org_qtproject_PastViewer_NotificationHelper_notificationTapped(JNIEnv *, jclass, jint photoId)
 {
+	if (notificationTappedHandler)
+		notificationTappedHandler(static_cast<int>(photoId));
+}
+
+void InitializeNotifications(NotificationTappedHandler handler)
+{
+	notificationTappedHandler = std::move(handler);
+
 	const auto activity = Activity();
 	if (!activity.isValid())
 	{

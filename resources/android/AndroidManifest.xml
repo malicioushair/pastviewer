@@ -27,9 +27,8 @@
         <meta-data
             android:name="io.sentry.auto-init"
             android:value="false" />
-        
         <activity
-            android:name="org.qtproject.qt.android.bindings.QtActivity"
+            android:name="org.qtproject.PastViewer.PastViewerActivity"
             android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
             android:label="PastViewer"
             android:launchMode="singleTop"

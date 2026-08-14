@@ -34,6 +34,19 @@ Rectangle {
             busyIndicatorID.visible = false
             imagesNearbyTextID.visible = true
         }
+
+        function onPhotoSelected(modelIndex, coordinate, isClustered, zoomToDecluster) {
+            mainWindowID.showMap()
+            listViewID.positionViewAtIndex(modelIndex, ListView.Contain)
+            if (isClustered)
+                mainWindowID.mapAnimationHelper.animateMapCenterAndZoom(
+                    coordinate,
+                    zoomToDecluster,
+                    coordinate
+                )
+            else
+                mainWindowID.mapAnimationHelper.animateMapCenter(coordinate)
+        }
     }
 
     Rectangle {
@@ -185,17 +198,7 @@ Rectangle {
                         }
 
                         TapHandler {
-                            onTapped: {
-                                model.Selected = true
-                                if (model.IsClustered)
-                                    mainWindowID.mapAnimationHelper.animateMapCenterAndZoom(
-                                        model.Coordinate,
-                                        model.ZoomToDecluster,
-                                        model.Coordinate
-                                    )
-                                else
-                                    mainWindowID.mapAnimationHelper.animateMapCenter(model.Coordinate)
-                            }
+                            onTapped: pastVuModelController.SelectPhoto(model.Cid)
                             onDoubleTapped: mainWindowID.openPhotoDetails(Photo, Thumbnail, Title, Year)
                         }
                     }

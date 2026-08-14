@@ -5,7 +5,7 @@
 
 namespace PlatformDependentLogic {
 
-void InitializeNotifications()
+void InitializeNotifications(NotificationTappedHandler)
 {
 }
 

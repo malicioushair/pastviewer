@@ -1,5 +1,7 @@
 #include "App/Controllers/GuiController/platform/Logic.h"
 
+#include <utility>
+
 #include <QFileInfo>
 
 #include "glog/logging.h"
@@ -7,6 +9,12 @@
 #import <Photos/Photos.h>
 #import <UIKit/UIKit.h>
 #import <UserNotifications/UserNotifications.h>
+
+static NSString * const PHOTO_ID_KEY = @"photoId";
+
+namespace {
+PlatformDependentLogic::NotificationTappedHandler notificationTappedHandler;
+}
 
 @interface PastViewerNotificationDelegate : NSObject<UNUserNotificationCenterDelegate>
 @end
@@ -18,6 +26,17 @@
 		 withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
 {
 	completionHandler(UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+	didReceiveNotificationResponse:(UNNotificationResponse *)response
+			 withCompletionHandler:(void (^)(void))completionHandler
+{
+	NSNumber * photoId = response.notification.request.content.userInfo[PHOTO_ID_KEY];
+	if ([photoId isKindOfClass:[NSNumber class]] && notificationTappedHandler)
+		notificationTappedHandler(photoId.intValue);
+
+	completionHandler();
 }
 
 @end
@@ -52,8 +71,10 @@ UIViewController * RootViewController()
 
 } // namespace
 
-void InitializeNotifications()
+void InitializeNotifications(NotificationTappedHandler handler)
 {
+	notificationTappedHandler = std::move(handler);
+
 	static PastViewerNotificationDelegate * notificationDelegate = [[PastViewerNotificationDelegate alloc] init];
 	UNUserNotificationCenter * center = [UNUserNotificationCenter currentNotificationCenter];
 	center.delegate = notificationDelegate;
@@ -78,6 +99,7 @@ void ShowPhotoProximityNotification(const QString title, const QString body, int
 		content.title = title.toNSString();
 		content.body = body.toNSString();
 		content.sound = [UNNotificationSound defaultSound];
+		content.userInfo = @{PHOTO_ID_KEY: @(photoId)};
 
 		NSString * identifier = [NSString stringWithFormat:@"photo-area-%d", photoId];
 		UNNotificationRequest * request = [UNNotificationRequest requestWithIdentifier:identifier

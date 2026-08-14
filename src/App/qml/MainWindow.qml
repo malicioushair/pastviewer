@@ -32,6 +32,11 @@ Rectangle {
         stackViewID.push("Views/Settings.qml")
     }
 
+    function showMap() {
+        if (stackViewID.depth > 1)
+            stackViewID.pop(null, StackView.Immediate)
+    }
+
     color: Colors.palette.bg
 
     MapAnimationHelper {

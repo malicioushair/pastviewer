@@ -1,10 +1,14 @@
 #pragma once
 
+#include <functional>
+
 #include <QString>
 
 namespace PlatformDependentLogic {
 
-void InitializeNotifications();
+using NotificationTappedHandler = std::function<void(int)>;
+
+void InitializeNotifications(NotificationTappedHandler notificationTappedHandler);
 void ShowPhotoProximityNotification(QString title, QString body, int photoId);
 bool SaveScreenshotToGallery(QString filePath);
 bool ShareImage(QString filePath);

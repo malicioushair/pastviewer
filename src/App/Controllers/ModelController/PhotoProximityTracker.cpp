@@ -5,9 +5,8 @@
 
 namespace {
 
-constexpr auto ENTER_DISTANCE_METERS = 10.0;
-constexpr auto EXIT_DISTANCE_METERS = 15.0;
-
+constexpr auto ENTER_DISTANCE_METERS = 50.0;
+constexpr auto EXIT_DISTANCE_METERS = 75.0;
 }
 
 std::optional<int> PhotoProximityTracker::Update(const QGeoCoordinate & position, std::span<const PhotoArea> photoAreas)

@@ -15,19 +15,24 @@ import androidx.core.app.NotificationManagerCompat;
 
 public final class NotificationHelper {
     private static final String CHANNEL_ID = "photo_proximity";
+    private static final String EXTRA_PHOTO_ID = "org.qtproject.PastViewer.PHOTO_ID";
     private static final int PERMISSION_REQUEST_CODE = 2026;
     private static final int NOTIFICATION_ID_PREFIX = 0x50000000;
+    private static boolean notificationTapHandlerReady = false;
 
     private NotificationHelper() {
     }
 
     public static void initialize(Activity activity) {
+        notificationTapHandlerReady = true;
+        handleNotificationIntent(activity.getIntent());
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Nearby historical photos",
                     NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription("Alerts when you are within 10 m of a historical photo");
+            channel.setDescription("Alerts when you are near a historical photo");
 
             NotificationManager manager = activity.getSystemService(NotificationManager.class);
             if (manager != null) {
@@ -65,6 +70,7 @@ public final class NotificationHelper {
         PendingIntent contentIntent = null;
         if (launchIntent != null) {
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            launchIntent.putExtra(EXTRA_PHOTO_ID, photoId);
             int flags = PendingIntent.FLAG_UPDATE_CURRENT;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 flags |= PendingIntent.FLAG_IMMUTABLE;
@@ -85,4 +91,18 @@ public final class NotificationHelper {
 
         manager.notify(NOTIFICATION_ID_PREFIX ^ photoId, builder.build());
     }
+
+    static void handleNotificationIntent(Intent intent) {
+        if (!notificationTapHandlerReady || intent == null || !intent.hasExtra(EXTRA_PHOTO_ID)) {
+            return;
+        }
+
+        int photoId = intent.getIntExtra(EXTRA_PHOTO_ID, -1);
+        intent.removeExtra(EXTRA_PHOTO_ID);
+        if (photoId >= 0) {
+            notificationTapped(photoId);
+        }
+    }
+
+    private static native void notificationTapped(int photoId);
 }
