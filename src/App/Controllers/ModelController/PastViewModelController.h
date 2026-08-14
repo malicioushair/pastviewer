@@ -36,6 +36,7 @@ signals:
 	void NearestObjectsOnlyChanged();
 	void ModelChanged();
 	void HistoryNearModelChanged();
+	void PhotoAreaApproached(const QString & title, int photoId);
 	void ZoomLevelChanged();
 	void YearFromChanged();
 	void YearToChanged();
@@ -67,6 +68,8 @@ public:
 	Q_INVOKABLE QAbstractItemModel * GetModel(ModelType::Type modelType);
 
 private:
+	void EvaluatePhotoProximity();
+
 	bool GetNearestObjectsOnly();
 	void SetNearestObjectsOnly(bool value);
 

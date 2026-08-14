@@ -184,6 +184,8 @@ endif()
 # Qt 6 static FFmpeg media plugin does not pull in libav*; link Qt's bundled xcframeworks.
 if(IOS)
     enable_language(OBJCXX)
+    find_library(USER_NOTIFICATIONS_FRAMEWORK UserNotifications REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${USER_NOTIFICATIONS_FRAMEWORK})
     qt_add_ios_ffmpeg_libraries(${PROJECT_NAME})
 endif()
 

@@ -6,6 +6,21 @@
 
 #import <Photos/Photos.h>
 #import <UIKit/UIKit.h>
+#import <UserNotifications/UserNotifications.h>
+
+@interface PastViewerNotificationDelegate : NSObject<UNUserNotificationCenterDelegate>
+@end
+
+@implementation PastViewerNotificationDelegate
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+	   willPresentNotification:(UNNotification *)notification
+		 withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
+{
+	completionHandler(UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
+}
+
+@end
 
 namespace PlatformDependentLogic {
 
@@ -37,7 +52,45 @@ UIViewController * RootViewController()
 
 } // namespace
 
-bool SaveScreenshotToGallery(const QString & filePath)
+void InitializeNotifications()
+{
+	static PastViewerNotificationDelegate * notificationDelegate = [[PastViewerNotificationDelegate alloc] init];
+	UNUserNotificationCenter * center = [UNUserNotificationCenter currentNotificationCenter];
+	center.delegate = notificationDelegate;
+	[center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound)
+						  completionHandler:^(BOOL granted, NSError * error) {
+							  if (error)
+								  NSLog(@"Failed to request notification authorization: %@", error);
+							  else if (!granted)
+								  NSLog(@"Notification authorization was not granted");
+						  }];
+}
+
+void ShowPhotoProximityNotification(const QString title, const QString body, int photoId)
+{
+	UNUserNotificationCenter * center = [UNUserNotificationCenter currentNotificationCenter];
+	[center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * settings) {
+		if (settings.authorizationStatus != UNAuthorizationStatusAuthorized
+			&& settings.authorizationStatus != UNAuthorizationStatusProvisional)
+			return;
+
+		UNMutableNotificationContent * content = [[UNMutableNotificationContent alloc] init];
+		content.title = title.toNSString();
+		content.body = body.toNSString();
+		content.sound = [UNNotificationSound defaultSound];
+
+		NSString * identifier = [NSString stringWithFormat:@"photo-area-%d", photoId];
+		UNNotificationRequest * request = [UNNotificationRequest requestWithIdentifier:identifier
+																			   content:content
+																			   trigger:nil];
+		[center addNotificationRequest:request withCompletionHandler:^(NSError * error) {
+			if (error)
+				NSLog(@"Failed to schedule photo proximity notification: %@", error);
+		}];
+	}];
+}
+
+bool SaveScreenshotToGallery(const QString filePath)
 {
 	QFileInfo fileInfo(filePath);
 	if (!fileInfo.exists() || fileInfo.size() <= 0)
@@ -46,7 +99,6 @@ bool SaveScreenshotToGallery(const QString & filePath)
 		return false;
 	}
 
-	const auto path = filePath;
 	[PHPhotoLibrary requestAuthorizationForAccessLevel:PHAccessLevelAddOnly
 											   handler:^(PHAuthorizationStatus status) {
 												   if (status != PHAuthorizationStatusAuthorized && status != PHAuthorizationStatusLimited)
@@ -55,7 +107,7 @@ bool SaveScreenshotToGallery(const QString & filePath)
 													   return;
 												   }
 
-												   NSString * nsPath = path.toNSString();
+												   NSString * nsPath = filePath.toNSString();
 												   UIImage * image = [UIImage imageWithContentsOfFile:nsPath];
 												   if (!image)
 												   {
@@ -74,7 +126,7 @@ bool SaveScreenshotToGallery(const QString & filePath)
 	return true;
 }
 
-bool ShareImage(const QString & filePath)
+bool ShareImage(const QString filePath)
 {
 	QFileInfo fileInfo(filePath);
 	if (!fileInfo.exists())

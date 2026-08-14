@@ -4,7 +4,8 @@
 
 namespace PlatformDependentLogic {
 
-bool SaveScreenshotToGallery(const QString & filePath);
-bool ShareImage(const QString & filePath);
-
+void InitializeNotifications();
+void ShowPhotoProximityNotification(QString title, QString body, int photoId);
+bool SaveScreenshotToGallery(QString filePath);
+bool ShareImage(QString filePath);
 }

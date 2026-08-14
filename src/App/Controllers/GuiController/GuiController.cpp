@@ -138,7 +138,11 @@ GuiController::GuiController(QObject * parent)
 		if (permission.type() == QLocationPermission::staticMetaObject.metaType())
 			m_impl->pastVuModelController->OnPositionPermissionGranted();
 	});
+	connect(m_impl->pastVuModelController.get(), &PastVuModelController::PhotoAreaApproached, this, [](const QString & photoTitle, int photoId) {
+		PlatformDependentLogic::ShowPhotoProximityNotification(GuiController::tr("Historical photo nearby"), GuiController::tr("You are within 10 m of \"%1\".").arg(photoTitle), photoId);
+	});
 
+	PlatformDependentLogic::InitializeNotifications();
 	RequestPermission(m_impl->locationPermission);
 	RequestCameraPermission();
 }

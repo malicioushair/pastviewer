@@ -5,12 +5,20 @@
 
 namespace PlatformDependentLogic {
 
-bool SaveScreenshotToGallery([[maybe_unused]] const QString & filePath)
+void InitializeNotifications()
+{
+}
+
+void ShowPhotoProximityNotification(const QString, const QString, int)
+{
+}
+
+bool SaveScreenshotToGallery(const QString)
 {
 	return true;
 }
 
-bool ShareImage([[maybe_unused]] const QString & filePath)
+bool ShareImage(const QString)
 {
 	return true;
 }

@@ -2,7 +2,9 @@
 
 #include <memory>
 #include <stdexcept>
+#include <vector>
 
+#include <QGeoPositionInfo>
 #include <QGuiApplication>
 #include <QLocationPermission>
 #include <QString>
@@ -10,6 +12,7 @@
 #include "App/Models/ClusterModel.h"
 #include "glog/logging.h"
 
+#include "App/Controllers/ModelController/PhotoProximityTracker.h"
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
 #include "App/Models/BaseModel.h"
 #include "App/Models/NearestObjectsModel.h"
@@ -51,6 +54,8 @@ struct PastVuModelController::Impl
 	std::unique_ptr<ClusterModel> clusterModelScreen;
 	std::unique_ptr<ClusterModel> clusterModelNearest;
 	std::unique_ptr<PositionSourceAdapter> positionSourceAdapter;
+	PhotoProximityTracker photoProximityTracker;
+	QGeoCoordinate currentCoordinate;
 	QSettings & settings;
 	const Range defaultTimelineRange { YEAR_FROM_VALUE, QDate::currentDate().year() };
 	Range userSelectedTimelineRange {
@@ -77,10 +82,48 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, m_impl->clusterModelNearest.get(), [&]() {
 		m_impl->clusterModelScreen->OnViewportChanged(m_impl->baseModel->GetLastKnownViewport());
 	});
+	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, &PastVuModelController::EvaluatePhotoProximity);
+	connect(m_impl->source.get(), &QGeoPositionInfoSource::positionUpdated, this, [this](const QGeoPositionInfo & info) {
+		m_impl->currentCoordinate = info.coordinate();
+		EvaluatePhotoProximity();
+	});
 	connect(m_impl->clusterModelScreen.get(), &ClusterModel::ZoomsToDecluster, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::UpdateZoomsToDecluster);
 }
 
 PastVuModelController::~PastVuModelController() = default;
+
+void PastVuModelController::EvaluatePhotoProximity()
+{
+	if (!m_impl->currentCoordinate.isValid())
+		return;
+
+	std::vector<PhotoArea> photoAreas;
+	photoAreas.reserve(m_impl->baseModel->rowCount());
+
+	for (auto row = 0; row < m_impl->baseModel->rowCount(); ++row)
+	{
+		const auto index = m_impl->baseModel->index(row, 0);
+		photoAreas.push_back({
+			m_impl->baseModel->data(index, BaseModel::Roles::Cid).toInt(),
+			m_impl->baseModel->data(index, BaseModel::Roles::Coordinate).value<QGeoCoordinate>(),
+		});
+	}
+
+	const auto enteredPhotoId = m_impl->photoProximityTracker.Update(m_impl->currentCoordinate, photoAreas);
+	if (!enteredPhotoId)
+		return;
+
+	const auto enteredPhoto = m_impl->baseModel->match(
+		m_impl->baseModel->index(0, 0),
+		BaseModel::Roles::Cid,
+		*enteredPhotoId,
+		1,
+		Qt::MatchExactly);
+	if (enteredPhoto.isEmpty())
+		return;
+
+	emit PhotoAreaApproached(m_impl->baseModel->data(enteredPhoto.front(), BaseModel::Roles::Title).toString(), *enteredPhotoId);
+}
 
 QAbstractItemModel * PastVuModelController::GetModel(ModelType::Type modelType)
 {
