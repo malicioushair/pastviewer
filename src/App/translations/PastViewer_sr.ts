@@ -191,5 +191,19 @@
         <translation>Критична грешка</translation>
     </message>
 </context>
+<context>
+    <name>PastViewer::GuiController</name>
+    <message>
+        <source>Historical photo nearby</source>
+        <translation>Историјска фотографија у близини</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of a historical photo.</source>
+        <translation>Налазите се на највише 10 м од историјске фотографије.</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of &quot;%1&quot;.</source>
+        <translation>Налазите се на највише 10 м од „%1“.</translation>
+    </message>
+</context>
 </TS>
-

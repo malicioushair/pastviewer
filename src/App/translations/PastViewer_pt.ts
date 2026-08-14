@@ -191,6 +191,20 @@
         <translation>Erro crítico</translation>
     </message>
 </context>
+<context>
+    <name>PastViewer::GuiController</name>
+    <message>
+        <source>Historical photo nearby</source>
+        <translation>Foto histórica nas proximidades</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of a historical photo.</source>
+        <translation>Você está a até 10 m de uma foto histórica.</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of &quot;%1&quot;.</source>
+        <translation>Você está a até 10 m de &quot;%1&quot;.</translation>
+    </message>
+</context>
 </TS>
-
 

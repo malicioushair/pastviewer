@@ -191,6 +191,20 @@
         <translation>Критическая ошибка</translation>
     </message>
 </context>
+<context>
+    <name>PastViewer::GuiController</name>
+    <message>
+        <source>Historical photo nearby</source>
+        <translation>Рядом историческая фотография</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of a historical photo.</source>
+        <translation>Вы находитесь в радиусе 10 м от исторической фотографии.</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of &quot;%1&quot;.</source>
+        <translation>Вы находитесь в радиусе 10 м от «%1».</translation>
+    </message>
+</context>
 </TS>
-
 

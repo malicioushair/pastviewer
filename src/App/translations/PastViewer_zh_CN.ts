@@ -191,6 +191,20 @@
         <translation>严重错误</translation>
     </message>
 </context>
+<context>
+    <name>PastViewer::GuiController</name>
+    <message>
+        <source>Historical photo nearby</source>
+        <translation>附近有历史照片</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of a historical photo.</source>
+        <translation>您距离一张历史照片不超过 10 米。</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of &quot;%1&quot;.</source>
+        <translation>您距离“%1”不超过 10 米。</translation>
+    </message>
+</context>
 </TS>
-
 

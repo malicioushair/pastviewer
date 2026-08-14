@@ -191,6 +191,20 @@
         <translation>치명적 오류</translation>
     </message>
 </context>
+<context>
+    <name>PastViewer::GuiController</name>
+    <message>
+        <source>Historical photo nearby</source>
+        <translation>근처에 역사 사진이 있습니다</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of a historical photo.</source>
+        <translation>역사 사진에서 10 m 이내에 있습니다.</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of &quot;%1&quot;.</source>
+        <translation>&quot;%1&quot;에서 10 m 이내에 있습니다.</translation>
+    </message>
+</context>
 </TS>
-
 

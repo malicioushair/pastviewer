@@ -191,6 +191,20 @@
         <translation>重大なエラー</translation>
     </message>
 </context>
+<context>
+    <name>PastViewer::GuiController</name>
+    <message>
+        <source>Historical photo nearby</source>
+        <translation>近くに歴史的な写真があります</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of a historical photo.</source>
+        <translation>歴史的な写真から10 m以内です。</translation>
+    </message>
+    <message>
+        <source>You are within 10 m of &quot;%1&quot;.</source>
+        <translation>「%1」から10 m以内です。</translation>
+    </message>
+</context>
 </TS>
-
 
