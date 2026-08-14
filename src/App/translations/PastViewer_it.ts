@@ -219,22 +219,27 @@
         <translation>Notifiche di prossimità</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="206"/>
+        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <source>Notification distance: %1 m</source>
+        <translation>Distanza di notifica: %1 m</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="254"/>
         <source>Reload map items</source>
         <translation>Ricarica mappa</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="243"/>
         <source>Reset onboarding</source>
         <translation>Reimposta introduzione</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="238"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>Mostra di nuovo i suggerimenti introduttivi sulla mappa e nelle schermate delle foto.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="201"/>
+        <location filename="../qml/Views/Settings.qml" line="249"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Carica di nuovo le foto storiche per la vista corrente della mappa usando i filtri attuali.</translation>
     </message>

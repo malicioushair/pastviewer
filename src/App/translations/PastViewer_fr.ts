@@ -211,7 +211,7 @@
     <message>
         <location filename="../qml/Views/Settings.qml" line="166"/>
         <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
-        <translation>Lorsque cette option est activée, PastViewer vous notifie lorsque vous vous approchez d'une photo historique.</translation>
+        <translation>Lorsque cette option est activée, PastViewer vous notifie lorsque vous vous approchez d&apos;une photo historique.</translation>
     </message>
     <message>
         <location filename="../qml/Views/Settings.qml" line="170"/>
@@ -219,22 +219,27 @@
         <translation>Notifications de proximité</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="206"/>
+        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <source>Notification distance: %1 m</source>
+        <translation>Distance de notification : %1 m</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="254"/>
         <source>Reload map items</source>
         <translation>Recharger carte</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="243"/>
         <source>Reset onboarding</source>
         <translation>Réinitialiser l&apos;introduction</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="238"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>Afficher à nouveau les conseils d&apos;introduction sur la carte et les écrans photo.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="201"/>
+        <location filename="../qml/Views/Settings.qml" line="249"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Recharger les photos historiques pour la vue actuelle de la carte avec vos filtres actuels.</translation>
     </message>

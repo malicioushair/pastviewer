@@ -219,22 +219,27 @@
         <translation>接近通知</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="206"/>
+        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <source>Notification distance: %1 m</source>
+        <translation>通知距離: %1 m</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="254"/>
         <source>Reload map items</source>
         <translation>マップ再読み込み</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="243"/>
         <source>Reset onboarding</source>
         <translation>紹介をリセット</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="238"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>地図画面と写真画面の紹介ヒントをもう一度表示します。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="201"/>
+        <location filename="../qml/Views/Settings.qml" line="249"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>現在のフィルターを使って、現在の地図表示の歴史写真を再読み込みします。</translation>
     </message>

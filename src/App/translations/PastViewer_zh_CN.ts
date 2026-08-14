@@ -219,22 +219,27 @@
         <translation>接近通知</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="206"/>
+        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <source>Notification distance: %1 m</source>
+        <translation>通知距离：%1 米</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="254"/>
         <source>Reload map items</source>
         <translation>重新加载地图</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="243"/>
         <source>Reset onboarding</source>
         <translation>重置引导</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="238"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>再次显示地图和照片页面上的入门提示。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="201"/>
+        <location filename="../qml/Views/Settings.qml" line="249"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>使用当前筛选条件重新加载当前地图视图的历史照片。</translation>
     </message>

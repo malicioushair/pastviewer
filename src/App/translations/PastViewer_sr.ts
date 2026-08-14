@@ -219,22 +219,27 @@
         <translation>Обавештења о близини</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="206"/>
+        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <source>Notification distance: %1 m</source>
+        <translation>Удаљеност обавештења: %1 м</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="254"/>
         <source>Reload map items</source>
         <translation>Поново учитај</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="243"/>
         <source>Reset onboarding</source>
         <translation>Ресет увода</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="238"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>Поново прикажи уводне савете на мапи и екранима са фотографијама.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="201"/>
+        <location filename="../qml/Views/Settings.qml" line="249"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Поново учитај историјске фотографије за тренутни приказ мапе користећи тренутне филтере.</translation>
     </message>
