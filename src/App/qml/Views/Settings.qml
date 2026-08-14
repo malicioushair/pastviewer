@@ -172,6 +172,57 @@ BasePage {
                 }
             }
 
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.rightMargin: 18
+                spacing: 8
+                enabled: pastVuModelController.proximityNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.45
+
+                Text {
+                    text: qsTr("Notification distance: %1 m").arg(proximityDistanceSliderID.value)
+                    color: Colors.palette.text
+                    font.family: "monospace"
+                }
+
+                Slider {
+                    id: proximityDistanceSliderID
+
+                    Layout.fillWidth: true
+
+                    from: pastVuModelController.GetNotificationDistanceMin()
+                    to: pastVuModelController.GetNotificationDistanceMax()
+                    stepSize: 5
+                    snapMode: Slider.SnapAlways
+                    value: pastVuModelController.proximityNotificationDistance
+                    onMoved: pastVuModelController.proximityNotificationDistance = Math.round(value)
+
+                    background: Rectangle {
+                        x: proximityDistanceSliderID.leftPadding
+                        y: proximityDistanceSliderID.topPadding + proximityDistanceSliderID.availableHeight / 2 - height / 2
+                        width: proximityDistanceSliderID.availableWidth
+                        height: 8
+                        radius: 4
+                        color: Colors.palette.sliderAlt
+
+                        Rectangle {
+                            width: proximityDistanceSliderID.visualPosition * parent.width
+                            height: parent.height
+                            color: Colors.palette.slider
+                            radius: 4
+                        }
+                    }
+
+                    handle: StyledSliderHandle {
+                        yOffset: 10
+
+                        pressed: proximityDistanceSliderID.pressed
+                        visualPosition: proximityDistanceSliderID.visualPosition
+                        availableWidth: proximityDistanceSliderID.availableWidth
+                    }
+                }
+            }
+
             StyledRangeSlider {
                 id: timelineSettingID
 

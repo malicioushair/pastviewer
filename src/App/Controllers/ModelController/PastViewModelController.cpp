@@ -1,5 +1,6 @@
 #include "PastViewModelController.h"
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -23,6 +24,10 @@ namespace {
 constexpr auto NEAREST_OBJECTS_ONLY = "NearestObjectsOnly";
 constexpr auto HISTORY_NEAR_MODEL_TYPE = "HistoryNearModelType";
 constexpr auto PROXIMITY_NOTIFICATIONS_ENABLED = "ProximityNotificationsEnabled";
+constexpr auto PROXIMITY_NOTIFICATION_DISTANCE = "ProximityNotificationDistance";
+constexpr auto PROXIMITY_NOTIFICATION_DISTANCE_DEFAULT = 50;
+constexpr auto PROXIMITY_NOTIFICATION_DISTANCE_MIN = 10;
+constexpr auto PROXIMITY_NOTIFICATION_DISTANCE_MAX = 200;
 constexpr auto YEARS_FROM = "YEARS_FROM";
 constexpr auto YEARS_TO = "YEARS_TO";
 constexpr auto YEAR_FROM_VALUE = 1800;
@@ -119,7 +124,10 @@ void PastVuModelController::EvaluatePhotoProximity()
 		});
 	}
 
-	const auto enteredPhotoId = m_impl->photoProximityTracker.Update(m_impl->currentCoordinate, photoAreas);
+	const auto enteredPhotoId = m_impl->photoProximityTracker.Update(
+		m_impl->currentCoordinate,
+		photoAreas,
+		GetProximityNotificationDistance());
 	if (!enteredPhotoId || !GetProximityNotificationsEnabled())
 		return;
 
@@ -188,6 +196,16 @@ bool PastVuModelController::SelectPhoto(int photoId)
 	return true;
 }
 
+int PastVuModelController::GetNotificationDistanceMin() const
+{
+	return PROXIMITY_NOTIFICATION_DISTANCE_MIN;
+}
+
+int PastVuModelController::GetNotificationDistanceMax() const
+{
+	return PROXIMITY_NOTIFICATION_DISTANCE_MAX;
+}
+
 QString PastVuModelController::GetMapHostApiKey()
 {
 	return QString::fromUtf8(API_KEY);
@@ -234,6 +252,22 @@ void PastVuModelController::SetProximityNotificationsEnabled(bool value)
 {
 	m_impl->settings.setValue(PROXIMITY_NOTIFICATIONS_ENABLED, value);
 	emit ProximityNotificationsEnabledChanged();
+}
+
+int PastVuModelController::GetProximityNotificationDistance()
+{
+	const auto value = m_impl->settings.value(PROXIMITY_NOTIFICATION_DISTANCE, PROXIMITY_NOTIFICATION_DISTANCE_DEFAULT).toInt();
+	return std::clamp(value, PROXIMITY_NOTIFICATION_DISTANCE_MIN, PROXIMITY_NOTIFICATION_DISTANCE_MAX);
+}
+
+void PastVuModelController::SetProximityNotificationDistance(int value)
+{
+	const auto clamped = std::clamp(value, PROXIMITY_NOTIFICATION_DISTANCE_MIN, PROXIMITY_NOTIFICATION_DISTANCE_MAX);
+	if (clamped == GetProximityNotificationDistance())
+		return;
+
+	m_impl->settings.setValue(PROXIMITY_NOTIFICATION_DISTANCE, clamped);
+	emit ProximityNotificationDistanceChanged();
 }
 
 int PastVuModelController::GetZoomLevel() const

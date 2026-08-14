@@ -15,7 +15,7 @@ struct PhotoArea
 class PhotoProximityTracker
 {
 public:
-	std::optional<int> Update(const QGeoCoordinate & position, std::span<const PhotoArea> photoAreas);
+	std::optional<int> Update(const QGeoCoordinate & position, std::span<const PhotoArea> photoAreas, double enterDistanceMeters);
 
 private:
 	std::unordered_set<int> m_activePhotoAreas;

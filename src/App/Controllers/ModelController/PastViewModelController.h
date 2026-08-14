@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QtCore/qtmetamacros.h>
 #include <memory>
 
 #include <QAbstractItemModel>
@@ -37,6 +38,7 @@ signals:
 	void ModelChanged();
 	void HistoryNearModelChanged();
 	void ProximityNotificationsEnabledChanged();
+	void ProximityNotificationDistanceChanged();
 	void PhotoAreaApproached(const QString & title, int photoId);
 	void photoSelected(int modelIndex, const QGeoCoordinate & coordinate, bool isClustered, int zoomToDecluster);
 	void ZoomLevelChanged();
@@ -55,6 +57,7 @@ public:
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjectsOnlyChanged);
 	Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
 	Q_PROPERTY(bool proximityNotificationsEnabled READ GetProximityNotificationsEnabled WRITE SetProximityNotificationsEnabled NOTIFY ProximityNotificationsEnabledChanged);
+	Q_PROPERTY(int proximityNotificationDistance READ GetProximityNotificationDistance WRITE SetProximityNotificationDistance NOTIFY ProximityNotificationDistanceChanged);
 	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
 	Q_PROPERTY(Range timelineRange READ GetTimelineRange);
 	Q_PROPERTY(Range userSelectedTimelineRange READ GetUserSelectedTimelineRange WRITE SetUserSelectedTimelineRange NOTIFY UserSelectedTimelineRangeChanged);
@@ -67,6 +70,8 @@ public:
 	Q_INVOKABLE void ToggleProximityNotifications();
 	Q_INVOKABLE void ReloadItems();
 	Q_INVOKABLE bool SelectPhoto(int photoId);
+	Q_INVOKABLE int GetNotificationDistanceMin() const;
+	Q_INVOKABLE int GetNotificationDistanceMax() const;
 
 	void OnPositionPermissionGranted();
 
@@ -83,6 +88,9 @@ private:
 
 	bool GetProximityNotificationsEnabled();
 	void SetProximityNotificationsEnabled(bool value);
+
+	int GetProximityNotificationDistance();
+	void SetProximityNotificationDistance(int value);
 
 	int GetZoomLevel() const;
 	void SetZoomLevel(int value);
