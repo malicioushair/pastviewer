@@ -209,22 +209,32 @@
         <translation>显示&quot;附近历史&quot;全部</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
+        <translation>启用后，当你走近一张历史照片时，PastViewer 会向你发送通知。</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <source>Proximity notifications</source>
+        <translation>接近通知</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="206"/>
         <source>Reload map items</source>
         <translation>重新加载地图</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="184"/>
+        <location filename="../qml/Views/Settings.qml" line="195"/>
         <source>Reset onboarding</source>
         <translation>重置引导</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="179"/>
+        <location filename="../qml/Views/Settings.qml" line="190"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>再次显示地图和照片页面上的入门提示。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="201"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>使用当前筛选条件重新加载当前地图视图的历史照片。</translation>
     </message>

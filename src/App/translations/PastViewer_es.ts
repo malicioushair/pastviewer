@@ -209,22 +209,32 @@
         <translation>Mostrar todos en &quot;Historia cerca&quot;</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
+        <translation>Si está activado, PastViewer te avisa cuando te acercas a una foto histórica.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <source>Proximity notifications</source>
+        <translation>Notificaciones de proximidad</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="206"/>
         <source>Reload map items</source>
         <translation>Recargar mapa</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="184"/>
+        <location filename="../qml/Views/Settings.qml" line="195"/>
         <source>Reset onboarding</source>
         <translation>Reiniciar introducción</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="179"/>
+        <location filename="../qml/Views/Settings.qml" line="190"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>Muestra de nuevo los consejos introductorios en las pantallas del mapa y la foto.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="201"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Vuelve a cargar fotos históricas para la vista actual del mapa usando tus filtros actuales.</translation>
     </message>

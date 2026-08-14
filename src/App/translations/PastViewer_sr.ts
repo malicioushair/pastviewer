@@ -209,22 +209,32 @@
         <translation>Све у окружењу</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
+        <translation>Када је укључено, PastViewer вас обавештава када се приближите историјској фотографији.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <source>Proximity notifications</source>
+        <translation>Обавештења о близини</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="206"/>
         <source>Reload map items</source>
         <translation>Поново учитај</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="184"/>
+        <location filename="../qml/Views/Settings.qml" line="195"/>
         <source>Reset onboarding</source>
         <translation>Ресет увода</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="179"/>
+        <location filename="../qml/Views/Settings.qml" line="190"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>Поново прикажи уводне савете на мапи и екранима са фотографијама.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="201"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Поново учитај историјске фотографије за тренутни приказ мапе користећи тренутне филтере.</translation>
     </message>

@@ -152,7 +152,7 @@
     <message>
         <location filename="../qml/Views/PhotoDetails.qml" line="168"/>
         <source>When you are ready, tap “Recreate this view” to open the camera and line up today’s scene with this photo.</source>
-        <translation>Quand vous êtes prêt, touchez « Recréer cette vue » pour ouvrir la caméra et aligner la scène d'aujourd'hui avec cette photo.</translation>
+        <translation>Quand vous êtes prêt, touchez « Recréer cette vue » pour ouvrir la caméra et aligner la scène d&apos;aujourd&apos;hui avec cette photo.</translation>
     </message>
 </context>
 <context>
@@ -209,22 +209,32 @@
         <translation>Afficher tout dans &quot;Histoire près&quot;</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
+        <translation>Lorsque cette option est activée, PastViewer vous notifie lorsque vous vous approchez d'une photo historique.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <source>Proximity notifications</source>
+        <translation>Notifications de proximité</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="206"/>
         <source>Reload map items</source>
         <translation>Recharger carte</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="184"/>
+        <location filename="../qml/Views/Settings.qml" line="195"/>
         <source>Reset onboarding</source>
         <translation>Réinitialiser l&apos;introduction</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="179"/>
+        <location filename="../qml/Views/Settings.qml" line="190"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>Afficher à nouveau les conseils d&apos;introduction sur la carte et les écrans photo.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="201"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Recharger les photos historiques pour la vue actuelle de la carte avec vos filtres actuels.</translation>
     </message>

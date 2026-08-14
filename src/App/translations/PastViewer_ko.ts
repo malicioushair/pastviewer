@@ -152,7 +152,7 @@
     <message>
         <location filename="../qml/Views/PhotoDetails.qml" line="168"/>
         <source>When you are ready, tap “Recreate this view” to open the camera and line up today’s scene with this photo.</source>
-        <translation>준비되면 '이 장면 다시 찍기'를 탭해 카메라를 열고 오늘의 장면을 이 사진에 맞추세요.</translation>
+        <translation>준비되면 &apos;이 장면 다시 찍기&apos;를 탭해 카메라를 열고 오늘의 장면을 이 사진에 맞추세요.</translation>
     </message>
 </context>
 <context>
@@ -209,22 +209,32 @@
         <translation>&quot;주변 역사&quot; 모두 표시</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="195"/>
+        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
+        <translation>사용 설정하면 역사 사진 근처에 있을 때 PastViewer가 알림을 보냅니다.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <source>Proximity notifications</source>
+        <translation>근접 알림</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="206"/>
         <source>Reload map items</source>
         <translation>지도 다시 로드</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="184"/>
+        <location filename="../qml/Views/Settings.qml" line="195"/>
         <source>Reset onboarding</source>
         <translation>소개 재설정</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="179"/>
+        <location filename="../qml/Views/Settings.qml" line="190"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>지도와 사진 화면의 소개 팁을 다시 표시합니다.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="190"/>
+        <location filename="../qml/Views/Settings.qml" line="201"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>현재 필터를 사용하여 현재 지도 보기의 역사 사진을 다시 불러옵니다.</translation>
     </message>
