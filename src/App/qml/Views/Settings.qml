@@ -160,6 +160,17 @@ BasePage {
                 }
             }
 
+            SettingWithHint {
+                Layout.leftMargin: -7
+
+                description: qsTr("When enabled, PastViewer notifies you when you walk near a historical photo.")
+
+                StyledCheckBox {
+                    checked: pastVuModelController.proximityNotificationsEnabled
+                    text: qsTr("Proximity notifications")
+                    onClicked: pastVuModelController.ToggleProximityNotifications();
+                }
+            }
 
             StyledRangeSlider {
                 id: timelineSettingID

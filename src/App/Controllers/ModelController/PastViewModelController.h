@@ -36,6 +36,7 @@ signals:
 	void NearestObjectsOnlyChanged();
 	void ModelChanged();
 	void HistoryNearModelChanged();
+	void ProximityNotificationsEnabledChanged();
 	void PhotoAreaApproached(const QString & title, int photoId);
 	void photoSelected(int modelIndex, const QGeoCoordinate & coordinate, bool isClustered, int zoomToDecluster);
 	void ZoomLevelChanged();
@@ -53,6 +54,7 @@ public:
 
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjectsOnlyChanged);
 	Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
+	Q_PROPERTY(bool proximityNotificationsEnabled READ GetProximityNotificationsEnabled WRITE SetProximityNotificationsEnabled NOTIFY ProximityNotificationsEnabledChanged);
 	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
 	Q_PROPERTY(Range timelineRange READ GetTimelineRange);
 	Q_PROPERTY(Range userSelectedTimelineRange READ GetUserSelectedTimelineRange WRITE SetUserSelectedTimelineRange NOTIFY UserSelectedTimelineRangeChanged);
@@ -62,6 +64,7 @@ public:
 	Q_INVOKABLE void SetViewportCoordinates(const QGeoRectangle & viewport);
 	Q_INVOKABLE void ToggleOnlyNearestObjects();
 	Q_INVOKABLE void ToggleHistoryNearYouModel();
+	Q_INVOKABLE void ToggleProximityNotifications();
 	Q_INVOKABLE void ReloadItems();
 	Q_INVOKABLE bool SelectPhoto(int photoId);
 
@@ -77,6 +80,9 @@ private:
 
 	bool GetHistoryNearModelType();
 	void SetHistoryNearModelType(bool value);
+
+	bool GetProximityNotificationsEnabled();
+	void SetProximityNotificationsEnabled(bool value);
 
 	int GetZoomLevel() const;
 	void SetZoomLevel(int value);

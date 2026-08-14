@@ -22,6 +22,7 @@
 namespace {
 constexpr auto NEAREST_OBJECTS_ONLY = "NearestObjectsOnly";
 constexpr auto HISTORY_NEAR_MODEL_TYPE = "HistoryNearModelType";
+constexpr auto PROXIMITY_NOTIFICATIONS_ENABLED = "ProximityNotificationsEnabled";
 constexpr auto YEARS_FROM = "YEARS_FROM";
 constexpr auto YEARS_TO = "YEARS_TO";
 constexpr auto YEAR_FROM_VALUE = 1800;
@@ -119,7 +120,7 @@ void PastVuModelController::EvaluatePhotoProximity()
 	}
 
 	const auto enteredPhotoId = m_impl->photoProximityTracker.Update(m_impl->currentCoordinate, photoAreas);
-	if (!enteredPhotoId)
+	if (!enteredPhotoId || !GetProximityNotificationsEnabled())
 		return;
 
 	const auto enteredPhoto = m_impl->baseModel->match(
@@ -224,6 +225,17 @@ void PastVuModelController::SetHistoryNearModelType(bool value)
 	emit HistoryNearModelChanged();
 }
 
+bool PastVuModelController::GetProximityNotificationsEnabled()
+{
+	return m_impl->settings.value(PROXIMITY_NOTIFICATIONS_ENABLED, true).toBool();
+}
+
+void PastVuModelController::SetProximityNotificationsEnabled(bool value)
+{
+	m_impl->settings.setValue(PROXIMITY_NOTIFICATIONS_ENABLED, value);
+	emit ProximityNotificationsEnabledChanged();
+}
+
 int PastVuModelController::GetZoomLevel() const
 {
 	return m_impl->screenObjectsModel->data({}, BaseModel::Roles::ZoomLevel).toInt();
@@ -263,6 +275,11 @@ void PastVuModelController::ToggleHistoryNearYouModel()
 {
 	SetHistoryNearModelType(!GetHistoryNearModelType());
 	emit HistoryNearModelChanged();
+}
+
+void PastVuModelController::ToggleProximityNotifications()
+{
+	SetProximityNotificationsEnabled(!GetProximityNotificationsEnabled());
 }
 
 void PastVuModelController::ReloadItems()
