@@ -20,6 +20,7 @@
 
 #include "glog/logging.h"
 
+#include "App/Controllers/GuiController/TipPromptTracker.h"
 #include "App/Controllers/GuiController/platform/Logic.h"
 #include "App/Controllers/I18nController/I18nController.h"
 #include "App/Controllers/ModelController/PastViewModelController.h"
@@ -30,6 +31,9 @@
 using namespace PastViewer;
 
 namespace {
+
+constexpr auto MAP_ONBOARDING_KEY = "MapPageIntro";
+constexpr auto PHOTO_DETAILS_ONBOARDING_KEY = "PhotoDetailsIntro";
 
 QUrl TipsUrl()
 {
@@ -84,6 +88,7 @@ struct GuiController::Impl
 	QQmlApplicationEngine engine;
 	I18nController i18nController { engine };
 	QSettings settings;
+	TipPromptTracker tipPromptTracker;
 	QLocationPermission locationPermission { [] {
 		QLocationPermission p;
 		p.setAccuracy(QLocationPermission::Precise);
@@ -193,12 +198,38 @@ bool GuiController::OpenTipsUrl()
 	const auto tipsUrl = TipsUrl();
 	if (!tipsUrl.isValid() || !QDesktopServices::openUrl(tipsUrl))
 	{
-		LOG(ERROR) << "Failed to open TIPS_URL: " << tipsUrl.toString().toStdString();
+		LOG(ERROR) << "Failed to open PASTVIEWER_TIPS_URL: " << tipsUrl.toString().toStdString();
 		emit showErrorDialog(tr("Could not open the support page."));
 		return false;
 	}
 
+	m_impl->tipPromptTracker.DisableAutomaticPrompts();
 	return true;
+}
+
+bool GuiController::ShouldShowTipsPrompt()
+{
+	return true
+		&& HasTipsUrl()
+		&& IsOnboardingStepCompleted(MAP_ONBOARDING_KEY)
+		&& IsOnboardingStepCompleted(PHOTO_DETAILS_ONBOARDING_KEY)
+		&& m_impl->tipPromptTracker.ShouldShowPrompt(QDateTime::currentDateTimeUtc());
+}
+
+void GuiController::NotifyCameraModeLeft()
+{
+	if (ShouldShowTipsPrompt())
+		emit tipsPromptRequested();
+}
+
+void GuiController::MarkTipsPromptShown()
+{
+	m_impl->tipPromptTracker.MarkPromptShown(QDateTime::currentDateTimeUtc());
+}
+
+void GuiController::DismissTipsPrompt()
+{
+	m_impl->tipPromptTracker.MarkPromptDismissed(QDateTime::currentDateTimeUtc());
 }
 
 bool GuiController::IsOnboardingStepCompleted(const QString & key)
@@ -264,6 +295,7 @@ QString GuiController::SaveImage(const QQuickItemGrabResult * grabResult)
 	}
 
 	m_impl->lastSavedImagePath = filePath;
+	m_impl->tipPromptTracker.RecordSuccessfulRecreation();
 	LOG(INFO) << "Screenshot saved to:" << filePath.toStdString();
 
 	if (Utils::IsMobile() && !SaveScreenshotToGallery(filePath))

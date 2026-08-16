@@ -12,6 +12,8 @@ import "Helpers"
 BasePage {
     id: rootID
 
+    objectName: "cameraModePage"
+
     required property string imageSource
     required property int year
     
@@ -20,6 +22,12 @@ BasePage {
     property bool thumbnailAnimationVisible: false
     property bool controlsHidden: false
     property double thumbnailScale: 0.2
+    property bool savedInThisVisit: false
+
+    StackView.onDeactivated: {
+        if (rootID.savedInThisVisit)
+            guiController.NotifyCameraModeLeft()
+    }
 
     function triggerShutterEffect() {
         shutterAnimationID.restart()
@@ -338,10 +346,12 @@ BasePage {
                 } else {
                     window.grabToImage((result) => {
                         const savedImageUrl = guiController.SaveImage(result)
-                        if (savedImageUrl.length > 0) 
+                        if (savedImageUrl.length > 0) {
+                            rootID.savedInThisVisit = true
                             rootID.animateThumbnail(savedImageUrl)
-                         else 
+                        } else {
                             rootID.controlsHidden = false
+                        }
                     })
                 }
             }
