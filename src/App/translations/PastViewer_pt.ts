@@ -4,12 +4,12 @@
 <context>
     <name>CameraMode</name>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="52"/>
+        <location filename="../qml/Views/CameraMode.qml" line="60"/>
         <source>Back</source>
         <translation>Voltar</translation>
     </message>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="121"/>
+        <location filename="../qml/Views/CameraMode.qml" line="129"/>
         <source>Now</source>
         <translation>Agora</translation>
     </message>
@@ -116,17 +116,17 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="149"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>Historical photo nearby</source>
         <translation>Foto histórica nas proximidades</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="149"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>Você está perto de &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="197"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="202"/>
         <source>Could not open the support page.</source>
         <translation>Não foi possível abrir a página de apoio.</translation>
     </message>
@@ -134,28 +134,28 @@
 <context>
     <name>PhotoDetails</name>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="20"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="22"/>
         <source>Year: </source>
         <translation>Ano: </translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="118"/>
-        <location filename="../qml/Views/PhotoDetails.qml" line="167"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="120"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="169"/>
         <source>Recreate this view</source>
         <translation>Recriar esta vista</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="163"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="165"/>
         <source>Explore the photo</source>
         <translation>Explorar a foto</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="164"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="166"/>
         <source>Pinch to zoom and drag to pan the historical photo. Use it to study the details of the past scene.</source>
         <translation>Belisque para zoom e arraste para mover a foto histórica. Use-a para estudar os pormenores da cena passada.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="168"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="170"/>
         <source>When you are ready, tap “Recreate this view” to open the camera and line up today’s scene with this photo.</source>
         <translation>Quando estiver pronto, toque em «Recriar esta vista» para abrir a câmara e alinhar a cena de hoje com esta foto.</translation>
     </message>
@@ -229,6 +229,11 @@
         <translation>Distância de notificação: %1 m</translation>
     </message>
     <message>
+        <location filename="../qml/Views/Settings.qml" line="251"/>
+        <source>Support us 💰</source>
+        <translation>Apoie-nos 💰</translation>
+    </message>
+    <message>
         <location filename="../qml/Views/Settings.qml" line="273"/>
         <source>Reload map items</source>
         <translation>Recarregar mapa</translation>
@@ -242,11 +247,6 @@
         <location filename="../qml/Views/Settings.qml" line="246"/>
         <source>By leaving a tip, you support PastViewer&apos;s continued development and keep it FREE</source>
         <translation>Ao deixar uma gorjeta, apoia o desenvolvimento contínuo do PastViewer e mantém-no GRATUITO</translation>
-    </message>
-    <message>
-        <location filename="../qml/Views/Settings.qml" line="251"/>
-        <source>Support us 💰</source>
-        <translation>Apoie-nos 💰</translation>
     </message>
     <message>
         <location filename="../qml/Views/Settings.qml" line="257"/>
@@ -265,6 +265,29 @@
         <location filename="../qml/GuiItems/StyledRangeSlider.qml" line="19"/>
         <source>Timeline: </source>
         <translation>Linha do tempo: </translation>
+    </message>
+</context>
+<context>
+    <name>TipsPromptDialog</name>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="53"/>
+        <source>Enjoying PastViewer?</source>
+        <translation>Está gostando do PastViewer?</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="63"/>
+        <source>If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.</source>
+        <translation>Se o PastViewer ajudou você a redescobrir um lugar, pode deixar uma gorjeta única para apoiar o desenvolvimento contínuo. O aplicativo continuará totalmente disponível de qualquer forma.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="79"/>
+        <source>Leave a tip</source>
+        <translation>Deixar uma gorjeta</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="87"/>
+        <source>Not now</source>
+        <translation>Agora não</translation>
     </message>
 </context>
 </TS>

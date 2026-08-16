@@ -4,12 +4,12 @@
 <context>
     <name>CameraMode</name>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="52"/>
+        <location filename="../qml/Views/CameraMode.qml" line="60"/>
         <source>Back</source>
         <translation>戻る</translation>
     </message>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="121"/>
+        <location filename="../qml/Views/CameraMode.qml" line="129"/>
         <source>Now</source>
         <translation>今</translation>
     </message>
@@ -116,17 +116,17 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="149"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>Historical photo nearby</source>
         <translation>近くに歴史的な写真があります</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="149"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>「%1」の近くにいます。</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="197"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="202"/>
         <source>Could not open the support page.</source>
         <translation>サポートページを開けませんでした。</translation>
     </message>
@@ -134,28 +134,28 @@
 <context>
     <name>PhotoDetails</name>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="20"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="22"/>
         <source>Year: </source>
         <translation>年：</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="118"/>
-        <location filename="../qml/Views/PhotoDetails.qml" line="167"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="120"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="169"/>
         <source>Recreate this view</source>
         <translation>この景色を再現する</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="163"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="165"/>
         <source>Explore the photo</source>
         <translation>写真を探索</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="164"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="166"/>
         <source>Pinch to zoom and drag to pan the historical photo. Use it to study the details of the past scene.</source>
         <translation>ピンチでズーム、ドラッグで移動。歴史写真の細部をじっくり見られます。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="168"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="170"/>
         <source>When you are ready, tap “Recreate this view” to open the camera and line up today’s scene with this photo.</source>
         <translation>準備ができたら「この景色を再現する」をタップし、カメラで今日の景色をこの写真に合わせてください。</translation>
     </message>
@@ -229,6 +229,11 @@
         <translation>通知距離: %1 m</translation>
     </message>
     <message>
+        <location filename="../qml/Views/Settings.qml" line="251"/>
+        <source>Support us 💰</source>
+        <translation>サポートする 💰</translation>
+    </message>
+    <message>
         <location filename="../qml/Views/Settings.qml" line="273"/>
         <source>Reload map items</source>
         <translation>マップ再読み込み</translation>
@@ -242,11 +247,6 @@
         <location filename="../qml/Views/Settings.qml" line="246"/>
         <source>By leaving a tip, you support PastViewer&apos;s continued development and keep it FREE</source>
         <translation>チップを残すことで、PastViewer の継続的な開発を支援し、無料のまま利用できます</translation>
-    </message>
-    <message>
-        <location filename="../qml/Views/Settings.qml" line="251"/>
-        <source>Support us 💰</source>
-        <translation>サポートする 💰</translation>
     </message>
     <message>
         <location filename="../qml/Views/Settings.qml" line="257"/>
@@ -265,6 +265,29 @@
         <location filename="../qml/GuiItems/StyledRangeSlider.qml" line="19"/>
         <source>Timeline: </source>
         <translation>タイムライン：</translation>
+    </message>
+</context>
+<context>
+    <name>TipsPromptDialog</name>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="53"/>
+        <source>Enjoying PastViewer?</source>
+        <translation>PastViewer を楽しんでいますか？</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="63"/>
+        <source>If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.</source>
+        <translation>PastViewer で場所を再発見できたなら、継続的な開発を支援するために一度だけチップを贈ることができます。チップの有無にかかわらず、アプリのすべての機能を引き続き利用できます。</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="79"/>
+        <source>Leave a tip</source>
+        <translation>チップを贈る</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="87"/>
+        <source>Not now</source>
+        <translation>今はしない</translation>
     </message>
 </context>
 </TS>
