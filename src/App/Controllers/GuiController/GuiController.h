@@ -24,6 +24,8 @@ public:
 	Q_INVOKABLE bool IsDebug();
 	Q_INVOKABLE void BumpHotReloadToken();
 	Q_INVOKABLE QString GetAppVersion();
+	Q_INVOKABLE bool HasTipsUrl() const;
+	Q_INVOKABLE bool OpenTipsUrl();
 	Q_INVOKABLE void RequestCameraPermission();
 	Q_INVOKABLE bool SaveScreenshotToGallery(const QString & filePath);
 	Q_INVOKABLE QString SaveImage(const QQuickItemGrabResult * grabResult);

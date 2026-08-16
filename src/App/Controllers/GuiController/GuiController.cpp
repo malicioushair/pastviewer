@@ -2,6 +2,7 @@
 
 #include <QCameraDevice>
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QDir>
 #include <QGuiApplication>
 #include <QLocationPermission>
@@ -29,6 +30,11 @@
 using namespace PastViewer;
 
 namespace {
+
+QUrl TipsUrl()
+{
+	return QUrl(QString::fromUtf8(PASTVIEWER_TIPS_URL));
+}
 
 class HotReloadUrlInterceptor
 	: public QQmlAbstractUrlInterceptor
@@ -175,6 +181,24 @@ bool GuiController::IsDebug()
 QString GuiController::GetAppVersion()
 {
 	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+}
+
+bool GuiController::HasTipsUrl() const
+{
+	return !TipsUrl().isEmpty();
+}
+
+bool GuiController::OpenTipsUrl()
+{
+	const auto tipsUrl = TipsUrl();
+	if (!tipsUrl.isValid() || !QDesktopServices::openUrl(tipsUrl))
+	{
+		LOG(ERROR) << "Failed to open TIPS_URL: " << tipsUrl.toString().toStdString();
+		emit showErrorDialog(tr("Could not open the support page."));
+		return false;
+	}
+
+	return true;
 }
 
 bool GuiController::IsOnboardingStepCompleted(const QString & key)

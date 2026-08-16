@@ -75,7 +75,10 @@ For Android builds, install Android SDK Platform 36, Android SDK Build Tools 35.
 ```bash
 -DOSM_API_KEY=your-stadiamaps-api-key
 -DSENTRY_DSN=your-sentry-dsn
+-DTIPS_URL=https://your-tip-page.example
 ```
+
+`TIPS_URL` is optional. When it is omitted, the support action is hidden. When provided, it must be an absolute HTTPS URL and opens in the system browser on every supported platform.
 
 Create a Stadia Maps key at [stadiamaps.com](https://stadiamaps.com/). Use a private or environment-specific Sentry project for `SENTRY_DSN`.
 

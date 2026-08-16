@@ -116,14 +116,19 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="143"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="149"/>
         <source>Historical photo nearby</source>
         <translation>Историјска фотографија у близини</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="143"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="149"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>Налазите се близу „%1“.</translation>
+    </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="197"/>
+        <source>Could not open the support page.</source>
+        <translation>Није могуће отворити страницу за подршку.</translation>
     </message>
 </context>
 <context>
@@ -184,62 +189,72 @@
         <translation>Верзија: </translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="45"/>
+        <location filename="../qml/Views/Settings.qml" line="49"/>
         <source>Language</source>
         <translation>Језик</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="142"/>
+        <location filename="../qml/Views/Settings.qml" line="146"/>
         <source>When enabled, the map shows only historical photos near your current location.</source>
         <translation>Када је укључено, мапа приказује само историјске фотографије близу ваше тренутне локације.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="146"/>
+        <location filename="../qml/Views/Settings.qml" line="150"/>
         <source>Show only nearest objects</source>
         <translation>Само у близини</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="154"/>
+        <location filename="../qml/Views/Settings.qml" line="158"/>
         <source>When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.</source>
         <translation>Када је укључено, ред „Историја у близини“ приказује све фотографије у области мапе у оквиру временске линије. Када је искључено, приказују се само оближње фотографије.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="158"/>
+        <location filename="../qml/Views/Settings.qml" line="162"/>
         <source>Show all objects in &quot;History near you&quot;</source>
         <translation>Све у окружењу</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
         <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
         <translation>Када је укључено, PastViewer вас обавештава када се приближите историјској фотографији.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <location filename="../qml/Views/Settings.qml" line="174"/>
         <source>Proximity notifications</source>
         <translation>Обавештења о близини</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <location filename="../qml/Views/Settings.qml" line="187"/>
         <source>Notification distance: %1 m</source>
         <translation>Удаљеност обавештења: %1 м</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="254"/>
+        <location filename="../qml/Views/Settings.qml" line="273"/>
         <source>Reload map items</source>
         <translation>Поново учитај</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="243"/>
+        <location filename="../qml/Views/Settings.qml" line="262"/>
         <source>Reset onboarding</source>
         <translation>Ресет увода</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="238"/>
+        <location filename="../qml/Views/Settings.qml" line="246"/>
+        <source>By leaving a tip, you support PastViewer&apos;s continued development and keep it FREE</source>
+        <translation>Остављањем бакшиша подржавате даљи развој PastViewer-а и помажете да остане БЕСПЛАТАН</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="251"/>
+        <source>Support us 💰</source>
+        <translation>Подржите нас 💰</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="257"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>Поново прикажи уводне савете на мапи и екранима са фотографијама.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="249"/>
+        <location filename="../qml/Views/Settings.qml" line="268"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Поново учитај историјске фотографије за тренутни приказ мапе користећи тренутне филтере.</translation>
     </message>
