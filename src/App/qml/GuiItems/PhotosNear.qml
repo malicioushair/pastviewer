@@ -147,7 +147,7 @@ Rectangle {
             Layout.fillHeight: true
 
 
-            model: pastVuModelController.GetModel(ModelType.Raw)
+            model: pastVuModelController.GetModel(ModelType.Filtered)
             orientation: ListView.Horizontal
             spacing: 10
 

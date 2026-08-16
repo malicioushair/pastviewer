@@ -23,15 +23,19 @@ BasePage {
         text: qsTr("Version: ") + guiController.GetAppVersion()
     }
 
-    ColumnLayout {
+    ScrollView {
+        id: settingsScrollViewID
+
         anchors {
             fill: parent
             margins: 20
         }
+        clip: true
+        contentWidth: availableWidth
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
         ColumnLayout {
-            Layout.alignment: Qt.AlignTop
-
+            width: settingsScrollViewID.availableWidth
             spacing: 20
 
             ColumnLayout {
@@ -235,6 +239,18 @@ BasePage {
 
                 onSelectedMinChanged: pastVuModelController.userSelectedTimelineRange.min = selectedMin
                 onSelectedMaxChanged: pastVuModelController.userSelectedTimelineRange.max = selectedMax
+            }
+
+            SettingWithHint {
+                visible: guiController.HasTipsUrl()
+                description: qsTr("By leaving a tip, you support PastViewer's continued development and keep it FREE")
+
+                StyledButton {
+                    id: supportButtonID
+
+                    text: qsTr("Support us 💰")
+                    onClicked: guiController.OpenTipsUrl()
+                }
             }
 
             SettingWithHint {

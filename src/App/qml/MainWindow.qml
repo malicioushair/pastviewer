@@ -18,6 +18,7 @@ Rectangle {
     id: mainWindowID
 
     property alias mapAnimationHelper: mapAnimationHelperID
+    property bool tipsPromptPending: false
 
     function openPhotoDetails(photo, thumbnail, title, year) {
         stackViewID.push("Views/PhotoDetails.qml", {
@@ -37,6 +38,30 @@ Rectangle {
             stackViewID.pop(null, StackView.Immediate)
     }
 
+    function scheduleTipsPrompt() {
+        tipsPromptPending = true
+        tipsPromptDelayID.restart()
+    }
+
+    function tryOpenTipsPrompt() {
+        if (!tipsPromptPending || stackViewID.busy)
+            return
+
+        tipsPromptPending = false
+        const currentItem = stackViewID.currentItem
+        if (false
+                || !currentItem
+                || Qt.application.state !== Qt.ApplicationActive
+                || currentItem.objectName === "cameraModePage"
+                || currentItem["blocksTipsPrompt"] === true
+                || errorDialogID.visible
+                || tipsPromptDialogID.visible
+                || !guiController.ShouldShowTipsPrompt())
+            return
+
+        tipsPromptDialogID.openPrompt()
+    }
+
     color: Colors.palette.bg
 
     MapAnimationHelper {
@@ -54,6 +79,19 @@ Rectangle {
         initialItem: MapPage {
             id: mapPageInstance
         }
+
+        onBusyChanged: {
+            if (!busy && mainWindowID.tipsPromptPending)
+                tipsPromptDelayID.restart()
+        }
+    }
+
+    Timer {
+        id: tipsPromptDelayID
+
+        interval: 350
+        repeat: false
+        onTriggered: mainWindowID.tryOpenTipsPrompt()
     }
 
     ErrorMessageDialog {
@@ -62,12 +100,25 @@ Rectangle {
         anchors.centerIn: Overlay.overlay
     }
 
+    TipsPromptDialog {
+        id: tipsPromptDialogID
+
+        anchors.centerIn: Overlay.overlay
+
+        onAccepted: guiController.OpenTipsUrl()
+        onDiscarded: guiController.DismissTipsPrompt()
+    }
+
     Connections {
         target: guiController
 
         function onShowErrorDialog(message) {
             errorDialogID.errorMessage = message
             errorDialogID.open()
+        }
+
+        function onTipsPromptRequested() {
+            mainWindowID.scheduleTipsPrompt()
         }
     }
 

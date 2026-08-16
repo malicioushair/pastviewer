@@ -4,12 +4,12 @@
 <context>
     <name>CameraMode</name>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="52"/>
+        <location filename="../qml/Views/CameraMode.qml" line="60"/>
         <source>Back</source>
         <translation>뒤로</translation>
     </message>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="121"/>
+        <location filename="../qml/Views/CameraMode.qml" line="129"/>
         <source>Now</source>
         <translation>지금</translation>
     </message>
@@ -116,41 +116,46 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="143"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>Historical photo nearby</source>
         <translation>근처에 역사 사진이 있습니다</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="143"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>&quot;%1&quot; 근처에 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="202"/>
+        <source>Could not open the support page.</source>
+        <translation>후원 페이지를 열 수 없습니다.</translation>
     </message>
 </context>
 <context>
     <name>PhotoDetails</name>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="20"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="22"/>
         <source>Year: </source>
         <translation>연도: </translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="118"/>
-        <location filename="../qml/Views/PhotoDetails.qml" line="167"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="120"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="169"/>
         <source>Recreate this view</source>
         <translation>이 장면 다시 찍기</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="163"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="165"/>
         <source>Explore the photo</source>
         <translation>사진 탐색</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="164"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="166"/>
         <source>Pinch to zoom and drag to pan the historical photo. Use it to study the details of the past scene.</source>
         <translation>핀치로 확대, 드래그로 이동. 과거 장면의 디테일을 자세히 볼 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="168"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="170"/>
         <source>When you are ready, tap “Recreate this view” to open the camera and line up today’s scene with this photo.</source>
         <translation>준비되면 &apos;이 장면 다시 찍기&apos;를 탭해 카메라를 열고 오늘의 장면을 이 사진에 맞추세요.</translation>
     </message>
@@ -184,62 +189,72 @@
         <translation>버전: </translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="45"/>
+        <location filename="../qml/Views/Settings.qml" line="49"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="142"/>
+        <location filename="../qml/Views/Settings.qml" line="146"/>
         <source>When enabled, the map shows only historical photos near your current location.</source>
         <translation>활성화하면 지도에 현재 위치 근처의 역사 사진만 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="146"/>
+        <location filename="../qml/Views/Settings.qml" line="150"/>
         <source>Show only nearest objects</source>
         <translation>가장 가까운만 표시</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="154"/>
+        <location filename="../qml/Views/Settings.qml" line="158"/>
         <source>When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.</source>
         <translation>활성화하면 &quot;주변 역사&quot; 행에 타임라인 내 지도 영역의 모든 사진이 표시됩니다. 비활성화하면 주변 사진만 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="158"/>
+        <location filename="../qml/Views/Settings.qml" line="162"/>
         <source>Show all objects in &quot;History near you&quot;</source>
         <translation>&quot;주변 역사&quot; 모두 표시</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
         <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
         <translation>사용 설정하면 역사 사진 근처에 있을 때 PastViewer가 알림을 보냅니다.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <location filename="../qml/Views/Settings.qml" line="174"/>
         <source>Proximity notifications</source>
         <translation>근접 알림</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <location filename="../qml/Views/Settings.qml" line="187"/>
         <source>Notification distance: %1 m</source>
         <translation>알림 거리: %1 m</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="254"/>
+        <location filename="../qml/Views/Settings.qml" line="251"/>
+        <source>Support us 💰</source>
+        <translation>후원하기 💰</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="273"/>
         <source>Reload map items</source>
         <translation>지도 다시 로드</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="243"/>
+        <location filename="../qml/Views/Settings.qml" line="262"/>
         <source>Reset onboarding</source>
         <translation>소개 재설정</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="238"/>
+        <location filename="../qml/Views/Settings.qml" line="246"/>
+        <source>By leaving a tip, you support PastViewer&apos;s continued development and keep it FREE</source>
+        <translation>팁을 남기면 PastViewer의 지속적인 개발을 지원하고 앱을 무료로 유지할 수 있습니다</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="257"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>지도와 사진 화면의 소개 팁을 다시 표시합니다.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="249"/>
+        <location filename="../qml/Views/Settings.qml" line="268"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>현재 필터를 사용하여 현재 지도 보기의 역사 사진을 다시 불러옵니다.</translation>
     </message>
@@ -250,6 +265,29 @@
         <location filename="../qml/GuiItems/StyledRangeSlider.qml" line="19"/>
         <source>Timeline: </source>
         <translation>타임라인: </translation>
+    </message>
+</context>
+<context>
+    <name>TipsPromptDialog</name>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="53"/>
+        <source>Enjoying PastViewer?</source>
+        <translation>PastViewer를 즐겨 사용하고 계신가요?</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="63"/>
+        <source>If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.</source>
+        <translation>PastViewer가 장소를 새롭게 발견하는 데 도움이 되었다면, 지속적인 개발을 지원하기 위해 일회성 팁을 보낼 수 있습니다. 팁 여부와 관계없이 앱의 모든 기능을 계속 사용할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="79"/>
+        <source>Leave a tip</source>
+        <translation>팁 보내기</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="87"/>
+        <source>Not now</source>
+        <translation>나중에</translation>
     </message>
 </context>
 </TS>

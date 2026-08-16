@@ -4,12 +4,12 @@
 <context>
     <name>CameraMode</name>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="52"/>
+        <location filename="../qml/Views/CameraMode.qml" line="60"/>
         <source>Back</source>
         <translation>返回</translation>
     </message>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="121"/>
+        <location filename="../qml/Views/CameraMode.qml" line="129"/>
         <source>Now</source>
         <translation>现在</translation>
     </message>
@@ -116,41 +116,46 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="143"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>Historical photo nearby</source>
         <translation>附近有历史照片</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="143"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>您在“%1”附近。</translation>
+    </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="202"/>
+        <source>Could not open the support page.</source>
+        <translation>无法打开支持页面。</translation>
     </message>
 </context>
 <context>
     <name>PhotoDetails</name>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="20"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="22"/>
         <source>Year: </source>
         <translation>年份：</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="118"/>
-        <location filename="../qml/Views/PhotoDetails.qml" line="167"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="120"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="169"/>
         <source>Recreate this view</source>
         <translation>重现此画面</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="163"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="165"/>
         <source>Explore the photo</source>
         <translation>探索照片</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="164"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="166"/>
         <source>Pinch to zoom and drag to pan the historical photo. Use it to study the details of the past scene.</source>
         <translation>双指捏合缩放，拖动平移历史照片。可仔细查看过去场景的细节。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="168"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="170"/>
         <source>When you are ready, tap “Recreate this view” to open the camera and line up today’s scene with this photo.</source>
         <translation>准备好后，点击「重现此画面」打开相机，将今天的场景与此照片对齐。</translation>
     </message>
@@ -184,62 +189,72 @@
         <translation>版本：</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="45"/>
+        <location filename="../qml/Views/Settings.qml" line="49"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="142"/>
+        <location filename="../qml/Views/Settings.qml" line="146"/>
         <source>When enabled, the map shows only historical photos near your current location.</source>
         <translation>启用后，地图仅显示当前位置附近的历史照片。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="146"/>
+        <location filename="../qml/Views/Settings.qml" line="150"/>
         <source>Show only nearest objects</source>
         <translation>仅显示最近的</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="154"/>
+        <location filename="../qml/Views/Settings.qml" line="158"/>
         <source>When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.</source>
         <translation>启用后，“附近历史”列表会显示时间线范围内当前地图区域的所有照片。禁用后，仅显示附近的照片。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="158"/>
+        <location filename="../qml/Views/Settings.qml" line="162"/>
         <source>Show all objects in &quot;History near you&quot;</source>
         <translation>显示&quot;附近历史&quot;全部</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
         <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
         <translation>启用后，当你走近一张历史照片时，PastViewer 会向你发送通知。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <location filename="../qml/Views/Settings.qml" line="174"/>
         <source>Proximity notifications</source>
         <translation>接近通知</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <location filename="../qml/Views/Settings.qml" line="187"/>
         <source>Notification distance: %1 m</source>
         <translation>通知距离：%1 米</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="254"/>
+        <location filename="../qml/Views/Settings.qml" line="251"/>
+        <source>Support us 💰</source>
+        <translation>支持我们 💰</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="273"/>
         <source>Reload map items</source>
         <translation>重新加载地图</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="243"/>
+        <location filename="../qml/Views/Settings.qml" line="262"/>
         <source>Reset onboarding</source>
         <translation>重置引导</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="238"/>
+        <location filename="../qml/Views/Settings.qml" line="246"/>
+        <source>By leaving a tip, you support PastViewer&apos;s continued development and keep it FREE</source>
+        <translation>留下小费即可支持 PastViewer 的持续开发，并让它保持免费</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="257"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>再次显示地图和照片页面上的入门提示。</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="249"/>
+        <location filename="../qml/Views/Settings.qml" line="268"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>使用当前筛选条件重新加载当前地图视图的历史照片。</translation>
     </message>
@@ -250,6 +265,29 @@
         <location filename="../qml/GuiItems/StyledRangeSlider.qml" line="19"/>
         <source>Timeline: </source>
         <translation>时间线：</translation>
+    </message>
+</context>
+<context>
+    <name>TipsPromptDialog</name>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="53"/>
+        <source>Enjoying PastViewer?</source>
+        <translation>喜欢 PastViewer 吗？</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="63"/>
+        <source>If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.</source>
+        <translation>如果 PastViewer 帮助您重新发现了一个地方，您可以留下一次性小费以支持其持续开发。无论是否支付，您都可以继续使用应用的全部功能。</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="79"/>
+        <source>Leave a tip</source>
+        <translation>留下小费</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="87"/>
+        <source>Not now</source>
+        <translation>暂时不要</translation>
     </message>
 </context>
 </TS>

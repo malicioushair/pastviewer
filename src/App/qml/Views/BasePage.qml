@@ -6,6 +6,8 @@ import "../Helpers/colors.js" as Colors
 Page {
     id: rootID
 
+    property bool blocksTipsPrompt: false
+
     background: Rectangle {
         color: Colors.palette.bg
     }

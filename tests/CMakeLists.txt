@@ -17,6 +17,7 @@ add_executable(PastViewerTests
     ${CMAKE_SOURCE_DIR}/src/App/Models/ScreenObjectsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/BaseModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PhotoProximityTracker.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/GuiController/TipPromptTracker.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Utils/Range.h
 )
 

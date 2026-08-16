@@ -75,7 +75,10 @@ For Android builds, install Android SDK Platform 36, Android SDK Build Tools 35.
 ```bash
 -DOSM_API_KEY=your-stadiamaps-api-key
 -DSENTRY_DSN=your-sentry-dsn
+-DPASTVIEWER_TIPS_URL=https://your-tip-page.example
 ```
+
+`PASTVIEWER_TIPS_URL` is optional. When it is omitted, the support action and automatic prompt are hidden. When provided, the support action opens the URL in the system browser on every supported platform. The automatic prompt becomes eligible only after successful recreations in two separate app sessions and can appear at most twice, with a 30-day cooldown after the first dismissal.
 
 Create a Stadia Maps key at [stadiamaps.com](https://stadiamaps.com/). Use a private or environment-specific Sentry project for `SENTRY_DSN`.
 

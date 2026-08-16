@@ -4,12 +4,12 @@
 <context>
     <name>CameraMode</name>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="52"/>
+        <location filename="../qml/Views/CameraMode.qml" line="60"/>
         <source>Back</source>
         <translation>Назад</translation>
     </message>
     <message>
-        <location filename="../qml/Views/CameraMode.qml" line="121"/>
+        <location filename="../qml/Views/CameraMode.qml" line="129"/>
         <source>Now</source>
         <translation>Сейчас</translation>
     </message>
@@ -116,41 +116,46 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="143"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>Historical photo nearby</source>
         <translation>Рядом историческая фотография</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="143"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>Вы рядом с «%1».</translation>
+    </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="202"/>
+        <source>Could not open the support page.</source>
+        <translation>Не удалось открыть страницу поддержки.</translation>
     </message>
 </context>
 <context>
     <name>PhotoDetails</name>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="20"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="22"/>
         <source>Year: </source>
         <translation>Год: </translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="118"/>
-        <location filename="../qml/Views/PhotoDetails.qml" line="167"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="120"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="169"/>
         <source>Recreate this view</source>
         <translation>Воссоздать этот вид</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="163"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="165"/>
         <source>Explore the photo</source>
         <translation>Изучите фото</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="164"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="166"/>
         <source>Pinch to zoom and drag to pan the historical photo. Use it to study the details of the past scene.</source>
         <translation>Сжимайте для масштаба, перетаскивайте для просмотра. Изучайте детали прошлой сцены.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/PhotoDetails.qml" line="168"/>
+        <location filename="../qml/Views/PhotoDetails.qml" line="170"/>
         <source>When you are ready, tap “Recreate this view” to open the camera and line up today’s scene with this photo.</source>
         <translation>Когда будете готовы, нажмите «Воссоздать этот вид», чтобы открыть камеру и совместить сегодняшнюю сцену с фото.</translation>
     </message>
@@ -184,62 +189,72 @@
         <translation>Версия: </translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="45"/>
+        <location filename="../qml/Views/Settings.qml" line="49"/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="142"/>
+        <location filename="../qml/Views/Settings.qml" line="146"/>
         <source>When enabled, the map shows only historical photos near your current location.</source>
         <translation>Если включено, карта показывает только исторические фотографии рядом с вашим текущим местоположением.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="146"/>
+        <location filename="../qml/Views/Settings.qml" line="150"/>
         <source>Show only nearest objects</source>
         <translation>Только ближайшие</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="154"/>
+        <location filename="../qml/Views/Settings.qml" line="158"/>
         <source>When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.</source>
         <translation>Если включено, строка «История рядом» показывает все фотографии в области карты в выбранном временном диапазоне. Если выключено, показываются только ближайшие фотографии.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="158"/>
+        <location filename="../qml/Views/Settings.qml" line="162"/>
         <source>Show all objects in &quot;History near you&quot;</source>
         <translation>Все в &quot;История рядом&quot;</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="166"/>
+        <location filename="../qml/Views/Settings.qml" line="170"/>
         <source>When enabled, PastViewer notifies you when you walk near a historical photo.</source>
         <translation>Если включено, PastViewer уведомляет вас, когда вы подходите к исторической фотографии.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="170"/>
+        <location filename="../qml/Views/Settings.qml" line="174"/>
         <source>Proximity notifications</source>
         <translation>Уведомления о приближении</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="183"/>
+        <location filename="../qml/Views/Settings.qml" line="187"/>
         <source>Notification distance: %1 m</source>
         <translation>Дистанция уведомления: %1 м</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="254"/>
+        <location filename="../qml/Views/Settings.qml" line="251"/>
+        <source>Support us 💰</source>
+        <translation>Поддержать нас 💰</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="273"/>
         <source>Reload map items</source>
         <translation>Перезагрузить карту</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="243"/>
+        <location filename="../qml/Views/Settings.qml" line="262"/>
         <source>Reset onboarding</source>
         <translation>Сбросить введение</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="238"/>
+        <location filename="../qml/Views/Settings.qml" line="246"/>
+        <source>By leaving a tip, you support PastViewer&apos;s continued development and keep it FREE</source>
+        <translation>Оставляя чаевые, вы поддерживаете дальнейшую разработку PastViewer и помогаете сохранить его БЕСПЛАТНЫМ</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/Settings.qml" line="257"/>
         <source>Show the introductory tips on the map and photo screens again.</source>
         <translation>Снова показать вводные подсказки на экране карты и фотографий.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/Settings.qml" line="249"/>
+        <location filename="../qml/Views/Settings.qml" line="268"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Заново загрузить исторические фотографии для текущего вида карты с текущими фильтрами.</translation>
     </message>
@@ -250,6 +265,29 @@
         <location filename="../qml/GuiItems/StyledRangeSlider.qml" line="19"/>
         <source>Timeline: </source>
         <translation>Время: </translation>
+    </message>
+</context>
+<context>
+    <name>TipsPromptDialog</name>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="53"/>
+        <source>Enjoying PastViewer?</source>
+        <translation>Нравится PastViewer?</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="63"/>
+        <source>If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.</source>
+        <translation>Если PastViewer помог вам заново открыть какое-либо место, вы можете оставить разовые чаевые и поддержать дальнейшую разработку. Все функции приложения останутся доступными в любом случае.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="79"/>
+        <source>Leave a tip</source>
+        <translation>Оставить чаевые</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="87"/>
+        <source>Not now</source>
+        <translation>Не сейчас</translation>
     </message>
 </context>
 </TS>
