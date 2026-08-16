@@ -21,6 +21,7 @@ Q_NAMESPACE
 enum Type
 {
 	Clustered,
+	Filtered,
 	Raw,
 };
 Q_ENUM_NS(Type)

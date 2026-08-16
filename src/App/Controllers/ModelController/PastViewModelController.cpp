@@ -148,6 +148,8 @@ QAbstractItemModel * PastVuModelController::GetModel(ModelType::Type modelType)
 	switch (modelType)
 	{
 		case ModelType::Raw:
+			return m_impl->baseModel.get();
+		case ModelType::Filtered:
 			return GetHistoryNearModelType() // @TODO think on the function name
 					 ? static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get())
 					 : static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get());
