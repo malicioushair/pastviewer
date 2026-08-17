@@ -9,6 +9,10 @@ void InitializeNotifications(NotificationTappedHandler)
 {
 }
 
+void SetBackgroundLocationTrackingEnabled(bool)
+{
+}
+
 void ShowPhotoProximityNotification(const QString, const QString, int)
 {
 }

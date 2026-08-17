@@ -94,10 +94,22 @@ struct GuiController::Impl
 		p.setAccuracy(QLocationPermission::Precise);
 		return p;
 	}() };
+	QLocationPermission backgroundLocationPermission;
 	QCameraPermission cameraPermission {};
 	std::unique_ptr<PastVuModelController> pastVuModelController;
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
 	QString lastSavedImagePath;
+
+	Impl()
+	{
+		if constexpr (Utils::IsAndroid())
+			backgroundLocationPermission = [] {
+				QLocationPermission p;
+				p.setAccuracy(QLocationPermission::Precise);
+				p.setAvailability(QLocationPermission::Always);
+				return p;
+			}();
+	}
 
 	void LoadQml()
 	{
@@ -146,11 +158,50 @@ GuiController::GuiController(QObject * parent)
 		throw std::runtime_error("Failed to load QML");
 	}
 
-	connect(this, &GuiController::PermissionGranted, m_impl->pastVuModelController.get(), [this](const QPermission & permission) {
+	const auto updateBackgroundLocationTracking = [this] {
+		bool enabled = false;
+		if constexpr (Utils::IsAndroid())
+			enabled = m_impl->pastVuModelController
+				   && m_impl->pastVuModelController->property("proximityNotificationsEnabled").toBool()
+				   && qApp->checkPermission(m_impl->backgroundLocationPermission) == Qt::PermissionStatus::Granted;
+		PlatformDependentLogic::SetBackgroundLocationTrackingEnabled(enabled);
+	};
+	const auto requestBackgroundLocationPermission = [this] {
+		if constexpr (Utils::IsAndroid())
+		{
+			if (!m_impl->pastVuModelController
+				|| !m_impl->pastVuModelController->property("proximityNotificationsEnabled").toBool()
+				|| qApp->checkPermission(m_impl->locationPermission) != Qt::PermissionStatus::Granted)
+				return;
+
+			RequestPermission(m_impl->backgroundLocationPermission);
+		}
+	};
+
+	connect(this, &GuiController::PermissionGranted, m_impl->pastVuModelController.get(), [this, requestBackgroundLocationPermission, updateBackgroundLocationTracking](const QPermission & permission) {
 		if (permission.type() == QLocationPermission::staticMetaObject.metaType())
+		{
 			m_impl->pastVuModelController->OnPositionPermissionGranted();
+			requestBackgroundLocationPermission();
+		}
+
+		updateBackgroundLocationTracking();
+	});
+	connect(m_impl->pastVuModelController.get(), &PastVuModelController::ProximityNotificationsEnabledChanged, this, [requestBackgroundLocationPermission, updateBackgroundLocationTracking] {
+		requestBackgroundLocationPermission();
+		updateBackgroundLocationTracking();
+	});
+	connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, [requestBackgroundLocationPermission, updateBackgroundLocationTracking](Qt::ApplicationState state) {
+		if (state != Qt::ApplicationActive)
+			return;
+
+		requestBackgroundLocationPermission();
+		updateBackgroundLocationTracking();
 	});
 	connect(m_impl->pastVuModelController.get(), &PastVuModelController::PhotoAreaApproached, this, [](const QString & photoTitle, int photoId) {
+		if (QGuiApplication::applicationState() == Qt::ApplicationActive)
+			return;
+
 		PlatformDependentLogic::ShowPhotoProximityNotification(GuiController::tr("Historical photo nearby"), GuiController::tr("You are near \"%1\".").arg(photoTitle), photoId);
 	});
 
@@ -161,6 +212,8 @@ GuiController::GuiController(QObject * parent)
 		m_impl->pastVuModelController->SelectPhoto(photoId);
 	});
 	RequestPermission(m_impl->locationPermission);
+	requestBackgroundLocationPermission();
+	updateBackgroundLocationTracking();
 	RequestCameraPermission();
 }
 

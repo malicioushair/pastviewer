@@ -17,6 +17,7 @@ namespace {
 constexpr auto QT_NATIVE = "org/qtproject/qt/android/QtNative";
 constexpr auto ACTIVITY = "activity";
 constexpr auto NOTIFICATION_HELPER = "org/qtproject/PastViewer/NotificationHelper";
+constexpr auto LOCATION_FOREGROUND_SERVICE = "org/qtproject/PastViewer/LocationForegroundService";
 constexpr auto SHARE_HELPER = "org/qtproject/PastViewer/ShareHelper";
 NotificationTappedHandler notificationTappedHandler;
 
@@ -56,6 +57,27 @@ void InitializeNotifications(NotificationTappedHandler handler)
 	QJniEnvironment env;
 	if (env.checkAndClearExceptions())
 		LOG(ERROR) << "Failed to initialize Android notifications";
+}
+
+void SetBackgroundLocationTrackingEnabled(bool enabled)
+{
+	const auto activity = Activity();
+	if (!activity.isValid())
+	{
+		LOG(ERROR) << "Failed to get Android activity while updating background location tracking";
+		return;
+	}
+
+	QJniObject::callStaticMethod<void>(
+		LOCATION_FOREGROUND_SERVICE,
+		"setEnabled",
+		"(Landroid/content/Context;Z)V",
+		activity.object(),
+		static_cast<jboolean>(enabled));
+
+	QJniEnvironment env;
+	if (env.checkAndClearExceptions())
+		LOG(ERROR) << "Failed to update Android background location tracking";
 }
 
 void ShowPhotoProximityNotification(const QString title, const QString body, int photoId)

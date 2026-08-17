@@ -25,7 +25,7 @@ PlatformDependentLogic::NotificationTappedHandler notificationTappedHandler;
 	   willPresentNotification:(UNNotification *)notification
 		 withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
 {
-	completionHandler(UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
+	completionHandler(UNNotificationPresentationOptionNone);
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
@@ -85,6 +85,10 @@ void InitializeNotifications(NotificationTappedHandler handler)
 							  else if (!granted)
 								  NSLog(@"Notification authorization was not granted");
 						  }];
+}
+
+void SetBackgroundLocationTrackingEnabled(bool)
+{
 }
 
 void ShowPhotoProximityNotification(const QString title, const QString body, int photoId)

@@ -62,6 +62,11 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>PastViewer uses your location to show your position on the map and find historical photos near you. For example, when you walk through a neighborhood, the app highlights archival photos taken at nearby street corners.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
