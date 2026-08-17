@@ -15,6 +15,54 @@
     </message>
 </context>
 <context>
+    <name>ChangelogPromptDialog</name>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
+        <source>Nearby photo alerts</source>
+        <translation>Alertas de fotos por perto</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
+        <source>Get a notification when you walk close to a historical photo.</source>
+        <translation>Receba uma notificação quando passar perto de uma foto histórica.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
+        <source>Works in the background</source>
+        <translation>Funciona em segundo plano</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
+        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
+        <translation>Continue explorando enquanto o PastViewer está em segundo plano e toque em um alerta para abrir a foto correspondente.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
+        <source>Distance control</source>
+        <translation>Controle de distância</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
+        <source>Choose how close you need to be in Settings.</source>
+        <translation>Escolha nas Configurações a que distância deseja receber os alertas.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
+        <source>What&apos;s new in PastViewer %1</source>
+        <translation>Novidades no PastViewer %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
+        <source>PastViewer can now help you discover history while you explore.</source>
+        <translation>Agora o PastViewer ajuda você a descobrir a história enquanto explora.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>
+        <source>Got it</source>
+        <translation>Entendido</translation>
+    </message>
+</context>
+<context>
     <name>ErrorMessageDialog</name>
     <message>
         <location filename="../qml/ErrorMessageDialog/ErrorMessageDialog.qml" line="38"/>
@@ -116,17 +164,17 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="211"/>
         <source>Historical photo nearby</source>
         <translation>Foto histórica nas proximidades</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="211"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>Você está perto de &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="202"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="271"/>
         <source>Could not open the support page.</source>
         <translation>Não foi possível abrir a página de apoio.</translation>
     </message>
@@ -270,22 +318,22 @@
 <context>
     <name>TipsPromptDialog</name>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="53"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="39"/>
         <source>Enjoying PastViewer?</source>
         <translation>Está gostando do PastViewer?</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="63"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="49"/>
         <source>If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.</source>
         <translation>Se o PastViewer ajudou você a redescobrir um lugar, pode deixar uma gorjeta única para apoiar o desenvolvimento contínuo. O aplicativo continuará totalmente disponível de qualquer forma.</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="79"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="65"/>
         <source>Leave a tip</source>
         <translation>Deixar uma gorjeta</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="87"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="73"/>
         <source>Not now</source>
         <translation>Agora não</translation>
     </message>

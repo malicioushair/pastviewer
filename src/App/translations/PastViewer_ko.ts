@@ -15,6 +15,54 @@
     </message>
 </context>
 <context>
+    <name>ChangelogPromptDialog</name>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
+        <source>Nearby photo alerts</source>
+        <translation>주변 사진 알림</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
+        <source>Get a notification when you walk close to a historical photo.</source>
+        <translation>역사 사진 근처를 지나면 알림을 받을 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
+        <source>Works in the background</source>
+        <translation>백그라운드에서도 작동</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
+        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
+        <translation>PastViewer가 백그라운드에 있어도 계속 탐색하고, 알림을 탭해 해당 사진을 열 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
+        <source>Distance control</source>
+        <translation>알림 거리 설정</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
+        <source>Choose how close you need to be in Settings.</source>
+        <translation>설정에서 얼마나 가까이 갔을 때 알림을 받을지 선택하세요.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
+        <source>What&apos;s new in PastViewer %1</source>
+        <translation>PastViewer %1의 새로운 기능</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
+        <source>PastViewer can now help you discover history while you explore.</source>
+        <translation>이제 PastViewer가 주변을 탐색하며 역사를 발견하도록 도와드립니다.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>
+        <source>Got it</source>
+        <translation>확인</translation>
+    </message>
+</context>
+<context>
     <name>ErrorMessageDialog</name>
     <message>
         <location filename="../qml/ErrorMessageDialog/ErrorMessageDialog.qml" line="38"/>
@@ -116,17 +164,17 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="211"/>
         <source>Historical photo nearby</source>
         <translation>근처에 역사 사진이 있습니다</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="211"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>&quot;%1&quot; 근처에 있습니다.</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="202"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="271"/>
         <source>Could not open the support page.</source>
         <translation>후원 페이지를 열 수 없습니다.</translation>
     </message>
@@ -270,22 +318,22 @@
 <context>
     <name>TipsPromptDialog</name>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="53"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="39"/>
         <source>Enjoying PastViewer?</source>
         <translation>PastViewer를 즐겨 사용하고 계신가요?</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="63"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="49"/>
         <source>If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.</source>
         <translation>PastViewer가 장소를 새롭게 발견하는 데 도움이 되었다면, 지속적인 개발을 지원하기 위해 일회성 팁을 보낼 수 있습니다. 팁 여부와 관계없이 앱의 모든 기능을 계속 사용할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="79"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="65"/>
         <source>Leave a tip</source>
         <translation>팁 보내기</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="87"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="73"/>
         <source>Not now</source>
         <translation>나중에</translation>
     </message>

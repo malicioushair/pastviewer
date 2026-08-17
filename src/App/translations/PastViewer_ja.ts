@@ -15,6 +15,54 @@
     </message>
 </context>
 <context>
+    <name>ChangelogPromptDialog</name>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
+        <source>Nearby photo alerts</source>
+        <translation>近くの写真をお知らせ</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
+        <source>Get a notification when you walk close to a historical photo.</source>
+        <translation>歴史的な写真の近くを通ると通知を受け取れます。</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
+        <source>Works in the background</source>
+        <translation>バックグラウンドで動作</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
+        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
+        <translation>PastViewer がバックグラウンドにあっても探索を続けられます。通知をタップすると該当する写真が開きます。</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
+        <source>Distance control</source>
+        <translation>通知距離の設定</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
+        <source>Choose how close you need to be in Settings.</source>
+        <translation>設定で、どのくらい近づいたときに通知するかを選べます。</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
+        <source>What&apos;s new in PastViewer %1</source>
+        <translation>PastViewer %1 の新機能</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
+        <source>PastViewer can now help you discover history while you explore.</source>
+        <translation>PastViewer が、街を探索しながら歴史を発見するお手伝いをします。</translation>
+    </message>
+    <message>
+        <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>
+        <source>Got it</source>
+        <translation>了解</translation>
+    </message>
+</context>
+<context>
     <name>ErrorMessageDialog</name>
     <message>
         <location filename="../qml/ErrorMessageDialog/ErrorMessageDialog.qml" line="38"/>
@@ -116,17 +164,17 @@
 <context>
     <name>PastViewer::GuiController</name>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="211"/>
         <source>Historical photo nearby</source>
         <translation>近くに歴史的な写真があります</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="154"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="211"/>
         <source>You are near &quot;%1&quot;.</source>
         <translation>「%1」の近くにいます。</translation>
     </message>
     <message>
-        <location filename="../Controllers/GuiController/GuiController.cpp" line="202"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="271"/>
         <source>Could not open the support page.</source>
         <translation>サポートページを開けませんでした。</translation>
     </message>
@@ -270,22 +318,22 @@
 <context>
     <name>TipsPromptDialog</name>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="53"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="39"/>
         <source>Enjoying PastViewer?</source>
         <translation>PastViewer を楽しんでいますか？</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="63"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="49"/>
         <source>If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.</source>
         <translation>PastViewer で場所を再発見できたなら、継続的な開発を支援するために一度だけチップを贈ることができます。チップの有無にかかわらず、アプリのすべての機能を引き続き利用できます。</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="79"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="65"/>
         <source>Leave a tip</source>
         <translation>チップを贈る</translation>
     </message>
     <message>
-        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="87"/>
+        <location filename="../qml/Helpers/TipsPromptDialog.qml" line="73"/>
         <source>Not now</source>
         <translation>今はしない</translation>
     </message>

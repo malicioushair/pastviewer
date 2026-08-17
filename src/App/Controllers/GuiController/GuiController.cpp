@@ -34,6 +34,12 @@ namespace {
 
 constexpr auto MAP_ONBOARDING_KEY = "MapPageIntro";
 constexpr auto PHOTO_DETAILS_ONBOARDING_KEY = "PhotoDetailsIntro";
+constexpr auto LAST_SHOWN_CHANGELOG_VERSION_KEY = "Changelog/LastShownVersion";
+
+QString AppVersion()
+{
+	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+}
 
 QUrl TipsUrl()
 {
@@ -238,7 +244,17 @@ bool GuiController::IsDebug()
 
 QString GuiController::GetAppVersion()
 {
-	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+	return AppVersion();
+}
+
+bool GuiController::ShouldShowChangelog() const
+{
+	return m_impl->settings.value(LAST_SHOWN_CHANGELOG_VERSION_KEY).toString() != AppVersion();
+}
+
+void GuiController::MarkChangelogShown()
+{
+	m_impl->settings.setValue(LAST_SHOWN_CHANGELOG_VERSION_KEY, AppVersion());
 }
 
 bool GuiController::HasTipsUrl() const

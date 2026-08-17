@@ -1,11 +1,10 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
 import "../GuiItems"
 import "colors.js" as Colors
 
-Dialog {
+PromptDialog {
     id: rootID
 
     property bool outcomeRecorded: false
@@ -23,25 +22,12 @@ Dialog {
         close()
     }
 
-    modal: true
-    focus: true
-    width: Math.min(parent.width * 0.9, 420)
-    padding: 20
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-
     onOpened: guiController.MarkTipsPromptShown()
     onClosed: {
         if (!outcomeRecorded) {
             outcomeRecorded = true
             rootID.discarded()
         }
-    }
-
-    background: Rectangle {
-        radius: 16
-        color: Colors.palette.toolbar
-        border.color: Colors.palette.border
-        border.width: 1
     }
 
     contentItem: ColumnLayout {

@@ -18,6 +18,7 @@ Rectangle {
     id: mainWindowID
 
     property alias mapAnimationHelper: mapAnimationHelperID
+    property bool changelogPromptPending: false
     property bool tipsPromptPending: false
 
     function openPhotoDetails(photo, thumbnail, title, year) {
@@ -38,24 +39,50 @@ Rectangle {
             stackViewID.pop(null, StackView.Immediate)
     }
 
-    function scheduleTipsPrompt() {
-        tipsPromptPending = true
-        tipsPromptDelayID.restart()
+    function hasPendingPrompt() {
+        return changelogPromptPending || tipsPromptPending
     }
 
-    function tryOpenTipsPrompt() {
-        if (!tipsPromptPending || stackViewID.busy)
+    function schedulePromptCheck() {
+        promptDelayID.restart()
+    }
+
+    function scheduleChangelogPrompt() {
+        changelogPromptPending = true
+        schedulePromptCheck()
+    }
+
+    function scheduleTipsPrompt() {
+        tipsPromptPending = true
+        schedulePromptCheck()
+    }
+
+    function tryOpenPendingPrompt() {
+        if (!hasPendingPrompt() || stackViewID.busy)
             return
 
-        tipsPromptPending = false
         const currentItem = stackViewID.currentItem
         if (false
                 || !currentItem
                 || Qt.application.state !== Qt.ApplicationActive
-                || currentItem.objectName === "cameraModePage"
-                || currentItem["blocksTipsPrompt"] === true
                 || errorDialogID.visible
                 || tipsPromptDialogID.visible
+                || changelogPromptDialogID.visible)
+            return
+
+        if (changelogPromptPending) {
+            changelogPromptPending = false
+            if (guiController.ShouldShowChangelog())
+                changelogPromptDialogID.open()
+            else if (tipsPromptPending)
+                schedulePromptCheck()
+            return
+        }
+
+        tipsPromptPending = false
+        if (false
+                || currentItem.objectName === "cameraModePage"
+                || currentItem["blocksTipsPrompt"] === true
                 || !guiController.ShouldShowTipsPrompt())
             return
 
@@ -81,23 +108,41 @@ Rectangle {
         }
 
         onBusyChanged: {
-            if (!busy && mainWindowID.tipsPromptPending)
-                tipsPromptDelayID.restart()
+            if (!busy && mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
         }
     }
 
     Timer {
-        id: tipsPromptDelayID
+        id: promptDelayID
 
         interval: 350
         repeat: false
-        onTriggered: mainWindowID.tryOpenTipsPrompt()
+        onTriggered: mainWindowID.tryOpenPendingPrompt()
     }
 
     ErrorMessageDialog {
         id: errorDialogID
 
         anchors.centerIn: Overlay.overlay
+
+        onClosed: {
+            if (mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
+        }
+    }
+
+    ChangelogPromptDialog {
+        id: changelogPromptDialogID
+
+        anchors.centerIn: Overlay.overlay
+        version: guiController.GetAppVersion()
+
+        onOpened: guiController.MarkChangelogShown()
+        onClosed: {
+            if (mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
+        }
     }
 
     TipsPromptDialog {
@@ -105,8 +150,16 @@ Rectangle {
 
         anchors.centerIn: Overlay.overlay
 
-        onAccepted: guiController.OpenTipsUrl()
-        onDiscarded: guiController.DismissTipsPrompt()
+        onAccepted: {
+            guiController.OpenTipsUrl()
+            if (mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
+        }
+        onDiscarded: {
+            guiController.DismissTipsPrompt()
+            if (mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
+        }
     }
 
     Connections {
@@ -120,6 +173,21 @@ Rectangle {
         function onTipsPromptRequested() {
             mainWindowID.scheduleTipsPrompt()
         }
+    }
+
+    Connections {
+        target: Qt.application
+
+        function onStateChanged() {
+            if (Qt.application.state === Qt.ApplicationActive
+                    && mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
+        }
+    }
+
+    Component.onCompleted: {
+        if (guiController.ShouldShowChangelog())
+            mainWindowID.scheduleChangelogPrompt()
     }
 
 }
