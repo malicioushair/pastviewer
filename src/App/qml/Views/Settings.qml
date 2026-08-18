@@ -23,15 +23,19 @@ BasePage {
         text: qsTr("Version: ") + guiController.GetAppVersion()
     }
 
-    ColumnLayout {
+    ScrollView {
+        id: settingsScrollViewID
+
         anchors {
             fill: parent
             margins: 20
         }
+        clip: true
+        contentWidth: availableWidth
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
         ColumnLayout {
-            Layout.alignment: Qt.AlignTop
-
+            width: settingsScrollViewID.availableWidth
             spacing: 20
 
             ColumnLayout {
@@ -160,6 +164,68 @@ BasePage {
                 }
             }
 
+            SettingWithHint {
+                Layout.leftMargin: -7
+
+                description: qsTr("When enabled, PastViewer notifies you when you walk near a historical photo.")
+
+                StyledCheckBox {
+                    checked: pastVuModelController.proximityNotificationsEnabled
+                    text: qsTr("Proximity notifications")
+                    onClicked: pastVuModelController.ToggleProximityNotifications();
+                }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.rightMargin: 18
+                spacing: 8
+                enabled: pastVuModelController.proximityNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.45
+
+                Text {
+                    text: qsTr("Notification distance: %1 m").arg(proximityDistanceSliderID.value)
+                    color: Colors.palette.text
+                    font.family: "monospace"
+                }
+
+                Slider {
+                    id: proximityDistanceSliderID
+
+                    Layout.fillWidth: true
+
+                    from: pastVuModelController.GetNotificationDistanceMin()
+                    to: pastVuModelController.GetNotificationDistanceMax()
+                    stepSize: 5
+                    snapMode: Slider.SnapAlways
+                    value: pastVuModelController.proximityNotificationDistance
+                    onMoved: pastVuModelController.proximityNotificationDistance = Math.round(value)
+
+                    background: Rectangle {
+                        x: proximityDistanceSliderID.leftPadding
+                        y: proximityDistanceSliderID.topPadding + proximityDistanceSliderID.availableHeight / 2 - height / 2
+                        width: proximityDistanceSliderID.availableWidth
+                        height: 8
+                        radius: 4
+                        color: Colors.palette.sliderAlt
+
+                        Rectangle {
+                            width: proximityDistanceSliderID.visualPosition * parent.width
+                            height: parent.height
+                            color: Colors.palette.slider
+                            radius: 4
+                        }
+                    }
+
+                    handle: StyledSliderHandle {
+                        yOffset: 10
+
+                        pressed: proximityDistanceSliderID.pressed
+                        visualPosition: proximityDistanceSliderID.visualPosition
+                        availableWidth: proximityDistanceSliderID.availableWidth
+                    }
+                }
+            }
 
             StyledRangeSlider {
                 id: timelineSettingID
@@ -173,6 +239,18 @@ BasePage {
 
                 onSelectedMinChanged: pastVuModelController.userSelectedTimelineRange.min = selectedMin
                 onSelectedMaxChanged: pastVuModelController.userSelectedTimelineRange.max = selectedMax
+            }
+
+            SettingWithHint {
+                visible: guiController.HasTipsUrl()
+                description: qsTr("By leaving a tip, you support PastViewer's continued development and keep it FREE")
+
+                StyledButton {
+                    id: supportButtonID
+
+                    text: qsTr("Support us 💰")
+                    onClicked: guiController.OpenTipsUrl()
+                }
             }
 
             SettingWithHint {

@@ -95,6 +95,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE SENTRY_DSN="${SENTRY_DSN}") #
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MAJOR="${CMAKE_PROJECT_VERSION_MAJOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MINOR="${CMAKE_PROJECT_VERSION_MINOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_PATCH="${CMAKE_PROJECT_VERSION_PATCH}")
+target_compile_definitions(${PROJECT_NAME} PRIVATE PASTVIEWER_TIPS_URL="${PASTVIEWER_TIPS_URL}")
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG=1)
 else()
@@ -140,6 +141,8 @@ elseif(ANDROID)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources/android"
         QT_ANDROID_APP_ICON "@mipmap/ic_launcher"
+        QT_ANDROID_COMPILE_SDK_VERSION 36
+        QT_ANDROID_TARGET_SDK_VERSION 36
         QT_ANDROID_VERSION_CODE "${CMAKE_PROJECT_VERSION_MAJOR}${CMAKE_PROJECT_VERSION_MINOR}${CMAKE_PROJECT_VERSION_PATCH}"
         QT_ANDROID_VERSION_NAME "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"
     )
@@ -182,6 +185,8 @@ endif()
 # Qt 6 static FFmpeg media plugin does not pull in libav*; link Qt's bundled xcframeworks.
 if(IOS)
     enable_language(OBJCXX)
+    find_library(USER_NOTIFICATIONS_FRAMEWORK UserNotifications REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${USER_NOTIFICATIONS_FRAMEWORK})
     qt_add_ios_ffmpeg_libraries(${PROJECT_NAME})
 endif()
 

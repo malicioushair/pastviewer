@@ -1,8 +1,12 @@
 #include "PastViewModelController.h"
 
+#include <algorithm>
 #include <memory>
+#include <optional>
 #include <stdexcept>
+#include <vector>
 
+#include <QGeoPositionInfo>
 #include <QGuiApplication>
 #include <QLocationPermission>
 #include <QString>
@@ -10,6 +14,7 @@
 #include "App/Models/ClusterModel.h"
 #include "glog/logging.h"
 
+#include "App/Controllers/ModelController/PhotoProximityTracker.h"
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
 #include "App/Models/BaseModel.h"
 #include "App/Models/NearestObjectsModel.h"
@@ -18,6 +23,11 @@
 namespace {
 constexpr auto NEAREST_OBJECTS_ONLY = "NearestObjectsOnly";
 constexpr auto HISTORY_NEAR_MODEL_TYPE = "HistoryNearModelType";
+constexpr auto PROXIMITY_NOTIFICATIONS_ENABLED = "ProximityNotificationsEnabled";
+constexpr auto PROXIMITY_NOTIFICATION_DISTANCE = "ProximityNotificationDistance";
+constexpr auto PROXIMITY_NOTIFICATION_DISTANCE_DEFAULT = 50;
+constexpr auto PROXIMITY_NOTIFICATION_DISTANCE_MIN = 10;
+constexpr auto PROXIMITY_NOTIFICATION_DISTANCE_MAX = 200;
 constexpr auto YEARS_FROM = "YEARS_FROM";
 constexpr auto YEARS_TO = "YEARS_TO";
 constexpr auto YEAR_FROM_VALUE = 1800;
@@ -51,6 +61,9 @@ struct PastVuModelController::Impl
 	std::unique_ptr<ClusterModel> clusterModelScreen;
 	std::unique_ptr<ClusterModel> clusterModelNearest;
 	std::unique_ptr<PositionSourceAdapter> positionSourceAdapter;
+	PhotoProximityTracker photoProximityTracker;
+	std::optional<int> pendingPhotoSelectionId;
+	QGeoCoordinate currentCoordinate;
 	QSettings & settings;
 	const Range defaultTimelineRange { YEAR_FROM_VALUE, QDate::currentDate().year() };
 	Range userSelectedTimelineRange {
@@ -77,16 +90,66 @@ PastVuModelController::PastVuModelController(const QLocationPermission & permiss
 	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, m_impl->clusterModelNearest.get(), [&]() {
 		m_impl->clusterModelScreen->OnViewportChanged(m_impl->baseModel->GetLastKnownViewport());
 	});
+	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, &PastVuModelController::EvaluatePhotoProximity);
+	const auto retryPendingPhotoSelection = [this] {
+		if (m_impl->pendingPhotoSelectionId)
+			SelectPhoto(*m_impl->pendingPhotoSelectionId);
+	};
+	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, retryPendingPhotoSelection);
+	connect(m_impl->screenObjectsModel.get(), &QAbstractItemModel::modelReset, this, retryPendingPhotoSelection);
+	connect(m_impl->nearestObjectsModel.get(), &QAbstractItemModel::modelReset, this, retryPendingPhotoSelection);
+	connect(m_impl->source.get(), &QGeoPositionInfoSource::positionUpdated, this, [this](const QGeoPositionInfo & info) {
+		m_impl->currentCoordinate = info.coordinate();
+		EvaluatePhotoProximity();
+	});
 	connect(m_impl->clusterModelScreen.get(), &ClusterModel::ZoomsToDecluster, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::UpdateZoomsToDecluster);
 }
 
 PastVuModelController::~PastVuModelController() = default;
+
+void PastVuModelController::EvaluatePhotoProximity()
+{
+	if (!m_impl->currentCoordinate.isValid())
+		return;
+
+	std::vector<PhotoArea> photoAreas;
+	photoAreas.reserve(m_impl->baseModel->rowCount());
+
+	for (auto row = 0; row < m_impl->baseModel->rowCount(); ++row)
+	{
+		const auto index = m_impl->baseModel->index(row, 0);
+		photoAreas.push_back({
+			m_impl->baseModel->data(index, BaseModel::Roles::Cid).toInt(),
+			m_impl->baseModel->data(index, BaseModel::Roles::Coordinate).value<QGeoCoordinate>(),
+		});
+	}
+
+	const auto enteredPhotoId = m_impl->photoProximityTracker.Update(
+		m_impl->currentCoordinate,
+		photoAreas,
+		GetProximityNotificationDistance());
+	if (!enteredPhotoId || !GetProximityNotificationsEnabled())
+		return;
+
+	const auto enteredPhoto = m_impl->baseModel->match(
+		m_impl->baseModel->index(0, 0),
+		BaseModel::Roles::Cid,
+		*enteredPhotoId,
+		1,
+		Qt::MatchExactly);
+	if (enteredPhoto.isEmpty())
+		return;
+
+	emit PhotoAreaApproached(m_impl->baseModel->data(enteredPhoto.front(), BaseModel::Roles::Title).toString(), *enteredPhotoId);
+}
 
 QAbstractItemModel * PastVuModelController::GetModel(ModelType::Type modelType)
 {
 	switch (modelType)
 	{
 		case ModelType::Raw:
+			return m_impl->baseModel.get();
+		case ModelType::Filtered:
 			return GetHistoryNearModelType() // @TODO think on the function name
 					 ? static_cast<QAbstractItemModel *>(m_impl->screenObjectsModel.get())
 					 : static_cast<QAbstractItemModel *>(m_impl->nearestObjectsModel.get());
@@ -96,6 +159,53 @@ QAbstractItemModel * PastVuModelController::GetModel(ModelType::Type modelType)
 					 : static_cast<QAbstractItemModel *>(m_impl->clusterModelScreen.get());
 	}
 	assert(false && "Unknown model type");
+}
+
+bool PastVuModelController::SelectPhoto(int photoId)
+{
+	auto * model = GetModel(ModelType::Raw);
+	if (!model || model->rowCount() == 0)
+	{
+		m_impl->pendingPhotoSelectionId = photoId;
+		return false;
+	}
+
+	const auto matches = model->match(
+		model->index(0, 0),
+		BaseModel::Roles::Cid,
+		photoId,
+		1,
+		Qt::MatchExactly);
+	if (matches.isEmpty())
+	{
+		m_impl->pendingPhotoSelectionId = photoId;
+		return false;
+	}
+
+	const auto index = matches.front();
+	if (!model->setData(index, true, BaseModel::Roles::Selected))
+	{
+		LOG(WARNING) << "Failed to select photo: " << photoId;
+		return false;
+	}
+
+	m_impl->pendingPhotoSelectionId.reset();
+	emit photoSelected(
+		index.row(),
+		model->data(index, BaseModel::Roles::Coordinate).value<QGeoCoordinate>(),
+		model->data(index, ScreenObjectsModel::Roles::IsClustered).toBool(),
+		model->data(index, ScreenObjectsModel::Roles::ZoomToDecluster).toInt());
+	return true;
+}
+
+int PastVuModelController::GetNotificationDistanceMin() const
+{
+	return PROXIMITY_NOTIFICATION_DISTANCE_MIN;
+}
+
+int PastVuModelController::GetNotificationDistanceMax() const
+{
+	return PROXIMITY_NOTIFICATION_DISTANCE_MAX;
 }
 
 QString PastVuModelController::GetMapHostApiKey()
@@ -133,6 +243,33 @@ void PastVuModelController::SetHistoryNearModelType(bool value)
 {
 	m_impl->settings.setValue(HISTORY_NEAR_MODEL_TYPE, value);
 	emit HistoryNearModelChanged();
+}
+
+bool PastVuModelController::GetProximityNotificationsEnabled()
+{
+	return m_impl->settings.value(PROXIMITY_NOTIFICATIONS_ENABLED, true).toBool();
+}
+
+void PastVuModelController::SetProximityNotificationsEnabled(bool value)
+{
+	m_impl->settings.setValue(PROXIMITY_NOTIFICATIONS_ENABLED, value);
+	emit ProximityNotificationsEnabledChanged();
+}
+
+int PastVuModelController::GetProximityNotificationDistance()
+{
+	const auto value = m_impl->settings.value(PROXIMITY_NOTIFICATION_DISTANCE, PROXIMITY_NOTIFICATION_DISTANCE_DEFAULT).toInt();
+	return std::clamp(value, PROXIMITY_NOTIFICATION_DISTANCE_MIN, PROXIMITY_NOTIFICATION_DISTANCE_MAX);
+}
+
+void PastVuModelController::SetProximityNotificationDistance(int value)
+{
+	const auto clamped = std::clamp(value, PROXIMITY_NOTIFICATION_DISTANCE_MIN, PROXIMITY_NOTIFICATION_DISTANCE_MAX);
+	if (clamped == GetProximityNotificationDistance())
+		return;
+
+	m_impl->settings.setValue(PROXIMITY_NOTIFICATION_DISTANCE, clamped);
+	emit ProximityNotificationDistanceChanged();
 }
 
 int PastVuModelController::GetZoomLevel() const
@@ -174,6 +311,11 @@ void PastVuModelController::ToggleHistoryNearYouModel()
 {
 	SetHistoryNearModelType(!GetHistoryNearModelType());
 	emit HistoryNearModelChanged();
+}
+
+void PastVuModelController::ToggleProximityNotifications()
+{
+	SetProximityNotificationsEnabled(!GetProximityNotificationsEnabled());
 }
 
 void PastVuModelController::ReloadItems()

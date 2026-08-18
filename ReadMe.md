@@ -68,14 +68,17 @@ The app currently includes translations for English, German, Spanish, French, It
 - Stadia Maps API key
 - Sentry DSN
 
-For Android builds, install Android SDK API 26+, Android NDK 26.3 or later, and JDK 17 or later. For iOS builds, configure a valid Apple team and provisioning profile through CMake options.
+For Android builds, install Android SDK Platform 36, Android SDK Build Tools 35.0.0 or later, Android NDK 26.3 or later, and JDK 17 or later. The app explicitly compiles against and targets Android 16 (API level 36); the native API level remains a separate compatibility setting. For iOS builds, configure a valid Apple team and provisioning profile through CMake options.
 
 ### Configure Keys
 
 ```bash
 -DOSM_API_KEY=your-stadiamaps-api-key
 -DSENTRY_DSN=your-sentry-dsn
+-DPASTVIEWER_TIPS_URL=https://your-tip-page.example
 ```
+
+`PASTVIEWER_TIPS_URL` is optional. When it is omitted, the support action and automatic prompt are hidden. When provided, the support action opens the URL in the system browser on every supported platform. The automatic prompt becomes eligible only after successful recreations in two separate app sessions and can appear at most twice, with a 30-day cooldown after the first dismissal.
 
 Create a Stadia Maps key at [stadiamaps.com](https://stadiamaps.com/). Use a private or environment-specific Sentry project for `SENTRY_DSN`.
 
@@ -160,4 +163,3 @@ adb install -r android-build/build/outputs/apk/release/android-build-release-uns
 ```
 
 VS Code users can also run the project tasks from `.vscode/tasks.json`.
-

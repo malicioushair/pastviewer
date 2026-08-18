@@ -10,6 +10,8 @@ import "Helpers"
 BasePage {
     id: photoDetailsPageID
 
+    blocksTipsPrompt: photoDetailsOnboardingID.active
+
     required property string imageSource
     required property string thumbnailSource
     required property int year

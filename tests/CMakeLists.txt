@@ -10,11 +10,14 @@ enable_testing()
 # Create test executable
 add_executable(PastViewerTests
     DirectionUtilsTest.cpp
+    PhotoProximityTrackerTest.cpp
     UniqueCircularBufferTest.cpp
     ClusterModelTest.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/ClusterModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/ScreenObjectsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/BaseModel.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PhotoProximityTracker.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/GuiController/TipPromptTracker.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Utils/Range.h
 )
 
@@ -50,4 +53,3 @@ add_custom_target(run_tests
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running unit tests..."
 )
-

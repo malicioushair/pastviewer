@@ -1,5 +1,7 @@
 #include "App/Controllers/GuiController/platform/Logic.h"
 
+#include <utility>
+
 #include <QDir>
 #include <QFileInfo>
 #include <QJniEnvironment>
@@ -10,7 +12,98 @@
 
 namespace PlatformDependentLogic {
 
-bool SaveScreenshotToGallery(const QString & filePath)
+namespace {
+
+constexpr auto QT_NATIVE = "org/qtproject/qt/android/QtNative";
+constexpr auto ACTIVITY = "activity";
+constexpr auto NOTIFICATION_HELPER = "org/qtproject/PastViewer/NotificationHelper";
+constexpr auto LOCATION_FOREGROUND_SERVICE = "org/qtproject/PastViewer/LocationForegroundService";
+constexpr auto SHARE_HELPER = "org/qtproject/PastViewer/ShareHelper";
+NotificationTappedHandler notificationTappedHandler;
+
+QJniObject Activity()
+{
+	return QJniObject::callStaticObjectMethod(
+		QT_NATIVE,
+		ACTIVITY,
+		"()Landroid/app/Activity;");
+}
+
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_qtproject_PastViewer_NotificationHelper_notificationTapped(JNIEnv *, jclass, jint photoId)
+{
+	if (notificationTappedHandler)
+		notificationTappedHandler(static_cast<int>(photoId));
+}
+
+void InitializeNotifications(NotificationTappedHandler handler)
+{
+	notificationTappedHandler = std::move(handler);
+
+	const auto activity = Activity();
+	if (!activity.isValid())
+	{
+		LOG(ERROR) << "Failed to get Android activity while initializing notifications";
+		return;
+	}
+
+	QJniObject::callStaticMethod<void>(
+		NOTIFICATION_HELPER,
+		"initialize",
+		"(Landroid/app/Activity;)V",
+		activity.object());
+
+	QJniEnvironment env;
+	if (env.checkAndClearExceptions())
+		LOG(ERROR) << "Failed to initialize Android notifications";
+}
+
+void SetBackgroundLocationTrackingEnabled(bool enabled)
+{
+	const auto activity = Activity();
+	if (!activity.isValid())
+	{
+		LOG(ERROR) << "Failed to get Android activity while updating background location tracking";
+		return;
+	}
+
+	QJniObject::callStaticMethod<void>(
+		LOCATION_FOREGROUND_SERVICE,
+		"setEnabled",
+		"(Landroid/content/Context;Z)V",
+		activity.object(),
+		static_cast<jboolean>(enabled));
+
+	QJniEnvironment env;
+	if (env.checkAndClearExceptions())
+		LOG(ERROR) << "Failed to update Android background location tracking";
+}
+
+void ShowPhotoProximityNotification(const QString title, const QString body, int photoId)
+{
+	const auto activity = Activity();
+	if (!activity.isValid())
+	{
+		LOG(ERROR) << "Failed to get Android activity while showing notification";
+		return;
+	}
+
+	QJniObject::callStaticMethod<void>(
+		NOTIFICATION_HELPER,
+		"showPhotoProximityNotification",
+		"(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;I)V",
+		activity.object(),
+		QJniObject::fromString(title).object(),
+		QJniObject::fromString(body).object(),
+		static_cast<jint>(photoId));
+
+	QJniEnvironment env;
+	if (env.checkAndClearExceptions())
+		LOG(ERROR) << "Failed to show Android proximity notification";
+}
+
+bool SaveScreenshotToGallery(const QString filePath)
 {
 	QFileInfo fileInfo(filePath);
 	if (!fileInfo.exists())
@@ -22,10 +115,7 @@ bool SaveScreenshotToGallery(const QString & filePath)
 	try
 	{
 		// Use MediaStore API to insert image into gallery (Android 10+)
-		const auto activity = QJniObject::callStaticObjectMethod(
-			"org/qtproject/qt/android/QtNative",
-			"activity",
-			"()Landroid/app/Activity;");
+		const auto activity = Activity();
 
 		if (!activity.isValid())
 		{
@@ -130,7 +220,7 @@ bool SaveScreenshotToGallery(const QString & filePath)
 	}
 }
 
-bool ShareImage(const QString & filePath)
+bool ShareImage(const QString filePath)
 {
 	QFileInfo fileInfo(filePath);
 	if (!fileInfo.exists())
@@ -139,10 +229,7 @@ bool ShareImage(const QString & filePath)
 		return false;
 	}
 
-	const auto activity = QJniObject::callStaticObjectMethod(
-		"org/qtproject/qt/android/QtNative",
-		"activity",
-		"()Landroid/app/Activity;");
+	const auto activity = Activity();
 	if (!activity.isValid())
 	{
 		LOG(ERROR) << "Failed to get Android activity";
@@ -150,7 +237,7 @@ bool ShareImage(const QString & filePath)
 	}
 
 	const auto ok = QJniObject::callStaticMethod<jboolean>(
-		"org/qtproject/PastViewer/ShareHelper",
+		SHARE_HELPER,
 		"shareImage",
 		"(Landroid/app/Activity;Ljava/lang/String;)Z",
 		activity.object(),

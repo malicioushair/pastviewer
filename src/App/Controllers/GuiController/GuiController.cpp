@@ -2,11 +2,13 @@
 
 #include <QCameraDevice>
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QDir>
 #include <QGuiApplication>
 #include <QLocationPermission>
 #include <QMediaDevices>
 #include <QPermissions>
+#include <QPointer>
 #include <QQmlAbstractUrlInterceptor>
 #include <QQmlContext>
 #include <QSettings>
@@ -18,6 +20,7 @@
 
 #include "glog/logging.h"
 
+#include "App/Controllers/GuiController/TipPromptTracker.h"
 #include "App/Controllers/GuiController/platform/Logic.h"
 #include "App/Controllers/I18nController/I18nController.h"
 #include "App/Controllers/ModelController/PastViewModelController.h"
@@ -28,6 +31,20 @@
 using namespace PastViewer;
 
 namespace {
+
+constexpr auto MAP_ONBOARDING_KEY = "MapPageIntro";
+constexpr auto PHOTO_DETAILS_ONBOARDING_KEY = "PhotoDetailsIntro";
+constexpr auto LAST_SHOWN_CHANGELOG_VERSION_KEY = "Changelog/LastShownVersion";
+
+QString AppVersion()
+{
+	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+}
+
+QUrl TipsUrl()
+{
+	return QUrl(QString::fromUtf8(PASTVIEWER_TIPS_URL));
+}
 
 class HotReloadUrlInterceptor
 	: public QQmlAbstractUrlInterceptor
@@ -77,15 +94,28 @@ struct GuiController::Impl
 	QQmlApplicationEngine engine;
 	I18nController i18nController { engine };
 	QSettings settings;
+	TipPromptTracker tipPromptTracker;
 	QLocationPermission locationPermission { [] {
 		QLocationPermission p;
 		p.setAccuracy(QLocationPermission::Precise);
 		return p;
 	}() };
+	QLocationPermission backgroundLocationPermission;
 	QCameraPermission cameraPermission {};
 	std::unique_ptr<PastVuModelController> pastVuModelController;
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
 	QString lastSavedImagePath;
+
+	Impl()
+	{
+		if constexpr (Utils::IsAndroid())
+			backgroundLocationPermission = [] {
+				QLocationPermission p;
+				p.setAccuracy(QLocationPermission::Precise);
+				p.setAvailability(QLocationPermission::Always);
+				return p;
+			}();
+	}
 
 	void LoadQml()
 	{
@@ -134,12 +164,62 @@ GuiController::GuiController(QObject * parent)
 		throw std::runtime_error("Failed to load QML");
 	}
 
-	connect(this, &GuiController::PermissionGranted, m_impl->pastVuModelController.get(), [this](const QPermission & permission) {
+	const auto updateBackgroundLocationTracking = [this] {
+		bool enabled = false;
+		if constexpr (Utils::IsAndroid())
+			enabled = m_impl->pastVuModelController
+				   && m_impl->pastVuModelController->property("proximityNotificationsEnabled").toBool()
+				   && qApp->checkPermission(m_impl->backgroundLocationPermission) == Qt::PermissionStatus::Granted;
+		PlatformDependentLogic::SetBackgroundLocationTrackingEnabled(enabled);
+	};
+	const auto requestBackgroundLocationPermission = [this] {
+		if constexpr (Utils::IsAndroid())
+		{
+			if (!m_impl->pastVuModelController
+				|| !m_impl->pastVuModelController->property("proximityNotificationsEnabled").toBool()
+				|| qApp->checkPermission(m_impl->locationPermission) != Qt::PermissionStatus::Granted)
+				return;
+
+			RequestPermission(m_impl->backgroundLocationPermission);
+		}
+	};
+
+	connect(this, &GuiController::PermissionGranted, m_impl->pastVuModelController.get(), [this, requestBackgroundLocationPermission, updateBackgroundLocationTracking](const QPermission & permission) {
 		if (permission.type() == QLocationPermission::staticMetaObject.metaType())
+		{
 			m_impl->pastVuModelController->OnPositionPermissionGranted();
+			requestBackgroundLocationPermission();
+		}
+
+		updateBackgroundLocationTracking();
+	});
+	connect(m_impl->pastVuModelController.get(), &PastVuModelController::ProximityNotificationsEnabledChanged, this, [requestBackgroundLocationPermission, updateBackgroundLocationTracking] {
+		requestBackgroundLocationPermission();
+		updateBackgroundLocationTracking();
+	});
+	connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, [requestBackgroundLocationPermission, updateBackgroundLocationTracking](Qt::ApplicationState state) {
+		if (state != Qt::ApplicationActive)
+			return;
+
+		requestBackgroundLocationPermission();
+		updateBackgroundLocationTracking();
+	});
+	connect(m_impl->pastVuModelController.get(), &PastVuModelController::PhotoAreaApproached, this, [](const QString & photoTitle, int photoId) {
+		if (QGuiApplication::applicationState() == Qt::ApplicationActive)
+			return;
+
+		PlatformDependentLogic::ShowPhotoProximityNotification(GuiController::tr("Historical photo nearby"), GuiController::tr("You are near \"%1\".").arg(photoTitle), photoId);
 	});
 
+	PlatformDependentLogic::InitializeNotifications([&](int photoId) {
+		if (!m_impl->pastVuModelController)
+			return;
+
+		m_impl->pastVuModelController->SelectPhoto(photoId);
+	});
 	RequestPermission(m_impl->locationPermission);
+	requestBackgroundLocationPermission();
+	updateBackgroundLocationTracking();
 	RequestCameraPermission();
 }
 
@@ -164,7 +244,61 @@ bool GuiController::IsDebug()
 
 QString GuiController::GetAppVersion()
 {
-	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+	return AppVersion();
+}
+
+bool GuiController::ShouldShowChangelog() const
+{
+	return m_impl->settings.value(LAST_SHOWN_CHANGELOG_VERSION_KEY).toString() != AppVersion();
+}
+
+void GuiController::MarkChangelogShown()
+{
+	m_impl->settings.setValue(LAST_SHOWN_CHANGELOG_VERSION_KEY, AppVersion());
+}
+
+bool GuiController::HasTipsUrl() const
+{
+	return !TipsUrl().isEmpty();
+}
+
+bool GuiController::OpenTipsUrl()
+{
+	const auto tipsUrl = TipsUrl();
+	if (!tipsUrl.isValid() || !QDesktopServices::openUrl(tipsUrl))
+	{
+		LOG(ERROR) << "Failed to open PASTVIEWER_TIPS_URL: " << tipsUrl.toString().toStdString();
+		emit showErrorDialog(tr("Could not open the support page."));
+		return false;
+	}
+
+	m_impl->tipPromptTracker.DisableAutomaticPrompts();
+	return true;
+}
+
+bool GuiController::ShouldShowTipsPrompt()
+{
+	return true
+		&& HasTipsUrl()
+		&& IsOnboardingStepCompleted(MAP_ONBOARDING_KEY)
+		&& IsOnboardingStepCompleted(PHOTO_DETAILS_ONBOARDING_KEY)
+		&& m_impl->tipPromptTracker.ShouldShowPrompt(QDateTime::currentDateTimeUtc());
+}
+
+void GuiController::NotifyCameraModeLeft()
+{
+	if (ShouldShowTipsPrompt())
+		emit tipsPromptRequested();
+}
+
+void GuiController::MarkTipsPromptShown()
+{
+	m_impl->tipPromptTracker.MarkPromptShown(QDateTime::currentDateTimeUtc());
+}
+
+void GuiController::DismissTipsPrompt()
+{
+	m_impl->tipPromptTracker.MarkPromptDismissed(QDateTime::currentDateTimeUtc());
 }
 
 bool GuiController::IsOnboardingStepCompleted(const QString & key)
@@ -230,6 +364,7 @@ QString GuiController::SaveImage(const QQuickItemGrabResult * grabResult)
 	}
 
 	m_impl->lastSavedImagePath = filePath;
+	m_impl->tipPromptTracker.RecordSuccessfulRecreation();
 	LOG(INFO) << "Screenshot saved to:" << filePath.toStdString();
 
 	if (Utils::IsMobile() && !SaveScreenshotToGallery(filePath))

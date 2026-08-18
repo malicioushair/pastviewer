@@ -10,4 +10,15 @@ constexpr bool IsMobile()
 	return false;
 #endif
 }
+
+constexpr bool IsAndroid()
+{
+	return
+#ifdef Q_OS_ANDROID
+		true
+#else
+		false
+#endif
+		;
+}
 }
