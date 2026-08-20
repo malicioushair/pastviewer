@@ -208,6 +208,11 @@ qt_add_qml_module(${PROJECT_NAME}
         ${REL_QML}
 )
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/Controllers/GuiController"
+    "${CMAKE_CURRENT_LIST_DIR}/Controllers/I18nController"
+)
+
 qt_add_translations(${PROJECT_NAME}
     TS_FILES
         ${CMAKE_CURRENT_LIST_DIR}/translations/PastViewer_de.ts

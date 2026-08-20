@@ -6,6 +6,7 @@ import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
+import PastViewer
 
 BasePage {
     id: rootID
@@ -57,12 +58,18 @@ BasePage {
                 ComboBox {
                     id: languageComboBoxID
 
+                    function setLanguage(language) {
+                        const value = language
+                        const index = languageComboBoxID.indexOfValue(value)
+                        languageComboBoxID.currentIndex = index
+                    }
+
                     Layout.fillWidth: true
-                    model: i18nController.languageModel
+                    model: I18nController.languageModel
                     textRole: "NameRole"
                     valueRole: "CodeRole"
                     currentIndex: {
-                        const index = i18nController.GetIndexOf(i18nController.GetCurrentLanguage())
+                        const index = I18nController.GetIndexOf(I18nController.GetCurrentLanguage())
                         if (index >= 0)
                             return index
                     }
@@ -127,16 +134,18 @@ BasePage {
                         }
                     }
 
-                    Component.onCompleted: currentValue = i18nController.GetCurrentLanguage()
+                    Component.onCompleted: {
+                        languageComboBoxID.setLanguage(I18nController.GetCurrentLanguage())
+                    }
 
                     Connections {
-                        target: i18nController
-                        function onLanguageChanged() {
-                            currentValue = i18nController.GetCurrentLanguage()
+                        target: I18nController
+                        function onCurrentLanguageChanged() {
+                            languageComboBoxID.setLanguage(I18nController.GetCurrentLanguage())
                         }
                     }
 
-                    onActivated: i18nController.SetCurrentLanguage(languageComboBoxID.currentValue);
+                    onActivated: I18nController.SetCurrentLanguage(languageComboBoxID.currentValue);
                 }
             }
 
