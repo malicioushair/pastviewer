@@ -10,10 +10,10 @@
 #include <QMetaType>
 #include <QObject>
 #include <QSettings>
+#include <qqmlintegration.h>
 
+#include "App/Controllers/ModelController/PositionSourceAdapter.h"
 #include "App/Utils/Range.h"
-
-class PositionSourceAdapter;
 
 namespace ModelType {
 Q_NAMESPACE
@@ -32,6 +32,8 @@ class PastVuModelController
 	: public QObject
 {
 	Q_OBJECT
+	QML_ELEMENT
+	QML_SINGLETON
 
 signals:
 	void PositionPermissionGranted();
@@ -46,13 +48,14 @@ signals:
 	void YearFromChanged();
 	void YearToChanged();
 	void UserSelectedTimelineRangeChanged(const Range & timeline);
+	void PositionSourceEmpty(const QString & message) const;
 
 	// @IMPORTANT: signals exposed to QML and HAVE to be in camel case
 	void loadingItems();
 	void itemsLoaded();
 
 public:
-	PastVuModelController(const QLocationPermission & permission, QSettings & settings, QObject * parent = nullptr);
+	explicit PastVuModelController(QObject * parent = nullptr);
 	~PastVuModelController();
 
 	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjectsOnlyChanged);

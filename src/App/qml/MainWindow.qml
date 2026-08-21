@@ -72,7 +72,7 @@ Rectangle {
 
         if (changelogPromptPending) {
             changelogPromptPending = false
-            if (guiController.ShouldShowChangelog())
+            if (GuiController.ShouldShowChangelog())
                 changelogPromptDialogID.open()
             else if (tipsPromptPending)
                 schedulePromptCheck()
@@ -83,7 +83,7 @@ Rectangle {
         if (false
                 || currentItem.objectName === "cameraModePage"
                 || currentItem["blocksTipsPrompt"] === true
-                || !guiController.ShouldShowTipsPrompt())
+                || !GuiController.ShouldShowTipsPrompt())
             return
 
         tipsPromptDialogID.openPrompt()
@@ -136,9 +136,9 @@ Rectangle {
         id: changelogPromptDialogID
 
         anchors.centerIn: Overlay.overlay
-        version: guiController.GetAppVersion()
+        version: GuiController.GetAppVersion()
 
-        onOpened: guiController.MarkChangelogShown()
+        onOpened: GuiController.MarkChangelogShown()
         onClosed: {
             if (mainWindowID.hasPendingPrompt())
                 mainWindowID.schedulePromptCheck()
@@ -151,19 +151,19 @@ Rectangle {
         anchors.centerIn: Overlay.overlay
 
         onAccepted: {
-            guiController.OpenTipsUrl()
+            GuiController.OpenTipsUrl()
             if (mainWindowID.hasPendingPrompt())
                 mainWindowID.schedulePromptCheck()
         }
         onDiscarded: {
-            guiController.DismissTipsPrompt()
+            GuiController.DismissTipsPrompt()
             if (mainWindowID.hasPendingPrompt())
                 mainWindowID.schedulePromptCheck()
         }
     }
 
     Connections {
-        target: guiController
+        target: GuiController
 
         function onShowErrorDialog(message) {
             errorDialogID.errorMessage = message
@@ -186,7 +186,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        if (guiController.ShouldShowChangelog())
+        if (GuiController.ShouldShowChangelog())
             mainWindowID.scheduleChangelogPrompt()
     }
 

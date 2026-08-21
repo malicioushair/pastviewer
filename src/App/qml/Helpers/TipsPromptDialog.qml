@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import "../GuiItems"
 import "colors.js" as Colors
 
+import PastViewer
+
 PromptDialog {
     id: rootID
 
@@ -22,7 +24,7 @@ PromptDialog {
         close()
     }
 
-    onOpened: guiController.MarkTipsPromptShown()
+    onOpened: GuiController.MarkTipsPromptShown()
     onClosed: {
         if (!outcomeRecorded) {
             outcomeRecorded = true

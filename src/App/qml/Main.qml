@@ -7,6 +7,8 @@ import QtPositioning
 
 import "Helpers/colors.js" as Colors
 
+import PastViewer
+
 ApplicationWindow {
     id: mainWindowID
 
@@ -31,10 +33,10 @@ ApplicationWindow {
         sequences: ["Ctrl+R"]
         context: Qt.ApplicationShortcut
         onActivated: {
-            if (!guiController.IsDebug())
+            if (!GuiController.IsDebug())
                 return
 
-            guiController.BumpHotReloadToken()
+            GuiController.BumpHotReloadToken()
             const base = Qt.resolvedUrl("MainWindow.qml")
             mainWindowLoaderID.source = ""
             mainWindowLoaderID.source = base + "?r=" + Date.now()

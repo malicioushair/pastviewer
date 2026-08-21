@@ -16,14 +16,14 @@ import "../Helpers/utils.js" as Utils
 Item {
     id: mapPageID
 
-    readonly property var positionSource: pastVuModelController.GetPositionSource()
+    readonly property var positionSource: PastVuModelController.GetPositionSource()
     property alias map: mapViewID.internalMap
 
     Connections {
-        target: guiController
+        target: GuiController
         function onOnboardingReset() {
             mapOnboardingID.currentIndex = 0
-            mapOnboardingID.active = !guiController.IsOnboardingStepCompleted(mapOnboardingID.completionKey)
+            mapOnboardingID.active = !GuiController.IsOnboardingStepCompleted(mapOnboardingID.completionKey)
         }
     }
 
@@ -36,7 +36,7 @@ Item {
         z: 1000
 
         completionKey: "MapPageIntro"
-        active: !guiController.IsOnboardingStepCompleted(completionKey)
+        active: !GuiController.IsOnboardingStepCompleted(completionKey)
         centered: currentIndex === 3
         topped: currentIndex === 4 || currentIndex === 5
 
@@ -170,7 +170,7 @@ Item {
 
                     const topLeftCoord = mapID.toCoordinate(Qt.point(0, 0), false)
                     const bottomRightCoord = mapID.toCoordinate(Qt.point(mapID.width, mapID.height), false)
-                    pastVuModelController.SetViewportCoordinates(QtPositioning.rectangle(topLeftCoord, bottomRightCoord))
+                    PastVuModelController.SetViewportCoordinates(QtPositioning.rectangle(topLeftCoord, bottomRightCoord))
                 }
 
                 anchors.fill: parent
@@ -185,15 +185,15 @@ Item {
 
                     PluginParameter {
                         name: "osm.mapping.custom.host"
-                        value: "https://tiles.stadiamaps.com/tiles/outdoors/%z/%x/%y.png?api_key=" + pastVuModelController.GetMapHostApiKey()
+                        value: "https://tiles.stadiamaps.com/tiles/outdoors/%z/%x/%y.png?api_key=" + PastVuModelController.GetMapHostApiKey()
                     }
                 }
 
                 activeMapType: supportedMapTypes.find((map) => { return map.style === MapType.CustomMap })
 
-                onZoomLevelChanged: (zoomLevel) => { pastVuModelController.zoomLevel = zoomLevel }
+                onZoomLevelChanged: (zoomLevel) => { PastVuModelController.zoomLevel = zoomLevel }
                 Component.onCompleted: {
-                    zoomLevel = pastVuModelController.zoomLevel
+                    zoomLevel = PastVuModelController.zoomLevel
                     Utils.setTimeout(updateViewCoordinates, 300) // delaying the call to update to allow some time for the map to load (otherwise we'll get a bad reply)
                 }
 
@@ -228,7 +228,7 @@ Item {
                 MapItemView {
                     id: mapItemViewID
 
-                    model: pastVuModelController.GetModel(ModelType.Clustered)
+                    model: PastVuModelController.GetModel(ModelType.Clustered)
                     delegate: delegateID
                 }
 

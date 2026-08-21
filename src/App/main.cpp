@@ -1,11 +1,13 @@
+#include <exception>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+
 #include <QDir>
 #include <QGuiApplication>
 #include <QQuickStyle>
 #include <QScopeGuard>
 #include <QStandardPaths>
-#include <exception>
-#include <iostream>
-#include <stdexcept>
 
 #include "Controllers/GuiController/GuiController.h"
 #include "SentryIntegration/SentryIntegration.h"
@@ -65,7 +67,7 @@ int RunApplication(int argc, char * argv[])
 
 	QGuiApplication app(argc, argv);
 
-	GuiController guiController;
+	const auto guiController = GuiController::Create();
 
 	LOG(INFO) << "Starting PastViewer application";
 	return QGuiApplication::exec();

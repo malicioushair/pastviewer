@@ -7,6 +7,8 @@ import "../Helpers/colors.js" as Colors
 import "../Helpers"
 import "Helpers"
 
+import PastViewer
+
 BasePage {
     id: photoDetailsPageID
 
@@ -158,7 +160,7 @@ BasePage {
         anchors.fill: parent
 
         completionKey: "PhotoDetailsIntro"
-        active: !guiController.IsOnboardingStepCompleted(completionKey)
+        active: !GuiController.IsOnboardingStepCompleted(completionKey)
 
         steps: [
             {

@@ -166,7 +166,7 @@ Item {
         const mapObj = pendingClusterCheck.map
         const topLeftCoord = mapObj.toCoordinate(Qt.point(0, 0), false)
         const bottomRightCoord = mapObj.toCoordinate(Qt.point(mapObj.width, mapObj.height), false)
-        pastVuModelController.SetViewportCoordinates(QtPositioning.rectangle(topLeftCoord, bottomRightCoord))
+        PastVuModelController.SetViewportCoordinates(QtPositioning.rectangle(topLeftCoord, bottomRightCoord))
 
         pendingClusterCheck = null
     }

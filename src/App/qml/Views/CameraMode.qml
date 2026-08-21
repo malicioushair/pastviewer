@@ -9,6 +9,8 @@ import "../Helpers/utils.js" as Utils
 import "../Helpers"
 import "Helpers"
 
+import PastViewer
+
 BasePage {
     id: rootID
 
@@ -26,7 +28,7 @@ BasePage {
 
     StackView.onDeactivated: {
         if (rootID.savedInThisVisit)
-            guiController.NotifyCameraModeLeft()
+            GuiController.NotifyCameraModeLeft()
     }
 
     function triggerShutterEffect() {
@@ -297,7 +299,7 @@ BasePage {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: guiController.ShareImage()
+            onClicked: GuiController.ShareImage()
         }
     }
 
@@ -345,7 +347,7 @@ BasePage {
                     rootID.controlsHidden = false
                 } else {
                     window.grabToImage((result) => {
-                        const savedImageUrl = guiController.SaveImage(result)
+                        const savedImageUrl = GuiController.SaveImage(result)
                         if (savedImageUrl.length > 0) {
                             rootID.savedInThisVisit = true
                             rootID.animateThumbnail(savedImageUrl)
