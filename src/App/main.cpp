@@ -67,7 +67,7 @@ int RunApplication(int argc, char * argv[])
 
 	QGuiApplication app(argc, argv);
 
-	GuiController guiController;
+	const auto guiController = GuiController::Create();
 
 	LOG(INFO) << "Starting PastViewer application";
 	return QGuiApplication::exec();

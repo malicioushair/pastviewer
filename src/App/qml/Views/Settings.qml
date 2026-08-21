@@ -21,7 +21,7 @@ BasePage {
     }
 
     footer: Footer {
-        text: qsTr("Version: ") + guiController.GetAppVersion()
+        text: qsTr("Version: ") + GuiController.GetAppVersion()
     }
 
     ScrollView {
@@ -251,14 +251,14 @@ BasePage {
             }
 
             SettingWithHint {
-                visible: guiController.HasTipsUrl()
+                visible: GuiController.HasTipsUrl()
                 description: qsTr("By leaving a tip, you support PastViewer's continued development and keep it FREE")
 
                 StyledButton {
                     id: supportButtonID
 
                     text: qsTr("Support us 💰")
-                    onClicked: guiController.OpenTipsUrl()
+                    onClicked: GuiController.OpenTipsUrl()
                 }
             }
 
@@ -269,7 +269,7 @@ BasePage {
                     id: resetOnboardingID
 
                     text: qsTr("Reset onboarding")
-                    onClicked: guiController.ResetOnboarding()
+                    onClicked: GuiController.ResetOnboarding()
                 }
             }
 

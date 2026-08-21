@@ -160,7 +160,7 @@ BasePage {
         anchors.fill: parent
 
         completionKey: "PhotoDetailsIntro"
-        active: !guiController.IsOnboardingStepCompleted(completionKey)
+        active: !GuiController.IsOnboardingStepCompleted(completionKey)
 
         steps: [
             {

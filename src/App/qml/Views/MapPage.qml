@@ -20,10 +20,10 @@ Item {
     property alias map: mapViewID.internalMap
 
     Connections {
-        target: guiController
+        target: GuiController
         function onOnboardingReset() {
             mapOnboardingID.currentIndex = 0
-            mapOnboardingID.active = !guiController.IsOnboardingStepCompleted(mapOnboardingID.completionKey)
+            mapOnboardingID.active = !GuiController.IsOnboardingStepCompleted(mapOnboardingID.completionKey)
         }
     }
 
@@ -36,7 +36,7 @@ Item {
         z: 1000
 
         completionKey: "MapPageIntro"
-        active: !guiController.IsOnboardingStepCompleted(completionKey)
+        active: !GuiController.IsOnboardingStepCompleted(completionKey)
         centered: currentIndex === 3
         topped: currentIndex === 4 || currentIndex === 5
 

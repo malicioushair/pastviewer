@@ -1,15 +1,20 @@
 #pragma once
 
+#include <memory>
+
 #include <QObject>
 #include <QPermission>
-#include <QQmlApplicationEngine>
+#include <QQmlEngine>
 #include <QQuickItemGrabResult>
+#include <qqmlintegration.h>
 
 namespace PastViewer {
 class GuiController
 	: public QObject
 {
 	Q_OBJECT
+	QML_ELEMENT
+	QML_SINGLETON
 	Q_DISABLE_COPY(GuiController)
 
 signals:
@@ -19,7 +24,9 @@ signals:
 	void tipsPromptRequested();
 
 public:
-	GuiController(QObject * parent = nullptr);
+	static std::unique_ptr<GuiController> Create();
+	static GuiController * create(QQmlEngine * qmlEngine, QJSEngine * jsEngine);
+
 	~GuiController();
 
 	Q_INVOKABLE bool IsDebug();
@@ -41,6 +48,10 @@ public:
 	Q_INVOKABLE bool IsOnboardingStepCompleted(const QString & key);
 	Q_INVOKABLE void SetOnboardingStepCompleted(const QString & key);
 	Q_INVOKABLE void ResetOnboarding();
+
+private:
+	// hiding the constructor from QML so it will have to use the static create(QQmlEngine * qmlEngine, QJSEngine * jsEngine)
+	GuiController();
 
 private:
 	void RequestPermission(const QPermission & permission);

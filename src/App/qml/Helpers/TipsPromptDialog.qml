@@ -24,7 +24,7 @@ PromptDialog {
         close()
     }
 
-    onOpened: guiController.MarkTipsPromptShown()
+    onOpened: GuiController.MarkTipsPromptShown()
     onClosed: {
         if (!outcomeRecorded) {
             outcomeRecorded = true

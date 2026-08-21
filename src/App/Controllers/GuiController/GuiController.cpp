@@ -5,12 +5,13 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QGuiApplication>
+#include <QJSEngine>
 #include <QLocationPermission>
 #include <QMediaDevices>
 #include <QPermissions>
 #include <QPointer>
 #include <QQmlAbstractUrlInterceptor>
-#include <QQmlContext>
+#include <QQmlApplicationEngine>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStringLiteral>
@@ -32,6 +33,8 @@
 using namespace PastViewer;
 
 namespace {
+
+QPointer<GuiController> s_guiController;
 
 constexpr auto MAP_ONBOARDING_KEY = "MapPageIntro";
 constexpr auto PHOTO_DETAILS_ONBOARDING_KEY = "PhotoDetailsIntro";
@@ -138,17 +141,20 @@ struct GuiController::Impl
 	}
 };
 
-GuiController::GuiController(QObject * parent)
-	: QObject(parent)
+GuiController::GuiController()
+	: QObject(nullptr)
 	, m_impl(std::make_unique<Impl>())
 {
+	if (s_guiController)
+		throw std::logic_error("Only one GuiController instance is supported");
+	s_guiController = this;
+
 	qmlRegisterType<HoleItem>("PastViewer", 1, 0, "HoleItem");
 	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
 	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
 	qmlRegisterUncreatableMetaObject(ModelType::staticMetaObject, "PastViewer", 1, 0, "ModelType", "ModelType is an enum namespace");
 	qRegisterMetaType<QGeoCoordinate>();
 	qRegisterMetaType<QGeoPositionInfo>();
-	m_impl->engine.rootContext()->setContextProperty("guiController", this);
 	m_impl->engine.addImportPath("qrc:/qt/qml");
 	m_impl->engine.addUrlInterceptor(m_impl->interceptor.get());
 	m_impl->LoadQml();
@@ -220,6 +226,29 @@ GuiController::GuiController(QObject * parent)
 }
 
 GuiController::~GuiController() = default;
+
+std::unique_ptr<GuiController> GuiController::Create()
+{
+	return std::unique_ptr<GuiController>(new GuiController);
+}
+
+GuiController * GuiController::create(QQmlEngine * qmlEngine, QJSEngine *)
+{
+	if (!s_guiController)
+	{
+		LOG(ERROR) << "GuiController must be constructed before it is accessed from QML";
+		return nullptr;
+	}
+
+	if (qmlEngine != &s_guiController->m_impl->engine)
+	{
+		LOG(ERROR) << "GuiController can only be accessed from its owning QML engine";
+		return nullptr;
+	}
+
+	QJSEngine::setObjectOwnership(s_guiController, QJSEngine::CppOwnership);
+	return s_guiController;
+}
 
 void GuiController::BumpHotReloadToken()
 {

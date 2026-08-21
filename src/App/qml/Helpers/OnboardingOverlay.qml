@@ -174,7 +174,7 @@ Item {
                     text: qsTr("Skip")
 
                     onClicked: {
-                        guiController.SetOnboardingStepCompleted(completionKey)
+                        GuiController.SetOnboardingStepCompleted(completionKey)
                         rootID.active = false
                     }
                 }
@@ -188,7 +188,7 @@ Item {
                         if (currentIndex < steps.length - 1) {
                             currentIndex += 1
                         } else {
-                            guiController.SetOnboardingStepCompleted(completionKey)
+                            GuiController.SetOnboardingStepCompleted(completionKey)
                             rootID.active = false
                         }
                     }
@@ -197,4 +197,3 @@ Item {
         }
     }
 }
-
