@@ -17,6 +17,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QtCore/qnamespace.h>
 
 #include "glog/logging.h"
 
@@ -107,7 +108,10 @@ struct GuiController::Impl
 	}() };
 	QLocationPermission backgroundLocationPermission;
 	QCameraPermission cameraPermission {};
-	std::unique_ptr<PastVuModelController> pastVuModelController;
+	// owned by qml
+	QPointer<PastVuModelController> pastVuModelController { engine.singletonInstance<PastVuModelController *>(
+		QStringLiteral("PastViewer"),
+		QStringLiteral("PastVuModelController")) };
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
 	QString lastSavedImagePath;
 
@@ -138,18 +142,6 @@ GuiController::GuiController(QObject * parent)
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>())
 {
-	try
-	{
-		m_impl->pastVuModelController = { std::make_unique<PastVuModelController>(m_impl->locationPermission, m_impl->settings) };
-	}
-	catch (const std::runtime_error & error)
-	{
-		LOG(ERROR) << "Failed to init PastVuModelController: " << error.what();
-		QTimer::singleShot(0, this, [this, error] {
-			emit showErrorDialog(QString::fromStdString(error.what()));
-		});
-	}
-
 	qmlRegisterType<HoleItem>("PastViewer", 1, 0, "HoleItem");
 	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
 	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
@@ -187,6 +179,7 @@ GuiController::GuiController(QObject * parent)
 		}
 	};
 
+	connect(m_impl->pastVuModelController, &PastVuModelController::PositionSourceEmpty, this, [&](const QString & message) { emit showErrorDialog(message); }, Qt::QueuedConnection);
 	connect(this, &GuiController::PermissionGranted, m_impl->pastVuModelController.get(), [this, requestBackgroundLocationPermission, updateBackgroundLocationTracking](const QPermission & permission) {
 		if (permission.type() == QLocationPermission::staticMetaObject.metaType())
 		{

@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import "../GuiItems"
 import "colors.js" as Colors
 
+import PastViewer
+
 PromptDialog {
     id: rootID
 

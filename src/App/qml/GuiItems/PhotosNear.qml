@@ -22,7 +22,7 @@ Rectangle {
     color: Colors.palette.bg
 
     Connections {
-        target: pastVuModelController
+        target: PastVuModelController
         enabled: true
 
         function onLoadingItems() {
@@ -147,7 +147,7 @@ Rectangle {
             Layout.fillHeight: true
 
 
-            model: pastVuModelController.GetModel(ModelType.Filtered)
+            model: PastVuModelController.GetModel(ModelType.Filtered)
             orientation: ListView.Horizontal
             spacing: 10
 
@@ -198,7 +198,7 @@ Rectangle {
                         }
 
                         TapHandler {
-                            onTapped: pastVuModelController.SelectPhoto(model.Cid)
+                            onTapped: PastVuModelController.SelectPhoto(model.Cid)
                             onDoubleTapped: mainWindowID.openPhotoDetails(Photo, Thumbnail, Title, Year)
                         }
                     }

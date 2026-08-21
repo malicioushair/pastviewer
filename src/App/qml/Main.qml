@@ -7,6 +7,8 @@ import QtPositioning
 
 import "Helpers/colors.js" as Colors
 
+import PastViewer
+
 ApplicationWindow {
     id: mainWindowID
 

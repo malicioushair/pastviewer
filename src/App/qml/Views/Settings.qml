@@ -155,9 +155,9 @@ BasePage {
                 description: qsTr("When enabled, the map shows only historical photos near your current location.")
 
                 StyledCheckBox {
-                    checked: pastVuModelController.nearestObjectsOnly
+                    checked: PastVuModelController.nearestObjectsOnly
                     text: qsTr("Show only nearest objects")
-                    onClicked: pastVuModelController.ToggleOnlyNearestObjects();
+                    onClicked: PastVuModelController.ToggleOnlyNearestObjects();
                 }
             }
 
@@ -167,9 +167,9 @@ BasePage {
                 description: qsTr('When enabled, the History near you row lists all photos in the map area within the timeline. When disabled, only nearby photos are shown.')
 
                 StyledCheckBox {
-                    checked: pastVuModelController.historyNearModelType
+                    checked: PastVuModelController.historyNearModelType
                     text: qsTr('Show all objects in "History near you"')
-                    onClicked: pastVuModelController.ToggleHistoryNearYouModel();
+                    onClicked: PastVuModelController.ToggleHistoryNearYouModel();
                 }
             }
 
@@ -179,9 +179,9 @@ BasePage {
                 description: qsTr("When enabled, PastViewer notifies you when you walk near a historical photo.")
 
                 StyledCheckBox {
-                    checked: pastVuModelController.proximityNotificationsEnabled
+                    checked: PastVuModelController.proximityNotificationsEnabled
                     text: qsTr("Proximity notifications")
-                    onClicked: pastVuModelController.ToggleProximityNotifications();
+                    onClicked: PastVuModelController.ToggleProximityNotifications();
                 }
             }
 
@@ -189,7 +189,7 @@ BasePage {
                 Layout.fillWidth: true
                 Layout.rightMargin: 18
                 spacing: 8
-                enabled: pastVuModelController.proximityNotificationsEnabled
+                enabled: PastVuModelController.proximityNotificationsEnabled
                 opacity: enabled ? 1.0 : 0.45
 
                 Text {
@@ -203,12 +203,12 @@ BasePage {
 
                     Layout.fillWidth: true
 
-                    from: pastVuModelController.GetNotificationDistanceMin()
-                    to: pastVuModelController.GetNotificationDistanceMax()
+                    from: PastVuModelController.GetNotificationDistanceMin()
+                    to: PastVuModelController.GetNotificationDistanceMax()
                     stepSize: 5
                     snapMode: Slider.SnapAlways
-                    value: pastVuModelController.proximityNotificationDistance
-                    onMoved: pastVuModelController.proximityNotificationDistance = Math.round(value)
+                    value: PastVuModelController.proximityNotificationDistance
+                    onMoved: PastVuModelController.proximityNotificationDistance = Math.round(value)
 
                     background: Rectangle {
                         x: proximityDistanceSliderID.leftPadding
@@ -241,13 +241,13 @@ BasePage {
 
                 Layout.rightMargin: 18
 
-                rangeMin: pastVuModelController.timelineRange.min
-                rangeMax: pastVuModelController.timelineRange.max
-                selectedMin: pastVuModelController.userSelectedTimelineRange.min
-                selectedMax: pastVuModelController.userSelectedTimelineRange.max
+                rangeMin: PastVuModelController.timelineRange.min
+                rangeMax: PastVuModelController.timelineRange.max
+                selectedMin: PastVuModelController.userSelectedTimelineRange.min
+                selectedMax: PastVuModelController.userSelectedTimelineRange.max
 
-                onSelectedMinChanged: pastVuModelController.userSelectedTimelineRange.min = selectedMin
-                onSelectedMaxChanged: pastVuModelController.userSelectedTimelineRange.max = selectedMax
+                onSelectedMinChanged: PastVuModelController.userSelectedTimelineRange.min = selectedMin
+                onSelectedMaxChanged: PastVuModelController.userSelectedTimelineRange.max = selectedMax
             }
 
             SettingWithHint {
@@ -280,7 +280,7 @@ BasePage {
                     id: reloadButtonID
 
                     text: qsTr("Reload map items")
-                    onClicked: pastVuModelController.ReloadItems()
+                    onClicked: PastVuModelController.ReloadItems()
                 }
             }
         }

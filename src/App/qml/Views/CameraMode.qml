@@ -9,6 +9,8 @@ import "../Helpers/utils.js" as Utils
 import "../Helpers"
 import "Helpers"
 
+import PastViewer
+
 BasePage {
     id: rootID
 

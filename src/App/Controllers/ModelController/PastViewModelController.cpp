@@ -10,6 +10,7 @@
 #include <QGuiApplication>
 #include <QLocationPermission>
 #include <QString>
+#include <QTimer>
 
 #include "App/Models/ClusterModel.h"
 #include "glog/logging.h"
@@ -35,24 +36,32 @@ constexpr auto YEAR_FROM_VALUE = 1800;
 
 struct PastVuModelController::Impl
 {
-	Impl(const QLocationPermission & permission, QSettings & settings)
-		: source(QGeoPositionInfoSource::createDefaultSource(nullptr))
+	Impl(const PastVuModelController & _pastVuModelController)
+		: pastVuModelController(_pastVuModelController)
+		, source(QGeoPositionInfoSource::createDefaultSource(nullptr))
 		, baseModel(std::make_unique<BaseModel>(source.get()))
 		, screenObjectsModel(std::make_unique<ScreenObjectsModel>(baseModel.get()))
 		, nearestObjectsModel(std::make_unique<NearestObjectsModel>(screenObjectsModel.get(), source.get()))
 		, clusterModelScreen(std::make_unique<ClusterModel>(screenObjectsModel.get()))
 		, clusterModelNearest(std::make_unique<ClusterModel>(nearestObjectsModel.get()))
-		, positionSourceAdapter([&] {
-			if (!source)
-				throw std::runtime_error("POSITION SOURCE EMPTY!");
-			return std::make_unique<PositionSourceAdapter>(*source);
-		}())
-		, settings(settings)
 	{
+		if (!source)
+		{
+			const auto message = "POSITION SOURCE EMPTY!";
+			LOG(ERROR) << message;
+			QTimer::singleShot(0, [&] {
+				emit pastVuModelController.PositionSourceEmpty(message);
+			});
+			return;
+		}
+		positionSourceAdapter = std::make_unique<PositionSourceAdapter>(*source);
+		QLocationPermission permission;
+		permission.setAccuracy(QLocationPermission::Precise);
 		if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted)
 			source->startUpdates();
 	}
 
+	const PastVuModelController & pastVuModelController;
 	std::unique_ptr<QGeoPositionInfoSource> source;
 	QGeoRectangle viewPort;
 	std::unique_ptr<BaseModel> baseModel;
@@ -64,7 +73,7 @@ struct PastVuModelController::Impl
 	PhotoProximityTracker photoProximityTracker;
 	std::optional<int> pendingPhotoSelectionId;
 	QGeoCoordinate currentCoordinate;
-	QSettings & settings;
+	QSettings settings;
 	const Range defaultTimelineRange { YEAR_FROM_VALUE, QDate::currentDate().year() };
 	Range userSelectedTimelineRange {
 		settings.value(YEARS_FROM, defaultTimelineRange.min).toInt(),
@@ -72,9 +81,9 @@ struct PastVuModelController::Impl
 	};
 };
 
-PastVuModelController::PastVuModelController(const QLocationPermission & permission, QSettings & settings, QObject * parent)
+PastVuModelController::PastVuModelController(QObject * parent)
 	: QObject(parent)
-	, m_impl(std::make_unique<Impl>(permission, settings))
+	, m_impl(std::make_unique<Impl>(*this))
 {
 	connect(this, &PastVuModelController::PositionPermissionGranted, m_impl->baseModel.get(), &BaseModel::OnPositionPermissionGranted);
 	connect(this, &PastVuModelController::UserSelectedTimelineRangeChanged, m_impl->screenObjectsModel.get(), &ScreenObjectsModel::OnUserSelectedTimelineRangeChanged);
@@ -193,7 +202,7 @@ bool PastVuModelController::SelectPhoto(int photoId)
 	emit photoSelected(
 		index.row(),
 		model->data(index, BaseModel::Roles::Coordinate).value<QGeoCoordinate>(),
-		model->data(index, ScreenObjectsModel::Roles::IsClustered).toBool(),
+		model->data(index, ScreenObjectsModel::Roles::IsClustered).toBool(), // @todo Role is missing in BaseModel assert is triggered
 		model->data(index, ScreenObjectsModel::Roles::ZoomToDecluster).toInt());
 	return true;
 }

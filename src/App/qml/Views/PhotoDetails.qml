@@ -7,6 +7,8 @@ import "../Helpers/colors.js" as Colors
 import "../Helpers"
 import "Helpers"
 
+import PastViewer
+
 BasePage {
     id: photoDetailsPageID
 
