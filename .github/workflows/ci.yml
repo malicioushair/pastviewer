@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'iOS/*'
   pull_request:
     branches:
       - master
@@ -21,6 +23,7 @@ env:
 jobs:
   clang-tidy:
     name: clang-tidy
+    if: github.ref_type != 'tag'
     runs-on: macos-15
     timeout-minutes: 120
     env:
@@ -97,6 +100,7 @@ jobs:
 
   macos-build:
     name: macOS Build & Test
+    if: github.ref_type != 'tag'
     runs-on: macos-15
     timeout-minutes: 120
     environment: default
@@ -176,6 +180,7 @@ jobs:
 
   android-build:
     name: Android Build
+    if: github.ref_type != 'tag'
     runs-on: macos-15
     timeout-minutes: 360
     environment: default
@@ -344,6 +349,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Select Xcode 26.3
+        run: sudo xcode-select --switch /Applications/Xcode_26.3.app/Contents/Developer
+
       - name: Set Qt install paths
         run: |
           echo "QT_BASE=$RUNNER_TEMP" >> "$GITHUB_ENV"
@@ -461,6 +469,7 @@ jobs:
             -DQT_HOST_PATH="${{ env.QT_MACOS_PREFIX }}" \
             -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \
+            -DAPPSTORE_BUILD_NUMBER="$GITHUB_RUN_NUMBER" \
             -DOSM_API_KEY="$OSM_API_KEY" \
             -DSENTRY_DSN="$SENTRY_DSN" \
             -DAPPLE_TEAM_ID="$APPLE_TEAM_ID" \
@@ -473,3 +482,64 @@ jobs:
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           cmake --build "${{ env.BUILD_DIR }}" --config "${{ env.BUILD_TYPE }}" --target PastViewer -- -allowProvisioningUpdates
+
+      - name: Archive for App Store
+        if: github.ref_type == 'tag'
+        env:
+          APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild archive \
+            -project "${{ env.BUILD_DIR }}/PastViewer.xcodeproj" \
+            -scheme PastViewer \
+            -configuration "${{ env.BUILD_TYPE }}" \
+            -archivePath "$RUNNER_TEMP/PastViewer.xcarchive" \
+            -destination 'generic/platform=iOS' \
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="$APPLE_DEVELOPMENT_TEAM"
+
+      - name: Export IPA
+        if: github.ref_type == 'tag'
+        run: |
+          mkdir -p "$RUNNER_TEMP/ipa-export"
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/PastViewer.xcarchive" \
+            -exportPath "$RUNNER_TEMP/ipa-export" \
+            -exportOptionsPlist "${{ env.BUILD_DIR }}/ExportOptions-app-store.plist" \
+            -allowProvisioningUpdates
+
+          if [ ! -f "$RUNNER_TEMP/ipa-export/PastViewer.ipa" ]; then
+            echo "::error::PastViewer.ipa was not produced."
+            exit 1
+          fi
+
+      - name: Upload IPA artifact
+        if: github.ref_type == 'tag'
+        uses: actions/upload-artifact@v7
+        with:
+          name: PastViewer-iOS-ipa
+          path: ${{ runner.temp }}/ipa-export/PastViewer.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+  upload-testflight:
+    name: Upload iOS build to TestFlight
+    if: github.ref_type == 'tag'
+    needs: ios-build
+    runs-on: macos-15
+    environment: default
+
+    steps:
+      - name: Download IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: PastViewer-iOS-ipa
+          path: dist
+
+      - name: Upload to App Store Connect
+        uses: apple-actions/upload-testflight-build@v5
+        with:
+          app-path: dist/PastViewer.ipa
+          app-type: ios
+          issuer-id: ${{ secrets.ASC_ISSUER_ID }}
+          api-key-id: ${{ secrets.ASC_KEY_ID }}
+          api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
