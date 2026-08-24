@@ -287,6 +287,7 @@ jobs:
           OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           QT_ANDROID_ARM64: ${{ env.QT_ANDROID_PREFIX }}
+          TIP_PRODUCT_IDS: ${{ secrets.TIP_PRODUCT_IDS }}
         run: |
           if [ -z "$OSM_API_KEY" ]; then
             echo "::error::OSM_API_KEY secret is not set. Add it in repository Settings → Secrets and variables → Actions."
@@ -313,6 +314,7 @@ jobs:
             -DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON \
             -DOSM_API_KEY="$OSM_API_KEY" \
             -DSENTRY_DSN="$SENTRY_DSN" \
+            -DTIP_PRODUCT_IDS="$TIP_PRODUCT_IDS" \
             -DOpenSSL_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
             -DZLIB_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
             -Dglog_DIR="${{ github.workspace }}/${{ env.BUILD_DIR }}" \
@@ -429,6 +431,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_PROVISION_PROFILE_NAME: ${{ secrets.APPLE_PROVISION_PROFILE_NAME }}
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
+          TIP_PRODUCT_IDS: ${{ secrets.TIP_PRODUCT_IDS }}
         run: |
           if [ -z "$OSM_API_KEY" ]; then
             echo "::error::OSM_API_KEY secret is not set."
@@ -462,7 +465,7 @@ jobs:
             -DSENTRY_DSN="$SENTRY_DSN" \
             -DAPPLE_TEAM_ID="$APPLE_TEAM_ID" \
             -DAPPLE_APP_REVERSED_DOMAIN=com.dv.pastviewer \
-            -DAPPLE_TIP_PRODUCT_IDS="com.dv.pastviewer.tip.small;com.dv.pastviewer.tip.medium;com.dv.pastviewer.tip.large" \
+            -DTIP_PRODUCT_IDS="$TIP_PRODUCT_IDS" \
             -DAPPLE_PROVISION_PROFILE_NAME="$APPLE_PROVISION_PROFILE_NAME"
 
       - name: Build

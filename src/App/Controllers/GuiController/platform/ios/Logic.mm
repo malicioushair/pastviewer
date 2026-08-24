@@ -285,21 +285,21 @@ bool SupportsNativeTipPurchases()
 	return true;
 }
 
+void InitializeTipPurchases(QStringList)
+{
+}
+
 void LoadTipProducts(QStringList productIds, TipProductsHandler handler)
 {
 	bool requestInProgress = false;
 	{
 		const std::scoped_lock lock(tipCallbackMutex);
-		if (tipProductsHandler)
-			requestInProgress = true;
-		else
-			tipProductsHandler = std::move(handler);
+		requestInProgress = static_cast<bool>(tipProductsHandler);
+		// Replace any in-flight waiter so the outstanding StoreKit query delivers to the latest caller.
+		tipProductsHandler = std::move(handler);
 	}
 	if (requestInProgress)
-	{
-		handler({}, QStringLiteral("A StoreKit product request is already in progress."));
 		return;
-	}
 
 	const auto productIdsCsv = productIds.join(QLatin1Char(',')).toUtf8();
 	PastViewerStoreKitLoadProducts(productIdsCsv.constData(), StoreKitProductsLoaded);

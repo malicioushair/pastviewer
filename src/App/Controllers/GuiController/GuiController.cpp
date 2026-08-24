@@ -45,10 +45,14 @@ QString AppVersion()
 	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
 }
 
-QStringList AppleTipProductIds()
+QStringList NativeTipProductIds()
 {
-	return QString::fromUtf8(PASTVIEWER_APPLE_TIP_PRODUCT_IDS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_APPLE)
+	return QString::fromUtf8(TIP_PRODUCT_IDS)
 		.split(QLatin1Char(','), Qt::SkipEmptyParts);
+#else
+	return {};
+#endif
 }
 
 QUrl TipsUrl()
@@ -228,6 +232,7 @@ GuiController::GuiController()
 
 		m_impl->pastVuModelController->SelectPhoto(photoId);
 	});
+	PlatformDependentLogic::InitializeTipPurchases(NativeTipProductIds());
 	RequestPermission(m_impl->locationPermission);
 	requestBackgroundLocationPermission();
 	updateBackgroundLocationTracking();
@@ -313,26 +318,20 @@ bool GuiController::OpenTipsUrl()
 bool GuiController::HasTipSupport() const
 {
 	if (PlatformDependentLogic::SupportsNativeTipPurchases())
-		return !AppleTipProductIds().isEmpty();
+		return !NativeTipProductIds().isEmpty();
 
 	return HasTipsUrl();
 }
 
-bool GuiController::UsesAppStoreTips() const
-{
-	return PlatformDependentLogic::SupportsNativeTipPurchases()
-		&& !AppleTipProductIds().isEmpty();
-}
-
 void GuiController::RequestTipFlow()
 {
-	// if (!PlatformDependentLogic::SupportsNativeTipPurchases())
-	// {
-	// 	OpenTipsUrl();
-	// 	return;
-	// }
+	if (!PlatformDependentLogic::SupportsNativeTipPurchases())
+	{
+		OpenTipsUrl();
+		return;
+	}
 
-	if (AppleTipProductIds().isEmpty())
+	if (NativeTipProductIds().isEmpty())
 		return;
 
 	m_impl->tipPromptTracker.DisableAutomaticPrompts();
@@ -341,15 +340,19 @@ void GuiController::RequestTipFlow()
 
 void GuiController::LoadTipProducts()
 {
-	// if (!UsesAppStoreTips() || m_impl->tipProductsLoading || !m_impl->tipProducts.isEmpty())
-	// 	return;
+	if (false
+		|| !PlatformDependentLogic::SupportsNativeTipPurchases()
+		|| NativeTipProductIds().isEmpty()
+		|| m_impl->tipProductsLoading
+		|| !m_impl->tipProducts.isEmpty())
+		return;
 
 	m_impl->tipProductsLoading = true;
 	emit tipProductsLoadingChanged();
 
 	const QPointer<GuiController> guard(this);
 	PlatformDependentLogic::LoadTipProducts(
-		AppleTipProductIds(),
+		NativeTipProductIds(),
 		[guard](QVector<PlatformDependentLogic::TipProduct> products, const QString & error) {
 			if (!guard)
 				return;
@@ -359,10 +362,9 @@ void GuiController::LoadTipProducts()
 
 			if (!error.isEmpty() || products.isEmpty())
 			{
-				LOG(ERROR) << "Failed to load App Store tip products: "
+				LOG(ERROR) << "Failed to load native tip products: "
 						   << (error.isEmpty() ? "No configured products were returned" : error.toStdString());
 				emit guard->tipOperationFailed();
-				emit guard->showErrorDialog(GuiController::tr("Tips are unavailable right now. Please try again later."));
 				return;
 			}
 
@@ -384,9 +386,10 @@ void GuiController::LoadTipProducts()
 
 void GuiController::PurchaseTip(const QString & productId)
 {
-	if (!UsesAppStoreTips()
+	if (false
+		|| !PlatformDependentLogic::SupportsNativeTipPurchases()
 		|| m_impl->tipPurchaseInProgress
-		|| !AppleTipProductIds().contains(productId))
+		|| !NativeTipProductIds().contains(productId))
 		return;
 
 	m_impl->tipPurchaseInProgress = true;
@@ -395,7 +398,7 @@ void GuiController::PurchaseTip(const QString & productId)
 	const QPointer<GuiController> guard(this);
 	PlatformDependentLogic::PurchaseTip(
 		productId,
-		[guard](PlatformDependentLogic::TipPurchaseResult result, const QString & error) {
+		[guard, productId](PlatformDependentLogic::TipPurchaseResult result, const QString & error) {
 			if (!guard)
 				return;
 
@@ -405,6 +408,7 @@ void GuiController::PurchaseTip(const QString & productId)
 			switch (result)
 			{
 				case PlatformDependentLogic::TipPurchaseResult::Succeeded:
+					LOG(INFO) << "Native tip purchase succeeded: " << productId.toStdString();
 					guard->m_impl->tipPromptTracker.DisableAutomaticPrompts();
 					emit guard->tipPurchaseSucceeded();
 					return;
@@ -414,9 +418,8 @@ void GuiController::PurchaseTip(const QString & productId)
 					emit guard->tipPurchasePending();
 					return;
 				case PlatformDependentLogic::TipPurchaseResult::Failed:
-					LOG(ERROR) << "App Store tip purchase failed: " << error.toStdString();
+					LOG(ERROR) << "Native tip purchase failed: " << error.toStdString();
 					emit guard->tipOperationFailed();
-					emit guard->showErrorDialog(GuiController::tr("Tips are unavailable right now. Please try again later."));
 					return;
 			}
 		});

@@ -34,6 +34,7 @@ void ShowPhotoProximityNotification(QString title, QString body, int photoId);
 bool SaveScreenshotToGallery(QString filePath);
 bool ShareImage(QString filePath);
 bool SupportsNativeTipPurchases();
+void InitializeTipPurchases(QStringList productIds);
 void LoadTipProducts(QStringList productIds, TipProductsHandler handler);
 void PurchaseTip(QString productId, TipPurchaseHandler handler);
 }

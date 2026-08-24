@@ -76,10 +76,10 @@ For Android builds, install Android SDK Platform 36, Android SDK Build Tools 35.
 -DOSM_API_KEY=your-stadiamaps-api-key
 -DSENTRY_DSN=your-sentry-dsn
 -DPASTVIEWER_TIPS_URL=https://your-tip-page.example
--DPASTVIEWER_APPLE_TIP_PRODUCT_IDS="com.example.pastviewer.tip.small;com.example.pastviewer.tip.medium;com.example.pastviewer.tip.large"
+-DTIP_PRODUCT_IDS="com.example.pastviewer.tip.small;com.example.pastviewer.tip.medium;com.example.pastviewer.tip.large"
 ```
 
-`PASTVIEWER_TIPS_URL` is optional and is used for Android and desktop builds. `PASTVIEWER_APPLE_TIP_PRODUCT_IDS` is a semicolon-separated list of consumable In-App Purchase product IDs and enables the native StoreKit tip picker on iOS. iOS does not fall back to the external tip URL. If the relevant setting is omitted, the support action and automatic prompt are hidden on that platform. The automatic prompt becomes eligible only after successful recreations in two separate app sessions and can appear at most twice, with a 30-day cooldown after the first dismissal.
+`TIP_PRODUCT_IDS` is a semicolon-separated list of consumable one-time product IDs. They enable the native StoreKit tip picker on iOS and Google Play tip picker on Android, respectively. `PASTVIEWER_TIPS_URL` is optional and remains the support flow for desktop and other builds without native billing. iOS and Android do not fall back to the external URL.
 
 Create a Stadia Maps key at [stadiamaps.com](https://stadiamaps.com/). Use a private or environment-specific Sentry project for `SENTRY_DSN`.
 
@@ -122,7 +122,7 @@ cmake .. \
   -DAPPLE_TEAM_ID=your-apple-team-id \
   -DAPPLE_PROVISION_PROFILE_NAME="Your Provisioning Profile" \
   -DAPPLE_APP_REVERSED_DOMAIN=com.example.pastviewer \
-  -DPASTVIEWER_APPLE_TIP_PRODUCT_IDS="com.example.pastviewer.tip.small;com.example.pastviewer.tip.medium;com.example.pastviewer.tip.large" \
+  -DTIP_PRODUCT_IDS="com.example.pastviewer.tip.small;com.example.pastviewer.tip.medium;com.example.pastviewer.tip.large" \
   -DOSM_API_KEY=your-stadiamaps-api-key \
   -DSENTRY_DSN=your-sentry-dsn
 
@@ -154,6 +154,7 @@ cmake .. \
   -DANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
   -DANDROID_NDK="${ANDROID_NDK_ROOT}" \
   -DQT_HOST_PATH=/path/to/Qt/6.9.2/macos \
+  -DTIP_PRODUCT_IDS="com.example.pastviewer.tip.small;com.example.pastviewer.tip.medium;com.example.pastviewer.tip.large" \
   -DOSM_API_KEY=your-stadiamaps-api-key \
   -DSENTRY_DSN=your-sentry-dsn
 

@@ -116,11 +116,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MINOR="${CMAKE_PROJEC
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_PATCH="${CMAKE_PROJECT_VERSION_PATCH}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE PASTVIEWER_TIPS_URL="${PASTVIEWER_TIPS_URL}")
 
-set(_pastviewer_apple_tip_product_ids_list "${APPLE_TIP_PRODUCT_IDS}")
+set(_pastviewer_apple_tip_product_ids_list "${TIP_PRODUCT_IDS}")
 string(REPLACE "\\;" ";" _pastviewer_apple_tip_product_ids_list "${_pastviewer_apple_tip_product_ids_list}")
 list(JOIN _pastviewer_apple_tip_product_ids_list "," _pastviewer_apple_tip_product_ids)
-target_compile_definitions(${PROJECT_NAME} PRIVATE PASTVIEWER_APPLE_TIP_PRODUCT_IDS="${_pastviewer_apple_tip_product_ids}")
-message(STATUS "joined= ${PASTVIEWER_APPLE_TIP_PRODUCT_IDS}")
+target_compile_definitions(${PROJECT_NAME} PRIVATE TIP_PRODUCT_IDS="${_pastviewer_apple_tip_product_ids}")
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG=1)

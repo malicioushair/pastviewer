@@ -32,6 +32,10 @@ bool SupportsNativeTipPurchases()
 	return false;
 }
 
+void InitializeTipPurchases(QStringList)
+{
+}
+
 void LoadTipProducts(QStringList, TipProductsHandler handler)
 {
 	handler({}, QStringLiteral("Native tip purchases are unavailable on this platform."));

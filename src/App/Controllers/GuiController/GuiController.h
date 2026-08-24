@@ -49,7 +49,6 @@ public:
 	Q_INVOKABLE bool HasTipsUrl() const;
 	Q_INVOKABLE bool OpenTipsUrl();
 	Q_INVOKABLE bool HasTipSupport() const;
-	Q_INVOKABLE bool UsesAppStoreTips() const;
 	Q_INVOKABLE void RequestTipFlow();
 	Q_INVOKABLE void LoadTipProducts();
 	Q_INVOKABLE void PurchaseTip(const QString & productId);
