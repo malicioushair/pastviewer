@@ -248,4 +248,19 @@ bool ShareImage(const QString filePath)
 	return ok;
 }
 
+bool SupportsNativeTipPurchases()
+{
+	return false;
+}
+
+void LoadTipProducts(QStringList, TipProductsHandler handler)
+{
+	handler({}, QStringLiteral("Native tip purchases are unavailable on this platform."));
+}
+
+void PurchaseTip(QString, TipPurchaseHandler handler)
+{
+	handler(TipPurchaseResult::Failed, QStringLiteral("Native tip purchases are unavailable on this platform."));
+}
+
 } // namespace PlatformDependentLogic

@@ -462,6 +462,7 @@ jobs:
             -DSENTRY_DSN="$SENTRY_DSN" \
             -DAPPLE_TEAM_ID="$APPLE_TEAM_ID" \
             -DAPPLE_APP_REVERSED_DOMAIN=com.dv.pastviewer \
+            -DAPPLE_TIP_PRODUCT_IDS="com.dv.pastviewer.tip.small;com.dv.pastviewer.tip.medium;com.dv.pastviewer.tip.large" \
             -DAPPLE_PROVISION_PROFILE_NAME="$APPLE_PROVISION_PROFILE_NAME"
 
       - name: Build

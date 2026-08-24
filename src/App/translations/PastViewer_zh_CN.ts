@@ -178,6 +178,12 @@
         <source>Could not open the support page.</source>
         <translation>无法打开支持页面。</translation>
     </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="365"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="419"/>
+        <source>Tips are unavailable right now. Please try again later.</source>
+        <translation>小费功能目前不可用。请稍后再试。</translation>
+    </message>
 </context>
 <context>
     <name>PhotoDetails</name>

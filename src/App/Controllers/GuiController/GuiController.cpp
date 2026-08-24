@@ -45,6 +45,12 @@ QString AppVersion()
 	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
 }
 
+QStringList AppleTipProductIds()
+{
+	return QString::fromUtf8(PASTVIEWER_APPLE_TIP_PRODUCT_IDS)
+		.split(QLatin1Char(','), Qt::SkipEmptyParts);
+}
+
 QUrl TipsUrl()
 {
 	return QUrl(QString::fromUtf8(PASTVIEWER_TIPS_URL));
@@ -117,6 +123,9 @@ struct GuiController::Impl
 		QStringLiteral("PastVuModelController")) };
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
 	QString lastSavedImagePath;
+	QVariantList tipProducts;
+	bool tipProductsLoading = false;
+	bool tipPurchaseInProgress = false;
 
 	Impl()
 	{
@@ -301,10 +310,137 @@ bool GuiController::OpenTipsUrl()
 	return true;
 }
 
+bool GuiController::HasTipSupport() const
+{
+	if (PlatformDependentLogic::SupportsNativeTipPurchases())
+		return !AppleTipProductIds().isEmpty();
+
+	return HasTipsUrl();
+}
+
+bool GuiController::UsesAppStoreTips() const
+{
+	return PlatformDependentLogic::SupportsNativeTipPurchases()
+		&& !AppleTipProductIds().isEmpty();
+}
+
+void GuiController::RequestTipFlow()
+{
+	// if (!PlatformDependentLogic::SupportsNativeTipPurchases())
+	// {
+	// 	OpenTipsUrl();
+	// 	return;
+	// }
+
+	if (AppleTipProductIds().isEmpty())
+		return;
+
+	m_impl->tipPromptTracker.DisableAutomaticPrompts();
+	emit tipJarRequested();
+}
+
+void GuiController::LoadTipProducts()
+{
+	// if (!UsesAppStoreTips() || m_impl->tipProductsLoading || !m_impl->tipProducts.isEmpty())
+	// 	return;
+
+	m_impl->tipProductsLoading = true;
+	emit tipProductsLoadingChanged();
+
+	const QPointer<GuiController> guard(this);
+	PlatformDependentLogic::LoadTipProducts(
+		AppleTipProductIds(),
+		[guard](QVector<PlatformDependentLogic::TipProduct> products, const QString & error) {
+			if (!guard)
+				return;
+
+			guard->m_impl->tipProductsLoading = false;
+			emit guard->tipProductsLoadingChanged();
+
+			if (!error.isEmpty() || products.isEmpty())
+			{
+				LOG(ERROR) << "Failed to load App Store tip products: "
+						   << (error.isEmpty() ? "No configured products were returned" : error.toStdString());
+				emit guard->tipOperationFailed();
+				emit guard->showErrorDialog(GuiController::tr("Tips are unavailable right now. Please try again later."));
+				return;
+			}
+
+			QVariantList productValues;
+			productValues.reserve(products.size());
+			for (const auto & product : products)
+			{
+				QVariantMap productValue;
+				productValue.insert(QStringLiteral("id"), product.id);
+				productValue.insert(QStringLiteral("title"), product.title);
+				productValue.insert(QStringLiteral("displayPrice"), product.displayPrice);
+				productValues.push_back(productValue);
+			}
+
+			guard->m_impl->tipProducts = std::move(productValues);
+			emit guard->tipProductsChanged();
+		});
+}
+
+void GuiController::PurchaseTip(const QString & productId)
+{
+	if (!UsesAppStoreTips()
+		|| m_impl->tipPurchaseInProgress
+		|| !AppleTipProductIds().contains(productId))
+		return;
+
+	m_impl->tipPurchaseInProgress = true;
+	emit tipPurchaseInProgressChanged();
+
+	const QPointer<GuiController> guard(this);
+	PlatformDependentLogic::PurchaseTip(
+		productId,
+		[guard](PlatformDependentLogic::TipPurchaseResult result, const QString & error) {
+			if (!guard)
+				return;
+
+			guard->m_impl->tipPurchaseInProgress = false;
+			emit guard->tipPurchaseInProgressChanged();
+
+			switch (result)
+			{
+				case PlatformDependentLogic::TipPurchaseResult::Succeeded:
+					guard->m_impl->tipPromptTracker.DisableAutomaticPrompts();
+					emit guard->tipPurchaseSucceeded();
+					return;
+				case PlatformDependentLogic::TipPurchaseResult::Cancelled:
+					return;
+				case PlatformDependentLogic::TipPurchaseResult::Pending:
+					emit guard->tipPurchasePending();
+					return;
+				case PlatformDependentLogic::TipPurchaseResult::Failed:
+					LOG(ERROR) << "App Store tip purchase failed: " << error.toStdString();
+					emit guard->tipOperationFailed();
+					emit guard->showErrorDialog(GuiController::tr("Tips are unavailable right now. Please try again later."));
+					return;
+			}
+		});
+}
+
+QVariantList GuiController::TipProducts() const
+{
+	return m_impl->tipProducts;
+}
+
+bool GuiController::TipProductsLoading() const
+{
+	return m_impl->tipProductsLoading;
+}
+
+bool GuiController::TipPurchaseInProgress() const
+{
+	return m_impl->tipPurchaseInProgress;
+}
+
 bool GuiController::ShouldShowTipsPrompt()
 {
 	return true
-		&& HasTipsUrl()
+		&& HasTipSupport()
 		&& IsOnboardingStepCompleted(MAP_ONBOARDING_KEY)
 		&& IsOnboardingStepCompleted(PHOTO_DETAILS_ONBOARDING_KEY)
 		&& m_impl->tipPromptTracker.ShouldShowPrompt(QDateTime::currentDateTimeUtc());

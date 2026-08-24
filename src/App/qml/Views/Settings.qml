@@ -251,14 +251,14 @@ BasePage {
             }
 
             SettingWithHint {
-                visible: GuiController.HasTipsUrl()
+                visible: GuiController.HasTipSupport()
                 description: qsTr("By leaving a tip, you support PastViewer's continued development and keep it FREE")
 
                 StyledButton {
                     id: supportButtonID
 
                     text: qsTr("Support us 💰")
-                    onClicked: GuiController.OpenTipsUrl()
+                    onClicked: GuiController.RequestTipFlow()
                 }
             }
 

@@ -178,6 +178,12 @@
         <source>Could not open the support page.</source>
         <translation>No se pudo abrir la página de apoyo.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="365"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="419"/>
+        <source>Tips are unavailable right now. Please try again later.</source>
+        <translation>Las propinas no están disponibles en este momento. Inténtalo de nuevo más tarde.</translation>
+    </message>
 </context>
 <context>
     <name>PhotoDetails</name>

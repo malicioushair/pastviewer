@@ -178,6 +178,12 @@
         <source>Could not open the support page.</source>
         <translation>후원 페이지를 열 수 없습니다.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="365"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="419"/>
+        <source>Tips are unavailable right now. Please try again later.</source>
+        <translation>현재 팁을 보낼 수 없습니다. 나중에 다시 시도해 주세요.</translation>
+    </message>
 </context>
 <context>
     <name>PhotoDetails</name>
