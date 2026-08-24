@@ -178,6 +178,12 @@
         <source>Could not open the support page.</source>
         <translation>Није могуће отворити страницу за подршку.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="365"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="419"/>
+        <source>Tips are unavailable right now. Please try again later.</source>
+        <translation>Напојнице тренутно нису доступне. Покушајте поново касније.</translation>
+    </message>
 </context>
 <context>
     <name>PhotoDetails</name>

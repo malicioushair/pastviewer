@@ -67,6 +67,7 @@ Rectangle {
                 || Qt.application.state !== Qt.ApplicationActive
                 || errorDialogID.visible
                 || tipsPromptDialogID.visible
+                || tipJarDialogID.visible
                 || changelogPromptDialogID.visible)
             return
 
@@ -151,12 +152,23 @@ Rectangle {
         anchors.centerIn: Overlay.overlay
 
         onAccepted: {
-            GuiController.OpenTipsUrl()
+            GuiController.RequestTipFlow()
             if (mainWindowID.hasPendingPrompt())
                 mainWindowID.schedulePromptCheck()
         }
         onDiscarded: {
             GuiController.DismissTipsPrompt()
+            if (mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
+        }
+    }
+
+    TipJarDialog {
+        id: tipJarDialogID
+
+        anchors.centerIn: Overlay.overlay
+
+        onClosed: {
             if (mainWindowID.hasPendingPrompt())
                 mainWindowID.schedulePromptCheck()
         }
@@ -172,6 +184,10 @@ Rectangle {
 
         function onTipsPromptRequested() {
             mainWindowID.scheduleTipsPrompt()
+        }
+
+        function onTipJarRequested() {
+            tipJarDialogID.open()
         }
     }
 

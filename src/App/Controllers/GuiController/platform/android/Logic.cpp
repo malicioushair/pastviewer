@@ -1,11 +1,17 @@
 #include "App/Controllers/GuiController/platform/Logic.h"
 
+#include <mutex>
 #include <utility>
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QJniEnvironment>
 #include <QJniObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QMetaObject>
 #include <QStandardPaths>
 
 #include "glog/logging.h"
@@ -19,7 +25,12 @@ constexpr auto ACTIVITY = "activity";
 constexpr auto NOTIFICATION_HELPER = "org/qtproject/PastViewer/NotificationHelper";
 constexpr auto LOCATION_FOREGROUND_SERVICE = "org/qtproject/PastViewer/LocationForegroundService";
 constexpr auto SHARE_HELPER = "org/qtproject/PastViewer/ShareHelper";
+constexpr auto GOOGLE_PLAY_BILLING_HELPER = "org/qtproject/PastViewer/GooglePlayBillingHelper";
+
 NotificationTappedHandler notificationTappedHandler;
+std::mutex tipCallbackMutex;
+TipProductsHandler tipProductsHandler;
+TipPurchaseHandler tipPurchaseHandler;
 
 QJniObject Activity()
 {
@@ -29,12 +40,108 @@ QJniObject Activity()
 		"()Landroid/app/Activity;");
 }
 
+QString FromJString(JNIEnv * env, jstring value)
+{
+	if (!value)
+		return {};
+
+	const auto length = env->GetStringLength(value);
+	const auto * characters = env->GetStringChars(value, nullptr);
+	if (!characters)
+		return {};
+
+	const auto result = QString::fromUtf16(
+		reinterpret_cast<const char16_t *>(characters),
+		length);
+	env->ReleaseStringChars(value, characters);
+	return result;
+}
+
+template <typename Callback, typename... Args>
+void DispatchToQt(Callback callback, Args... args)
+{
+	if (!callback)
+		return;
+
+	auto invoke = [callback = std::move(callback), ... args = std::move(args)]() mutable {
+		callback(std::move(args)...);
+	};
+	if (auto * application = QCoreApplication::instance())
+		QMetaObject::invokeMethod(application, std::move(invoke), Qt::QueuedConnection);
+	else
+		invoke();
+}
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_qtproject_PastViewer_NotificationHelper_notificationTapped(JNIEnv *, jclass, jint photoId)
 {
 	if (notificationTappedHandler)
 		notificationTappedHandler(static_cast<int>(photoId));
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_qtproject_PastViewer_GooglePlayBillingHelper_productsLoaded(
+	JNIEnv * env,
+	jclass,
+	jstring productsJson,
+	jstring errorMessage)
+{
+	TipProductsHandler handler;
+	{
+		const std::scoped_lock lock(tipCallbackMutex);
+		handler = std::move(tipProductsHandler);
+	}
+
+	QVector<TipProduct> products;
+	auto error = FromJString(env, errorMessage);
+	if (productsJson)
+	{
+		QJsonParseError parseError;
+		const auto document = QJsonDocument::fromJson(FromJString(env, productsJson).toUtf8(), &parseError);
+		if (parseError.error != QJsonParseError::NoError || !document.isArray())
+			error = QStringLiteral("Could not parse Google Play product data: %1").arg(parseError.errorString());
+		else
+		{
+			for (const auto & value : document.array())
+			{
+				const auto product = value.toObject();
+				products.push_back({
+					.id = product.value(QStringLiteral("id")).toString(),
+					.title = product.value(QStringLiteral("title")).toString(),
+					.displayPrice = product.value(QStringLiteral("displayPrice")).toString(),
+				});
+			}
+		}
+	}
+
+	DispatchToQt(std::move(handler), std::move(products), std::move(error));
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_qtproject_PastViewer_GooglePlayBillingHelper_purchaseFinished(
+	JNIEnv * env,
+	jclass,
+	jint result,
+	jstring errorMessage)
+{
+	TipPurchaseHandler handler;
+	{
+		const std::scoped_lock lock(tipCallbackMutex);
+		handler = std::move(tipPurchaseHandler);
+	}
+
+	const auto purchaseResult = [result] {
+		switch (result)
+		{
+			case 0:
+				return TipPurchaseResult::Succeeded;
+			case 1:
+				return TipPurchaseResult::Cancelled;
+			case 2:
+				return TipPurchaseResult::Pending;
+			default:
+				return TipPurchaseResult::Failed;
+		}
+	}();
+	DispatchToQt(std::move(handler), purchaseResult, FromJString(env, errorMessage));
 }
 
 void InitializeNotifications(NotificationTappedHandler handler)
@@ -246,6 +353,125 @@ bool ShareImage(const QString filePath)
 		LOG(ERROR) << "Failed to share image: " << filePath.toStdString();
 
 	return ok;
+}
+
+bool SupportsNativeTipPurchases()
+{
+	return true;
+}
+
+void InitializeTipPurchases(QStringList productIds)
+{
+	if (productIds.isEmpty())
+		return;
+
+	const auto activity = Activity();
+	if (!activity.isValid())
+	{
+		LOG(ERROR) << "Failed to get Android activity while initializing Google Play Billing";
+		return;
+	}
+
+	QJniObject::callStaticMethod<void>(
+		GOOGLE_PLAY_BILLING_HELPER,
+		"initialize",
+		"(Landroid/app/Activity;Ljava/lang/String;)V",
+		activity.object(),
+		QJniObject::fromString(productIds.join(QLatin1Char(','))).object());
+
+	QJniEnvironment env;
+	if (env.checkAndClearExceptions())
+		LOG(ERROR) << "Failed to initialize Google Play Billing";
+}
+
+void LoadTipProducts(QStringList productIds, TipProductsHandler handler)
+{
+	bool requestInProgress = false;
+	{
+		const std::scoped_lock lock(tipCallbackMutex);
+		requestInProgress = static_cast<bool>(tipProductsHandler);
+		// Replace any in-flight waiter so the outstanding Play query delivers to the latest caller.
+		tipProductsHandler = std::move(handler);
+	}
+	if (requestInProgress)
+		return;
+
+	const auto activity = Activity();
+	if (!activity.isValid())
+	{
+		TipProductsHandler failedHandler;
+		{
+			const std::scoped_lock lock(tipCallbackMutex);
+			failedHandler = std::move(tipProductsHandler);
+		}
+		DispatchToQt(std::move(failedHandler), QVector<TipProduct> {}, QStringLiteral("Android activity is unavailable."));
+		return;
+	}
+
+	QJniObject::callStaticMethod<void>(
+		GOOGLE_PLAY_BILLING_HELPER,
+		"loadProducts",
+		"(Landroid/app/Activity;Ljava/lang/String;)V",
+		activity.object(),
+		QJniObject::fromString(productIds.join(QLatin1Char(','))).object());
+
+	QJniEnvironment env;
+	if (env.checkAndClearExceptions())
+	{
+		TipProductsHandler failedHandler;
+		{
+			const std::scoped_lock lock(tipCallbackMutex);
+			failedHandler = std::move(tipProductsHandler);
+		}
+		DispatchToQt(std::move(failedHandler), QVector<TipProduct> {}, QStringLiteral("Could not call Google Play Billing."));
+	}
+}
+
+void PurchaseTip(QString productId, TipPurchaseHandler handler)
+{
+	bool purchaseInProgress = false;
+	{
+		const std::scoped_lock lock(tipCallbackMutex);
+		if (tipPurchaseHandler)
+			purchaseInProgress = true;
+		else
+			tipPurchaseHandler = std::move(handler);
+	}
+	if (purchaseInProgress)
+	{
+		handler(TipPurchaseResult::Failed, QStringLiteral("A Google Play purchase is already in progress."));
+		return;
+	}
+
+	const auto activity = Activity();
+	if (!activity.isValid())
+	{
+		TipPurchaseHandler failedHandler;
+		{
+			const std::scoped_lock lock(tipCallbackMutex);
+			failedHandler = std::move(tipPurchaseHandler);
+		}
+		DispatchToQt(std::move(failedHandler), TipPurchaseResult::Failed, QStringLiteral("Android activity is unavailable."));
+		return;
+	}
+
+	QJniObject::callStaticMethod<void>(
+		GOOGLE_PLAY_BILLING_HELPER,
+		"purchaseProduct",
+		"(Landroid/app/Activity;Ljava/lang/String;)V",
+		activity.object(),
+		QJniObject::fromString(productId).object());
+
+	QJniEnvironment env;
+	if (env.checkAndClearExceptions())
+	{
+		TipPurchaseHandler failedHandler;
+		{
+			const std::scoped_lock lock(tipCallbackMutex);
+			failedHandler = std::move(tipPurchaseHandler);
+		}
+		DispatchToQt(std::move(failedHandler), TipPurchaseResult::Failed, QStringLiteral("Could not call Google Play Billing."));
+	}
 }
 
 } // namespace PlatformDependentLogic

@@ -178,6 +178,12 @@
         <source>Could not open the support page.</source>
         <translation>Die Support-Seite konnte nicht geöffnet werden.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="365"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="419"/>
+        <source>Tips are unavailable right now. Please try again later.</source>
+        <translation>Trinkgelder sind derzeit nicht verfügbar. Bitte versuche es später erneut.</translation>
+    </message>
 </context>
 <context>
     <name>PhotoDetails</name>

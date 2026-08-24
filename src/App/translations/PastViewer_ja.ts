@@ -178,6 +178,12 @@
         <source>Could not open the support page.</source>
         <translation>サポートページを開けませんでした。</translation>
     </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="365"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="419"/>
+        <source>Tips are unavailable right now. Please try again later.</source>
+        <translation>現在チップを利用できません。しばらくしてからもう一度お試しください。</translation>
+    </message>
 </context>
 <context>
     <name>PhotoDetails</name>

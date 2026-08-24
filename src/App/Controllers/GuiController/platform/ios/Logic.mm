@@ -1,10 +1,18 @@
 #include "App/Controllers/GuiController/platform/Logic.h"
 
+#include <mutex>
 #include <utility>
 
+#include <QCoreApplication>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QMetaObject>
 
 #include "glog/logging.h"
+
+#include "App/Controllers/GuiController/platform/ios/StoreKitBridge.h"
 
 #import <Photos/Photos.h>
 #import <UIKit/UIKit.h>
@@ -14,6 +22,87 @@ static NSString * const PHOTO_ID_KEY = @"photoId";
 
 namespace {
 PlatformDependentLogic::NotificationTappedHandler notificationTappedHandler;
+std::mutex tipCallbackMutex;
+PlatformDependentLogic::TipProductsHandler tipProductsHandler;
+PlatformDependentLogic::TipPurchaseHandler tipPurchaseHandler;
+
+template<typename Callback, typename... Args>
+void DispatchToQt(Callback callback, Args... args)
+{
+	if (!callback)
+		return;
+
+	auto invoke = [callback = std::move(callback), ... args = std::move(args)]() mutable {
+		callback(std::move(args)...);
+	};
+	if (auto * application = QCoreApplication::instance())
+		QMetaObject::invokeMethod(application, std::move(invoke), Qt::QueuedConnection);
+	else
+		invoke();
+}
+
+void StoreKitProductsLoaded(const char * productsJson, const char * errorMessage)
+{
+	PlatformDependentLogic::TipProductsHandler handler;
+	{
+		const std::scoped_lock lock(tipCallbackMutex);
+		handler = std::move(tipProductsHandler);
+	}
+
+	QVector<PlatformDependentLogic::TipProduct> products;
+	QString error = errorMessage ? QString::fromUtf8(errorMessage) : QString {};
+	if (productsJson)
+	{
+		QJsonParseError parseError;
+		const auto document = QJsonDocument::fromJson(QByteArray(productsJson), &parseError);
+		if (parseError.error != QJsonParseError::NoError || !document.isArray())
+			error = QStringLiteral("Could not parse StoreKit product data: %1").arg(parseError.errorString());
+		else
+		{
+			for (const auto & value : document.array())
+			{
+				const auto object = value.toObject();
+				const auto id = object.value(QStringLiteral("id")).toString();
+				const auto title = object.value(QStringLiteral("title")).toString();
+				const auto displayPrice = object.value(QStringLiteral("displayPrice")).toString();
+				if (!id.isEmpty() && !displayPrice.isEmpty())
+					products.push_back({ id, title, displayPrice });
+			}
+		}
+	}
+
+	DispatchToQt(std::move(handler), std::move(products), std::move(error));
+}
+
+void StoreKitPurchaseFinished(int result, const char * errorMessage)
+{
+	PlatformDependentLogic::TipPurchaseHandler handler;
+	{
+		const std::scoped_lock lock(tipCallbackMutex);
+		handler = std::move(tipPurchaseHandler);
+	}
+
+	auto purchaseResult = PlatformDependentLogic::TipPurchaseResult::Failed;
+	switch (result)
+	{
+	case 0:
+		purchaseResult = PlatformDependentLogic::TipPurchaseResult::Succeeded;
+		break;
+	case 1:
+		purchaseResult = PlatformDependentLogic::TipPurchaseResult::Cancelled;
+		break;
+	case 2:
+		purchaseResult = PlatformDependentLogic::TipPurchaseResult::Pending;
+		break;
+	default:
+		break;
+	}
+
+	DispatchToQt(
+		std::move(handler),
+		purchaseResult,
+		errorMessage ? QString::fromUtf8(errorMessage) : QString {});
+}
 }
 
 @interface PastViewerNotificationDelegate : NSObject<UNUserNotificationCenterDelegate>
@@ -171,7 +260,7 @@ bool ShareImage(const QString filePath)
 		}
 
 		NSURL * url = [NSURL fileURLWithPath:filePath.toNSString()];
-		UIActivityViewController * activityController = [[UIActivityViewController alloc] initWithActivityItems:@[ url ] applicationActivities:nil];
+		UIActivityViewController * activityController = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
 
 		if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad)
 		{
@@ -189,6 +278,51 @@ bool ShareImage(const QString filePath)
 	}
 
 	return true;
+}
+
+bool SupportsNativeTipPurchases()
+{
+	return true;
+}
+
+void InitializeTipPurchases(QStringList)
+{
+}
+
+void LoadTipProducts(QStringList productIds, TipProductsHandler handler)
+{
+	bool requestInProgress = false;
+	{
+		const std::scoped_lock lock(tipCallbackMutex);
+		requestInProgress = static_cast<bool>(tipProductsHandler);
+		// Replace any in-flight waiter so the outstanding StoreKit query delivers to the latest caller.
+		tipProductsHandler = std::move(handler);
+	}
+	if (requestInProgress)
+		return;
+
+	const auto productIdsCsv = productIds.join(QLatin1Char(',')).toUtf8();
+	PastViewerStoreKitLoadProducts(productIdsCsv.constData(), StoreKitProductsLoaded);
+}
+
+void PurchaseTip(QString productId, TipPurchaseHandler handler)
+{
+	bool purchaseInProgress = false;
+	{
+		const std::scoped_lock lock(tipCallbackMutex);
+		if (tipPurchaseHandler)
+			purchaseInProgress = true;
+		else
+			tipPurchaseHandler = std::move(handler);
+	}
+	if (purchaseInProgress)
+	{
+		handler(TipPurchaseResult::Failed, QStringLiteral("A StoreKit purchase is already in progress."));
+		return;
+	}
+
+	const auto productIdUtf8 = productId.toUtf8();
+	PastViewerStoreKitPurchase(productIdUtf8.constData(), StoreKitPurchaseFinished);
 }
 
 } // namespace PlatformDependentLogic

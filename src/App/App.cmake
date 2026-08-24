@@ -2,6 +2,15 @@ include(cmake/Helpers.cmake)
 
 if(IOS)
     list(APPEND CMAKE_FIND_ROOT_PATH "${CMAKE_BINARY_DIR}")
+    if(CMAKE_GENERATOR MATCHES "Ninja" AND NOT CMAKE_Swift_COMPILER_TARGET)
+        list(GET CMAKE_OSX_ARCHITECTURES 0 _pastviewer_swift_arch)
+        set(_pastviewer_swift_target "${_pastviewer_swift_arch}-apple-ios${CMAKE_OSX_DEPLOYMENT_TARGET}")
+        if(CMAKE_OSX_SYSROOT MATCHES "[Ss]imulator")
+            string(APPEND _pastviewer_swift_target "-simulator")
+        endif()
+        set(CMAKE_Swift_COMPILER_TARGET "${_pastviewer_swift_target}" CACHE STRING "Swift target triple for the iOS Ninja build")
+    endif()
+    enable_language(OBJCXX Swift)
 endif()
 
 find_package(glog REQUIRED)
@@ -49,9 +58,19 @@ include(ext/android_openssl/android_openssl.cmake)
 qt_add_executable(${PROJECT_NAME} ${SOURCES} ${QT_RESOURCES})
 
 if(IOS)
+    add_library(PastViewerStoreKitBridge STATIC
+        "${CMAKE_CURRENT_LIST_DIR}/Controllers/GuiController/platform/ios/StoreKitBridge.swift"
+    )
+    set_target_properties(PastViewerStoreKitBridge PROPERTIES
+        AUTOMOC OFF
+        Swift_COMPILATION_MODE wholemodule
+        Swift_LANGUAGE_VERSION 5
+    )
+
     # https://doc.qt.io/qt-6/ios-platform-notes.html — absolute path required
     set_target_properties(${PROJECT_NAME} PROPERTIES
         QT_IOS_LAUNCH_SCREEN "${CMAKE_SOURCE_DIR}/resources/ios/LaunchScreen.storyboard"
+        LINKER_LANGUAGE CXX
     )
     # Symlinks are unreliable with actool; keep a real PNG (synced from Android foreground).
     configure_file(
@@ -96,6 +115,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MAJOR="${CMAKE_PROJEC
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MINOR="${CMAKE_PROJECT_VERSION_MINOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_PATCH="${CMAKE_PROJECT_VERSION_PATCH}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE PASTVIEWER_TIPS_URL="${PASTVIEWER_TIPS_URL}")
+
+set(_pastviewer_apple_tip_product_ids_list "${TIP_PRODUCT_IDS}")
+string(REPLACE "\\;" ";" _pastviewer_apple_tip_product_ids_list "${_pastviewer_apple_tip_product_ids_list}")
+list(JOIN _pastviewer_apple_tip_product_ids_list "," _pastviewer_apple_tip_product_ids)
+target_compile_definitions(${PROJECT_NAME} PRIVATE TIP_PRODUCT_IDS="${_pastviewer_apple_tip_product_ids}")
+
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG=1)
 else()
@@ -184,9 +209,13 @@ endif()
 
 # Qt 6 static FFmpeg media plugin does not pull in libav*; link Qt's bundled xcframeworks.
 if(IOS)
-    enable_language(OBJCXX)
     find_library(USER_NOTIFICATIONS_FRAMEWORK UserNotifications REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${USER_NOTIFICATIONS_FRAMEWORK})
+    find_library(STOREKIT_FRAMEWORK StoreKit REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        PastViewerStoreKitBridge
+        ${USER_NOTIFICATIONS_FRAMEWORK}
+        ${STOREKIT_FRAMEWORK}
+    )
     qt_add_ios_ffmpeg_libraries(${PROJECT_NAME})
 endif()
 

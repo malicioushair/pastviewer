@@ -178,6 +178,12 @@
         <source>Could not open the support page.</source>
         <translation>Impossible d’ouvrir la page de soutien.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="365"/>
+        <location filename="../Controllers/GuiController/GuiController.cpp" line="419"/>
+        <source>Tips are unavailable right now. Please try again later.</source>
+        <translation>Les pourboires sont indisponibles pour le moment. Veuillez réessayer plus tard.</translation>
+    </message>
 </context>
 <context>
     <name>PhotoDetails</name>
