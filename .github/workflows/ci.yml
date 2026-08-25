@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'iOS/*'
+      - 'Android/*'
   pull_request:
     branches:
       - master
@@ -21,6 +24,7 @@ env:
 jobs:
   clang-tidy:
     name: clang-tidy
+    if: github.ref_type != 'tag'
     runs-on: macos-15
     timeout-minutes: 120
     env:
@@ -97,6 +101,7 @@ jobs:
 
   macos-build:
     name: macOS Build & Test
+    if: github.ref_type != 'tag'
     runs-on: macos-15
     timeout-minutes: 120
     environment: default
@@ -176,6 +181,7 @@ jobs:
 
   android-build:
     name: Android Build
+    if: github.ref_type != 'tag' || startsWith(github.ref, 'refs/tags/Android/')
     runs-on: macos-15
     timeout-minutes: 360
     environment: default
@@ -193,6 +199,31 @@ jobs:
         uses: actions/checkout@v5
         with:
           submodules: recursive
+
+      - name: Validate Google Play release secrets
+        if: startsWith(github.ref, 'refs/tags/Android/')
+        env:
+          PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_BASE64 }}
+          PLAY_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          PLAY_UPLOAD_STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$PLAY_UPLOAD_KEYSTORE_BASE64" ] || [ -z "$PLAY_UPLOAD_KEY_ALIAS" ] || \
+             [ -z "$PLAY_UPLOAD_STORE_PASSWORD" ] || [ -z "$PLAY_UPLOAD_KEY_PASSWORD" ] || \
+             [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::Android release requires PLAY_UPLOAD_KEYSTORE_BASE64, PLAY_UPLOAD_KEY_ALIAS, PLAY_UPLOAD_STORE_PASSWORD, PLAY_UPLOAD_KEY_PASSWORD, and PLAY_SERVICE_ACCOUNT_JSON."
+            exit 1
+          fi
+
+      - name: Set Android build number
+        run: |
+          playstore_build_number=$(( $(date -u +%s) - 1577836800 ))
+          if [ "$playstore_build_number" -le 0 ] || [ "$playstore_build_number" -gt 2100000000 ]; then
+            echo "::error::Generated Google Play versionCode is outside the supported range: $playstore_build_number"
+            exit 1
+          fi
+          echo "PLAYSTORE_BUILD_NUMBER=$playstore_build_number" >> "$GITHUB_ENV"
 
       - name: Set build paths
         run: |
@@ -312,6 +343,7 @@ jobs:
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-${{ env.ANDROID_NATIVE_API_LEVEL }} \
             -DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON \
+            -DPLAYSTORE_BUILD_NUMBER="$PLAYSTORE_BUILD_NUMBER" \
             -DOSM_API_KEY="$OSM_API_KEY" \
             -DSENTRY_DSN="$SENTRY_DSN" \
             -DTIP_PRODUCT_IDS="$TIP_PRODUCT_IDS" \
@@ -325,10 +357,58 @@ jobs:
         run: cmake --build "${{ env.BUILD_DIR }}" --parallel
 
       - name: Package APK
+        if: github.ref_type != 'tag'
         run: cmake --build "${{ env.BUILD_DIR }}" --target apk
+
+      - name: Package AAB
+        if: startsWith(github.ref, 'refs/tags/Android/')
+        run: cmake --build "${{ env.BUILD_DIR }}" --target aab
+
+      - name: Sign and verify AAB
+        if: startsWith(github.ref, 'refs/tags/Android/')
+        env:
+          PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_BASE64 }}
+          PLAY_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          PLAY_UPLOAD_STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          unsigned_aab="${{ env.BUILD_DIR }}/android-build/build/outputs/bundle/release/android-build-release.aab"
+          signed_aab="$RUNNER_TEMP/PastViewer.aab"
+          keystore_path="$RUNNER_TEMP/pastviewer-upload.jks"
+
+          if [ ! -f "$unsigned_aab" ]; then
+            echo "::error::Unsigned AAB was not produced at $unsigned_aab"
+            exit 1
+          fi
+
+          echo -n "$PLAY_UPLOAD_KEYSTORE_BASE64" | base64 --decode -o "$keystore_path"
+          chmod 600 "$keystore_path"
+
+          jarsigner \
+            -verbose:summary \
+            -sigalg SHA256withRSA \
+            -digestalg SHA-256 \
+            -keystore "$keystore_path" \
+            -storepass:env PLAY_UPLOAD_STORE_PASSWORD \
+            -keypass:env PLAY_UPLOAD_KEY_PASSWORD \
+            -signedjar "$signed_aab" \
+            "$unsigned_aab" \
+            "$PLAY_UPLOAD_KEY_ALIAS"
+
+          jarsigner -verify -verbose:summary "$signed_aab"
+
+      - name: Upload AAB artifact
+        if: startsWith(github.ref, 'refs/tags/Android/')
+        uses: actions/upload-artifact@v7
+        with:
+          name: PastViewer-Android-aab
+          path: ${{ runner.temp }}/PastViewer.aab
+          if-no-files-found: error
+          retention-days: 14
 
   ios-build:
     name: iOS Device Build
+    if: github.ref_type != 'tag' || startsWith(github.ref, 'refs/tags/iOS/')
     runs-on: macos-15
     timeout-minutes: 180
     environment: default
@@ -343,6 +423,9 @@ jobs:
         uses: actions/checkout@v5
         with:
           submodules: recursive
+
+      - name: Select Xcode 26.3
+        run: sudo xcode-select --switch /Applications/Xcode_26.3.app/Contents/Developer
 
       - name: Set Qt install paths
         run: |
@@ -461,6 +544,7 @@ jobs:
             -DQT_HOST_PATH="${{ env.QT_MACOS_PREFIX }}" \
             -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \
+            -DAPPSTORE_BUILD_NUMBER="$GITHUB_RUN_NUMBER" \
             -DOSM_API_KEY="$OSM_API_KEY" \
             -DSENTRY_DSN="$SENTRY_DSN" \
             -DAPPLE_TEAM_ID="$APPLE_TEAM_ID" \
@@ -473,3 +557,88 @@ jobs:
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           cmake --build "${{ env.BUILD_DIR }}" --config "${{ env.BUILD_TYPE }}" --target PastViewer -- -allowProvisioningUpdates
+
+      - name: Archive for App Store
+        if: startsWith(github.ref, 'refs/tags/iOS/')
+        env:
+          APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild archive \
+            -project "${{ env.BUILD_DIR }}/PastViewer.xcodeproj" \
+            -scheme PastViewer \
+            -configuration "${{ env.BUILD_TYPE }}" \
+            -archivePath "$RUNNER_TEMP/PastViewer.xcarchive" \
+            -destination 'generic/platform=iOS' \
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="$APPLE_DEVELOPMENT_TEAM"
+
+      - name: Export IPA
+        if: startsWith(github.ref, 'refs/tags/iOS/')
+        run: |
+          mkdir -p "$RUNNER_TEMP/ipa-export"
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/PastViewer.xcarchive" \
+            -exportPath "$RUNNER_TEMP/ipa-export" \
+            -exportOptionsPlist "${{ env.BUILD_DIR }}/ExportOptions-app-store.plist" \
+            -allowProvisioningUpdates
+
+          if [ ! -f "$RUNNER_TEMP/ipa-export/PastViewer.ipa" ]; then
+            echo "::error::PastViewer.ipa was not produced."
+            exit 1
+          fi
+
+      - name: Upload IPA artifact
+        if: startsWith(github.ref, 'refs/tags/iOS/')
+        uses: actions/upload-artifact@v7
+        with:
+          name: PastViewer-iOS-ipa
+          path: ${{ runner.temp }}/ipa-export/PastViewer.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+  upload-testflight:
+    name: Upload iOS build to TestFlight
+    if: startsWith(github.ref, 'refs/tags/iOS/') || startsWith(github.ref, 'refs/tags/v/')
+    needs: ios-build
+    runs-on: macos-15
+    environment: default
+
+    steps:
+      - name: Download IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: PastViewer-iOS-ipa
+          path: dist
+
+      - name: Upload to App Store Connect
+        uses: apple-actions/upload-testflight-build@v5
+        with:
+          app-path: dist/PastViewer.ipa
+          app-type: ios
+          issuer-id: ${{ secrets.ASC_ISSUER_ID }}
+          api-key-id: ${{ secrets.ASC_KEY_ID }}
+          api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
+
+  upload-google-play:
+    name: Upload Android build to Google Play
+    if: startsWith(github.ref, 'refs/tags/Android/') || startsWith(github.ref, 'refs/tags/v/')
+    needs: android-build
+    runs-on: ubuntu-latest
+    environment: default
+
+    steps:
+      - name: Download AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: PastViewer-Android-aab
+          path: dist
+
+      - name: Upload to Google Play Internal testing
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: org.qtproject.PastViewer
+          releaseFiles: dist/PastViewer.aab
+          tracks: internal
+          status: completed
+          releaseName: ${{ github.ref_name }}
