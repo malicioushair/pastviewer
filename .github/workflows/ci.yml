@@ -7,6 +7,7 @@ on:
     tags:
       - 'iOS/*'
       - 'Android/*'
+      - 'v/*'
   pull_request:
     branches:
       - master
@@ -181,7 +182,7 @@ jobs:
 
   android-build:
     name: Android Build
-    if: github.ref_type != 'tag' || startsWith(github.ref, 'refs/tags/Android/')
+    if: github.ref_type != 'tag' || startsWith(github.ref, 'refs/tags/iOS/') || startsWith(github.ref, 'refs/tags/v/')
     runs-on: macos-15
     timeout-minutes: 360
     environment: default
@@ -361,11 +362,11 @@ jobs:
         run: cmake --build "${{ env.BUILD_DIR }}" --target apk
 
       - name: Package AAB
-        if: startsWith(github.ref, 'refs/tags/Android/')
+        if: startsWith(github.ref, 'refs/tags/Android/') || startsWith(github.ref, 'refs/tags/v/')
         run: cmake --build "${{ env.BUILD_DIR }}" --target aab
 
       - name: Sign and verify AAB
-        if: startsWith(github.ref, 'refs/tags/Android/')
+        if: startsWith(github.ref, 'refs/tags/Android/') || startsWith(github.ref, 'refs/tags/v/')
         env:
           PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_BASE64 }}
           PLAY_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
@@ -398,7 +399,7 @@ jobs:
           jarsigner -verify -verbose:summary "$signed_aab"
 
       - name: Upload AAB artifact
-        if: startsWith(github.ref, 'refs/tags/Android/')
+        if: startsWith(github.ref, 'refs/tags/Android/') || startsWith(github.ref, 'refs/tags/v/')
         uses: actions/upload-artifact@v7
         with:
           name: PastViewer-Android-aab
@@ -408,7 +409,7 @@ jobs:
 
   ios-build:
     name: iOS Device Build
-    if: github.ref_type != 'tag' || startsWith(github.ref, 'refs/tags/iOS/')
+    if: github.ref_type != 'tag' || startsWith(github.ref, 'refs/tags/iOS/') || startsWith(github.ref, 'refs/tags/v/')
     runs-on: macos-15
     timeout-minutes: 180
     environment: default
@@ -559,7 +560,7 @@ jobs:
           cmake --build "${{ env.BUILD_DIR }}" --config "${{ env.BUILD_TYPE }}" --target PastViewer -- -allowProvisioningUpdates
 
       - name: Archive for App Store
-        if: startsWith(github.ref, 'refs/tags/iOS/')
+        if: startsWith(github.ref, 'refs/tags/iOS/') || startsWith(github.ref, 'refs/tags/v/')
         env:
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
         run: |
@@ -573,7 +574,7 @@ jobs:
             DEVELOPMENT_TEAM="$APPLE_DEVELOPMENT_TEAM"
 
       - name: Export IPA
-        if: startsWith(github.ref, 'refs/tags/iOS/')
+        if: startsWith(github.ref, 'refs/tags/iOS/') || startsWith(github.ref, 'refs/tags/v/')
         run: |
           mkdir -p "$RUNNER_TEMP/ipa-export"
           xcodebuild -exportArchive \
@@ -588,7 +589,7 @@ jobs:
           fi
 
       - name: Upload IPA artifact
-        if: startsWith(github.ref, 'refs/tags/iOS/')
+        if: startsWith(github.ref, 'refs/tags/iOS/') || startsWith(github.ref, 'refs/tags/v/')
         uses: actions/upload-artifact@v7
         with:
           name: PastViewer-iOS-ipa
