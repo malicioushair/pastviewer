@@ -598,7 +598,7 @@ jobs:
 
   upload-testflight:
     name: Upload iOS build to TestFlight
-    if: startsWith(github.ref, 'refs/tags/iOS/')
+    if: startsWith(github.ref, 'refs/tags/iOS/') || startsWith(github.ref, 'refs/tags/v/')
     needs: ios-build
     runs-on: macos-15
     environment: default
@@ -621,7 +621,7 @@ jobs:
 
   upload-google-play:
     name: Upload Android build to Google Play
-    if: startsWith(github.ref, 'refs/tags/Android/')
+    if: startsWith(github.ref, 'refs/tags/Android/') || startsWith(github.ref, 'refs/tags/v/')
     needs: android-build
     runs-on: ubuntu-latest
     environment: default
