@@ -55,11 +55,6 @@ QStringList NativeTipProductIds()
 #endif
 }
 
-QUrl TipsUrl()
-{
-	return QUrl(QString::fromUtf8(PASTVIEWER_TIPS_URL));
-}
-
 class HotReloadUrlInterceptor
 	: public QQmlAbstractUrlInterceptor
 {
@@ -296,40 +291,15 @@ void GuiController::MarkChangelogShown()
 	m_impl->settings.setValue(LAST_SHOWN_CHANGELOG_VERSION_KEY, AppVersion());
 }
 
-bool GuiController::HasTipsUrl() const
-{
-	return !TipsUrl().isEmpty();
-}
-
-bool GuiController::OpenTipsUrl()
-{
-	const auto tipsUrl = TipsUrl();
-	if (!tipsUrl.isValid() || !QDesktopServices::openUrl(tipsUrl))
-	{
-		LOG(ERROR) << "Failed to open PASTVIEWER_TIPS_URL: " << tipsUrl.toString().toStdString();
-		emit showErrorDialog(tr("Could not open the support page."));
-		return false;
-	}
-
-	m_impl->tipPromptTracker.DisableAutomaticPrompts();
-	return true;
-}
-
 bool GuiController::HasTipSupport() const
 {
-	if (PlatformDependentLogic::SupportsNativeTipPurchases())
-		return !NativeTipProductIds().isEmpty();
-
-	return HasTipsUrl();
+	return PlatformDependentLogic::SupportsNativeTipPurchases() && !NativeTipProductIds().isEmpty();
 }
 
 void GuiController::RequestTipFlow()
 {
 	if (!PlatformDependentLogic::SupportsNativeTipPurchases())
-	{
-		OpenTipsUrl();
 		return;
-	}
 
 	if (NativeTipProductIds().isEmpty())
 		return;
