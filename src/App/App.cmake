@@ -114,7 +114,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE SENTRY_DSN="${SENTRY_DSN}") #
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MAJOR="${CMAKE_PROJECT_VERSION_MAJOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MINOR="${CMAKE_PROJECT_VERSION_MINOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_PATCH="${CMAKE_PROJECT_VERSION_PATCH}")
-target_compile_definitions(${PROJECT_NAME} PRIVATE PASTVIEWER_TIPS_URL="${PASTVIEWER_TIPS_URL}")
 
 set(_pastviewer_apple_tip_product_ids_list "${TIP_PRODUCT_IDS}")
 string(REPLACE "\\;" ";" _pastviewer_apple_tip_product_ids_list "${_pastviewer_apple_tip_product_ids_list}")
@@ -125,6 +124,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG=1)
 else()
     target_compile_definitions(${PROJECT_NAME} PRIVATE MAIN_QML="${CMAKE_CURRENT_LIST_DIR}/qml/Main.qml")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE QT_QML_DEBUG)
 endif()
 
 if (APPLE)
