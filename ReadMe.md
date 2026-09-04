@@ -75,11 +75,10 @@ For Android builds, install Android SDK Platform 36, Android SDK Build Tools 35.
 ```bash
 -DOSM_API_KEY=your-stadiamaps-api-key
 -DSENTRY_DSN=your-sentry-dsn
--DPASTVIEWER_TIPS_URL=https://your-tip-page.example
 -DTIP_PRODUCT_IDS="com.example.pastviewer.tip.small;com.example.pastviewer.tip.medium;com.example.pastviewer.tip.large"
 ```
 
-`TIP_PRODUCT_IDS` is a semicolon-separated list of consumable one-time product IDs. They enable the native StoreKit tip picker on iOS and Google Play tip picker on Android, respectively. `PASTVIEWER_TIPS_URL` is optional and remains the support flow for desktop and other builds without native billing. iOS and Android do not fall back to the external URL.
+`TIP_PRODUCT_IDS` is a semicolon-separated list of consumable one-time product IDs. They enable the native StoreKit tip picker on iOS and Google Play tip picker on Android, respectively.
 
 Create a Stadia Maps key at [stadiamaps.com](https://stadiamaps.com/). Use a private or environment-specific Sentry project for `SENTRY_DSN`.
 
