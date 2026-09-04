@@ -10,6 +10,9 @@ enable_testing()
 # Create test executable
 add_executable(PastViewerTests
     DirectionUtilsTest.cpp
+    PhotoNotificationCoordinatorTest.cpp
+    PhotoNotificationPresenterTest.cpp
+    PhotoNotificationSettingsTest.cpp
     PhotoProximityTrackerTest.cpp
     UniqueCircularBufferTest.cpp
     ClusterModelTest.cpp
@@ -17,6 +20,8 @@ add_executable(PastViewerTests
     ${CMAKE_SOURCE_DIR}/src/App/Models/ScreenObjectsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/BaseModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PhotoProximityTracker.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PhotoNotificationCoordinator.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/GuiController/PhotoNotificationPresenter.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/GuiController/TipPromptTracker.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Utils/Range.h
 )
