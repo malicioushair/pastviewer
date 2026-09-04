@@ -172,7 +172,7 @@ QAbstractItemModel * PastVuModelController::GetModel(ModelType::Type modelType)
 
 bool PastVuModelController::SelectPhoto(int photoId)
 {
-	auto * model = GetModel(ModelType::Raw);
+	auto * model = GetModel(ModelType::Filtered);
 	if (!model || model->rowCount() == 0)
 	{
 		m_impl->pendingPhotoSelectionId = photoId;
