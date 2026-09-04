@@ -30,7 +30,7 @@ struct ClusterItem
 using CellKey = std::pair<int, int>;
 
 const auto getHash = [](const CellKey & key) {
-	return std::hash<int> {}(key.first) ^ (std::hash<int> {}(key.second) << 1);
+	return std::hash<int> {}(key.first) ^ (std::hash<int> {}(key.second) << 1u);
 };
 
 using GridMap = std::unordered_map<CellKey, std::vector<int>, decltype(getHash)>;
