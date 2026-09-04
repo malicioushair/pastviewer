@@ -22,6 +22,7 @@
 
 #include "glog/logging.h"
 
+#include "App/Controllers/GuiController/PhotoNotificationPresenter.h"
 #include "App/Controllers/GuiController/TipPromptTracker.h"
 #include "App/Controllers/GuiController/platform/Logic.h"
 #include "App/Controllers/I18nController/I18nController.h"
@@ -215,10 +216,14 @@ GuiController::GuiController()
 		updateBackgroundLocationTracking();
 	});
 	connect(m_impl->pastVuModelController.get(), &PastVuModelController::PhotoAreaApproached, this, [](const QString & photoTitle, int photoId) {
-		if (QGuiApplication::applicationState() == Qt::ApplicationActive)
-			return;
-
-		PlatformDependentLogic::ShowPhotoProximityNotification(GuiController::tr("Historical photo nearby"), GuiController::tr("You are near \"%1\".").arg(photoTitle), photoId);
+		PhotoNotificationPresenter::PresentPhotoApproach(
+			QGuiApplication::applicationState(),
+			GuiController::tr("Historical photo nearby"),
+			GuiController::tr("You are near \"%1\".").arg(photoTitle),
+			photoId,
+			[](QString title, QString body, int id) {
+				PlatformDependentLogic::ShowPhotoProximityNotification(std::move(title), std::move(body), id);
+			});
 	});
 
 	PlatformDependentLogic::InitializeNotifications([&](int photoId) {

@@ -1,4 +1,5 @@
 #include <array>
+#include <limits>
 
 #include <QGeoCoordinate>
 #include <gtest/gtest.h>
@@ -79,4 +80,77 @@ TEST(PhotoProximityTrackerTest, IgnoresInvalidPositionAndPhotoCoordinates)
 	EXPECT_FALSE(tracker.Update({}, validPhotoAreas, ENTER_DISTANCE_METERS));
 	EXPECT_FALSE(tracker.Update(PHOTO_COORDINATE, invalidPhotoAreas, ENTER_DISTANCE_METERS));
 	EXPECT_FALSE(tracker.Update(PHOTO_COORDINATE, validPhotoAreas, 0.0));
+}
+
+TEST(PhotoProximityTrackerTest, UsesConfiguredRadius)
+{
+	PhotoProximityTracker tracker;
+	const std::array photoAreas {
+		PhotoArea { 42, PHOTO_COORDINATE }
+	};
+
+	EXPECT_FALSE(tracker.Update(CoordinateNorthOfPhoto(50.1), photoAreas, 50.0));
+	EXPECT_EQ(tracker.Update(CoordinateNorthOfPhoto(49.9), photoAreas, 50.0), 42);
+}
+
+TEST(PhotoProximityTrackerTest, NotifiesForNewAreaWhileAnotherAreaRemainsActive)
+{
+	PhotoProximityTracker tracker;
+	const std::array photoAreas {
+		PhotoArea { 1, PHOTO_COORDINATE             },
+		PhotoArea { 2, CoordinateNorthOfPhoto(18.0) },
+	};
+
+	EXPECT_EQ(tracker.Update(PHOTO_COORDINATE, photoAreas, ENTER_DISTANCE_METERS), 1);
+	EXPECT_EQ(tracker.Update(CoordinateNorthOfPhoto(9.0), photoAreas, ENTER_DISTANCE_METERS), 2);
+	EXPECT_FALSE(tracker.Update(CoordinateNorthOfPhoto(10.0), photoAreas, ENTER_DISTANCE_METERS));
+}
+
+TEST(PhotoProximityTrackerTest, RearmsOnlyAreaThatCrossedExitRadius)
+{
+	PhotoProximityTracker tracker;
+	const std::array photoAreas {
+		PhotoArea { 1, PHOTO_COORDINATE            },
+		PhotoArea { 2, CoordinateNorthOfPhoto(8.0) },
+	};
+
+	EXPECT_EQ(tracker.Update(PHOTO_COORDINATE, photoAreas, ENTER_DISTANCE_METERS), 1);
+	EXPECT_FALSE(tracker.Update(CoordinateNorthOfPhoto(20.0), photoAreas, ENTER_DISTANCE_METERS));
+	EXPECT_EQ(tracker.Update(PHOTO_COORDINATE, photoAreas, ENTER_DISTANCE_METERS), 1);
+}
+
+TEST(PhotoProximityTrackerTest, InvalidUpdatesDoNotResetActiveAreas)
+{
+	PhotoProximityTracker tracker;
+	const std::array photoAreas {
+		PhotoArea { 42, PHOTO_COORDINATE }
+	};
+
+	EXPECT_EQ(tracker.Update(PHOTO_COORDINATE, photoAreas, ENTER_DISTANCE_METERS), 42);
+	EXPECT_FALSE(tracker.Update({}, photoAreas, ENTER_DISTANCE_METERS));
+	EXPECT_FALSE(tracker.Update(PHOTO_COORDINATE, photoAreas, std::numeric_limits<double>::quiet_NaN()));
+	EXPECT_FALSE(tracker.Update(PHOTO_COORDINATE, photoAreas, ENTER_DISTANCE_METERS));
+}
+
+TEST(PhotoProximityTrackerTest, RejectsNonFiniteAndNegativeDistances)
+{
+	PhotoProximityTracker tracker;
+	const std::array photoAreas {
+		PhotoArea { 42, PHOTO_COORDINATE }
+	};
+
+	EXPECT_FALSE(tracker.Update(PHOTO_COORDINATE, photoAreas, -1.0));
+	EXPECT_FALSE(tracker.Update(PHOTO_COORDINATE, photoAreas, std::numeric_limits<double>::infinity()));
+	EXPECT_FALSE(tracker.Update(PHOTO_COORDINATE, photoAreas, std::numeric_limits<double>::quiet_NaN()));
+}
+
+TEST(PhotoProximityTrackerTest, InvalidPhotoAreaDoesNotHideValidEntry)
+{
+	PhotoProximityTracker tracker;
+	const std::array photoAreas {
+		PhotoArea { 1, {}               },
+		PhotoArea { 2, PHOTO_COORDINATE },
+	};
+
+	EXPECT_EQ(tracker.Update(PHOTO_COORDINATE, photoAreas, ENTER_DISTANCE_METERS), 2);
 }
