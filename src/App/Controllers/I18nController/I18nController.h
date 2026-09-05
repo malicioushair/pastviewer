@@ -37,6 +37,9 @@ private:
 	I18nController(QQmlEngine & engine, QObject * parent = nullptr);
 
 private:
+	QString GetSystemLocale() const;
+
+private:
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
 };

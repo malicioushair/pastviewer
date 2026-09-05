@@ -39,12 +39,29 @@ I18nController::I18nController(QQmlEngine & engine, QObject * parent)
 	, m_impl(std::make_unique<Impl>(engine))
 {
 	const QSettings settings;
-	const auto currentLanguage = settings.value(LANGUANGE).toString();
+	auto currentLanguage = settings.value(LANGUANGE).toString();
+	if (currentLanguage.isEmpty())
+		currentLanguage = GetSystemLocale();
+
 	LoadTranslator(m_impl->runtimeTranslator, currentLanguage);
 
 	QCoreApplication::installTranslator(&m_impl->runtimeTranslator);
 	m_impl->currentLanguage = currentLanguage;
 	m_impl->engine.retranslate();
+}
+
+QString I18nController::GetSystemLocale() const
+{
+	for (const auto & locale : QLocale::system().uiLanguages())
+	{
+		const auto allLocales = m_impl->languageModel.GetAllLanguages();
+		const auto it = std::ranges::find_if(allLocales, [&](decltype(allLocales)::const_reference item) {
+			return item.code == locale;
+		});
+		if (it != allLocales.cend())
+			return it->code;
+	}
+	return {};
 }
 
 I18nController * I18nController::create(QQmlEngine * qmlEngine, QJSEngine *)
