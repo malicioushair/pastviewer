@@ -7,7 +7,7 @@ namespace {
 
 I18nModel::LanguageItems languages {
 	{
-     { "zh_CN", "Chinese (Simplified" },
+     { "zh_CN", "Chinese (Simplified)" },
      { "en", "English" },
      { "fr", "French" },
      { "de", "German" },
@@ -29,7 +29,7 @@ I18nModel::I18nModel(QObject * parent)
 
 int I18nModel::rowCount(const QModelIndex &) const
 {
-	return languages.size();
+	return languages.size() - 1;
 }
 
 QVariant I18nModel::data(const QModelIndex & index, int role) const

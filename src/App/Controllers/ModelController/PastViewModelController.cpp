@@ -1,5 +1,6 @@
 #include "PastViewModelController.h"
 
+#include <QtQml/qjsengine.h>
 #include <memory>
 #include <stdexcept>
 
@@ -40,6 +41,12 @@ struct PastVuModelController::Impl
 		, clusterModelScreen(std::make_unique<ClusterModel>(screenObjectsModel.get()))
 		, clusterModelNearest(std::make_unique<ClusterModel>(nearestObjectsModel.get()))
 	{
+		QJSEngine::setObjectOwnership(baseModel.get(), QJSEngine::CppOwnership);
+		QJSEngine::setObjectOwnership(screenObjectsModel.get(), QJSEngine::CppOwnership);
+		QJSEngine::setObjectOwnership(nearestObjectsModel.get(), QJSEngine::CppOwnership);
+		QJSEngine::setObjectOwnership(clusterModelScreen.get(), QJSEngine::CppOwnership);
+		QJSEngine::setObjectOwnership(nearestObjectsModel.get(), QJSEngine::CppOwnership);
+
 		if (!source)
 		{
 			const auto message = "POSITION SOURCE EMPTY!";
@@ -50,6 +57,8 @@ struct PastVuModelController::Impl
 			return;
 		}
 		positionSourceAdapter = std::make_unique<PositionSourceAdapter>(*source);
+		QJSEngine::setObjectOwnership(positionSourceAdapter.get(), QJSEngine::CppOwnership);
+
 		QLocationPermission permission;
 		permission.setAccuracy(QLocationPermission::Precise);
 		if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted)

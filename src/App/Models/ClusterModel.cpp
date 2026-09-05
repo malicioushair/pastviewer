@@ -289,6 +289,12 @@ int ZoomToDeclusterFromNearestPx(const double dPx, const int currentZoom)
 
 struct ClusterModel::Impl
 {
+	Impl(QAbstractItemModel * sourceModel)
+		: sourceModel(sourceModel)
+	{
+		auto a = 0;
+	}
+
 	QAbstractItemModel * sourceModel;
 	std::vector<Node> nodes;
 	QGeoRectangle viewport;
