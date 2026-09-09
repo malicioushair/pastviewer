@@ -19,11 +19,16 @@ Item {
     readonly property var positionSource: PastVuModelController.GetPositionSource()
     property alias map: mapViewID.internalMap
 
+    property int mode: GuiController.MapMode.Main
+
     Connections {
         target: GuiController
         function onOnboardingReset() {
             mapOnboardingID.currentIndex = 0
             mapOnboardingID.active = !GuiController.IsOnboardingStepCompleted(mapOnboardingID.completionKey)
+        }
+        function onMapModeChanged(mode) {
+            mapPageID.mode = mode
         }
     }
 
@@ -380,9 +385,30 @@ Item {
             }
         }
 
-        PhotosNear {
-            id: photosNearID
-            map: mapID
+
+
+        Loader {
+            id: subAreaLoaderID
+
+            Layout.fillWidth: true
+            Layout.preferredHeight: 210
+
+            sourceComponent: mapPageID.mode === GuiController.MapMode.Main ? photosNearID : tourCreationID
+
+            Component {
+                id: photosNearID
+
+                PhotosNear {
+                    map: mapID
+                }
+            }
+
+            Component {
+                id: tourCreationID
+
+                ToursCreationControls {
+                }
+            }
         }
     }
 }

@@ -39,6 +39,10 @@ Rectangle {
             stackViewID.pop(null, StackView.Immediate)
     }
 
+    function openTours() {
+        stackViewID.push("Views/Tours.qml")
+    }
+
     function hasPendingPrompt() {
         return changelogPromptPending || tipsPromptPending
     }

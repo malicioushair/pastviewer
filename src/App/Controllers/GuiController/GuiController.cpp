@@ -553,3 +553,8 @@ void GuiController::RequestPermission(const QPermission & permission)
 			throw std::runtime_error("Unknown permission status");
 	}
 }
+
+void PastViewer::GuiController::ChangeMapMode(MapMode mode)
+{
+	emit mapModeChanged(mode);
+}

@@ -283,6 +283,17 @@ BasePage {
                     onClicked: PastVuModelController.ReloadItems()
                 }
             }
+
+            SettingWithHint {
+                description: qsTr("Browse and create tours")
+
+                StyledButton {
+                    id: toursID
+
+                    text: qsTr("Tours")
+                    onClicked: mainWindowID.openTours()
+                }
+            }
         }
     }
 }
