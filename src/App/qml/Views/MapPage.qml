@@ -6,6 +6,7 @@ import QtPositioning
 import QtQuick.Shapes
 
 import PastViewer 1.0
+import TourController 1.0
 
 import "../GuiItems"
 import "../Helpers"
@@ -230,6 +231,16 @@ Item {
                     restoreMode: Binding.RestoreNone
                 }
 
+                MapPolyline {
+                    id: tourPathID
+
+                    path: TourController.tourPath
+                    line.width: 4
+                    line.color: Colors.palette.accent
+
+                    visible: path.length >= 2
+                }
+
                 MapItemView {
                     id: mapItemViewID
 
@@ -406,8 +417,7 @@ Item {
             Component {
                 id: tourCreationID
 
-                ToursCreationControls {
-                }
+                ToursCreationControls {}
             }
         }
     }

@@ -6,8 +6,17 @@ import "../Helpers/colors.js" as Colors
 Button {
     id: controlID
 
+    property bool reversedColors: false
+
     background: Rectangle {
-        color: controlID.pressed ? Colors.palette.accentAlt : Colors.palette.accent
+        color:  controlID.reversedColors
+            ? !controlID.pressed
+                    ? Colors.palette.accentAlt
+                    : Colors.palette.accent
+            : controlID.pressed
+                ? Colors.palette.accentAlt
+                : Colors.palette.accent
+
         radius: 8
         border {
             color: Colors.palette.border

@@ -6,9 +6,9 @@ import QtLocation
 import QtPositioning
 
 import PastViewer 1.0
+import TourController 1.0
 
 import "../Helpers/colors.js" as Colors
-import "../Helpers/utils.js" as Utils
 
 Rectangle {
     id: rootID
@@ -46,7 +46,7 @@ Rectangle {
                     Layout.fillHeight: true
 
                     infoText: qsTr("Distance")
-                    valueText: "0 m"
+                    valueText: TourController.distance
                 }
 
                 InfoLabel {
@@ -66,14 +66,28 @@ Rectangle {
                 StyledButton {
                     id: recID
 
+                    property bool inProgress: false
+
                     Layout.fillWidth: true
-                    text: qsTr("Start\n recording")
+                    Layout.preferredWidth: parent.width / 2
+
+                    text: inProgress ? qsTr("Pause") : qsTr("Start recording")
+                    reversedColors: inProgress
+                    onClicked: {
+                        if (inProgress)
+                            TourController.PauseRecording()
+                        else
+                            TourController.StartRecording()
+                        inProgress = !inProgress
+                    }
                 }
 
                 StyledButton {
                     id: addStopID
 
                     Layout.fillWidth: true
+                    Layout.preferredWidth: parent.width / 2
+
                     text: qsTr("Add stop")
                 }
             }

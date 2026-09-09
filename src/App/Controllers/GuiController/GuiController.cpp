@@ -18,7 +18,6 @@
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
-#include <QtCore/qnamespace.h>
 
 #include "glog/logging.h"
 
@@ -28,6 +27,7 @@
 #include "App/Controllers/I18nController/I18nController.h"
 #include "App/Controllers/ModelController/PastViewModelController.h"
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
+#include "App/Controllers/TourController/TourController.h"
 #include "App/Utils/HoleItem.h"
 #include "App/Utils/PlatformUtils.h"
 
@@ -124,6 +124,7 @@ struct GuiController::Impl
 	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
 	QString lastSavedImagePath;
 	QVariantList tipProducts;
+	TourController tourController { *pastVuModelController->GetPositionSource(), nullptr };
 	bool tipProductsLoading = false;
 	bool tipPurchaseInProgress = false;
 
@@ -158,6 +159,7 @@ GuiController::GuiController()
 		throw std::logic_error("Only one GuiController instance is supported");
 	s_guiController = this;
 
+	qmlRegisterSingletonInstance("TourController", 1, 0, "TourController", &m_impl->tourController);
 	qmlRegisterType<HoleItem>("PastViewer", 1, 0, "HoleItem");
 	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
 	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
