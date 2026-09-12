@@ -15,4 +15,5 @@ const palette = {
     sliderAlt:       "#b49e94",
     selected:        "#b7b2a7",
     error:           "#d32f2f",
+    textEdit:        "#b7b2a7",
 }

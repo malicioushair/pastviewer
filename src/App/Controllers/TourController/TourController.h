@@ -2,14 +2,19 @@
 
 #include <memory>
 
+#include <QAbstractListModel>
 #include <QGeoCoordinate>
 #include <QList>
 #include <QObject>
-#include <qqmlintegration.h>
+#include <QUrl>
 
 class PositionSourceAdapter;
 class QQmlEngine;
 class QJSEngine;
+
+namespace Tours {
+struct Tour;
+}
 
 class TourController
 	: public QObject
@@ -32,10 +37,17 @@ public:
 	Q_INVOKABLE void PauseRecording();
 	Q_INVOKABLE void UnpauseRecording();
 	Q_INVOKABLE void StopRecording();
+	Q_INVOKABLE void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile);
+	Q_INVOKABLE void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
+	Q_INVOKABLE QAbstractListModel * GetDraftsModel() const;
+	Q_INVOKABLE void UpdateModel();
+	Q_INVOKABLE void SaveDraft();
 
 private:
 	QList<QGeoCoordinate> GetTourPath() const;
 	QString GetDistance() const;
+	int64_t NextTourId() const;
+	void SaveDraft(const Tours::Tour & tour);
 
 private:
 	struct Impl;

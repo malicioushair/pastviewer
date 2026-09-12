@@ -6,6 +6,7 @@ import "../GuiItems"
 import "Helpers"
 
 import PastViewer
+import TourController
 
 BasePage {
     id: toursPageID
@@ -49,8 +50,19 @@ BasePage {
                 StyledButton {
                     text: qsTr("Create tour")
                     onClicked: {
-                        GuiController.ChangeMapMode(GuiController.MapMode.TourCreation)
-                        mainWindowID.showMap()
+                        mainWindowID.openCreateTour()
+                    }
+                }
+            }
+
+            SettingWithHint {
+                description: qsTr("Browse your drafts")
+
+                StyledButton {
+                    text: qsTr("My draft tours")
+                    onClicked: {
+                        TourController.UpdateModel()
+                        mainWindowID.openDrafts()
                     }
                 }
             }

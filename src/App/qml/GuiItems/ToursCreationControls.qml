@@ -10,6 +10,8 @@ import TourController 1.0
 
 import "../Helpers/colors.js" as Colors
 
+import TourController
+
 Rectangle {
     id: rootID
 
@@ -89,6 +91,21 @@ Rectangle {
                     Layout.preferredWidth: parent.width / 2
 
                     text: qsTr("Add stop")
+                    onClicked: mainWindowID.openAddTourStopDescription()
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 30
+
+                StyledButton {
+                    id: saveDraftID
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    onClicked: TourController.SaveDraft()
                 }
             }
         }

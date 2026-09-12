@@ -43,6 +43,18 @@ Rectangle {
         stackViewID.push("Views/Tours.qml")
     }
 
+    function openCreateTour() {
+        stackViewID.push("Views/TourDescription.qml")
+    }
+
+    function openAddTourStopDescription() {
+        stackViewID.push("Views/AddTourStopDescription.qml")
+    }
+
+    function openDrafts() {
+        stackViewID.push("Views/Drafts.qml")
+    }
+
     function hasPendingPrompt() {
         return changelogPromptPending || tipsPromptPending
     }

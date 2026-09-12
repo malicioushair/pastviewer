@@ -10,3 +10,6 @@ SettingWithHint 1.0 SettingWithHint.qml
 UserPosition 1.0 UserPosition.qml
 ToursCreationControls 1.0 ToursCreationControls.qml
 InfoLabel 1.0 InfoLabel.qml
+AddTourStopDescription 1.0 AddTourStopDescription.qml
+TourDescription 1.0 TourDescription.qml
+StyledTextArea 1.0 StyledTextArea.qml
