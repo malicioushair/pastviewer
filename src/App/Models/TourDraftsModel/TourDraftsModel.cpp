@@ -133,7 +133,7 @@ void TourDraftsModel::Update()
 		});
 		if (std::ranges::none_of(m_impl->tours, [&](const Tours::Tour & item) { return item.id == tour.id; }))
 		{
-			beginInsertRows({}, 0, rowCount());
+			beginInsertRows({}, rowCount(), rowCount());
 			m_impl->tours.push_back(tour);
 			endInsertRows();
 		}
@@ -147,7 +147,7 @@ std::vector<Tours::Tour> TourDraftsModel::GetTourDrafts() const
 
 void TourDraftsModel::AddTour(const Tours::Tour & tour)
 {
-	beginInsertRows({}, 0, rowCount());
+	beginInsertRows({}, rowCount(), rowCount());
 	m_impl->tours.emplace_back(tour);
 	endInsertRows();
 }
