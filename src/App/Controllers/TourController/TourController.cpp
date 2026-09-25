@@ -172,7 +172,6 @@ void TourController::OnNetworkReplyFinished(QNetworkReply * reply)
 	}
 	LOG(INFO) << "Published tour '" << tourTitle.toStdString()
 			  << "': " << body.toStdString();
-	QFile(Tours::GetDraftFileLocation(tourTitle)).remove();
 	m_impl->tourDraftsModel.setData(m_impl->tourDraftsModel.index(row), true, TourDraftsModel::Roles::Delete);
 	emit TourPublished(row, true, {});
 }
