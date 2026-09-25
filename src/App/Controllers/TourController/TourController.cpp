@@ -83,6 +83,7 @@ void TourController::CreateNewTour(const QString & title, const QString & descri
 		.id = NextTourId(),
 		.title = title,
 		.description = description,
+		.imageFile = imageFile,
 		.stops = {},
 	});
 

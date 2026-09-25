@@ -114,6 +114,7 @@ void TourDraftsModel::Update()
 			PROPERTY(id).toInt(),
 			PROPERTY(title).toString(),
 			PROPERTY(description).toString(),
+			PROPERTY(imageFile).toString(),
 #undef PROPERTY
 		};
 		const auto stops = json["stops"].toArray();
