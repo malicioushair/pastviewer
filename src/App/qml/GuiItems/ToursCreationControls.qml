@@ -122,6 +122,7 @@ Rectangle {
                     text: qsTr("Finish")
 
                     onClicked: {
+                        TourController.StopRecording()
                         mainWindowID.openDrafts()
                         mapPageID.mode = GuiController.MapMode.Main
                     }
