@@ -52,6 +52,9 @@ TourController::~TourController() = default;
 
 void TourController::StartRecording()
 {
+	m_impl->distance = 0;
+	emit DistanceChanged();
+
 	m_impl->tourPath.clear();
 	m_impl->tourPath.emplace_back(m_impl->positionSource.Coordinate());
 	emit TourPathChanged();
