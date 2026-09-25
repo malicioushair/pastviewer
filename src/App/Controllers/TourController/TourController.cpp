@@ -5,12 +5,15 @@
 #include <QDir>
 #include <QFile>
 #include <QGeoCoordinate>
+#include <QHttpMultiPart>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMimeDatabase>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTimer>
 
@@ -45,7 +48,6 @@ TourController::TourController(const PositionSourceAdapter & positionSource, QOb
 		m_impl->tourPath.emplace_back(currentPos);
 		emit TourPathChanged();
 	});
-	connect(&m_impl->networkManager, &QNetworkAccessManager::finished, this, &TourController::OnNetworkReplyFinished);
 }
 
 TourController::~TourController() = default;
@@ -203,4 +205,62 @@ void TourController::PublishTour(int row)
 	auto * reply = m_impl->networkManager.post(request, payload);
 	reply->setProperty("row", row);
 	reply->setProperty("tourTitle", tour.title);
+	connect(reply, &QNetworkReply::finished, this, [this, reply] { OnNetworkReplyFinished(reply); });
+}
+
+void TourController::UploadImage(const QUrl & imageFile)
+{
+	if (!imageFile.isLocalFile())
+	{
+		emit ImageUploadFailed(tr("Please select a local image file."));
+		return;
+	}
+
+	auto multipart = std::make_unique<QHttpMultiPart>(QHttpMultiPart::FormDataType);
+	auto * file = new QFile(imageFile.toLocalFile(), multipart.get());
+	if (!file->open(QIODevice::ReadOnly))
+	{
+		emit ImageUploadFailed(file->errorString());
+		return;
+	}
+
+	const auto mimeType = QMimeDatabase().mimeTypeForFile(file->fileName(), QMimeDatabase::MatchContent).name();
+	if (!mimeType.startsWith("image/"))
+	{
+		emit ImageUploadFailed(tr("The selected file is not an image."));
+		return;
+	}
+
+	QHttpPart part;
+	part.setHeader(QNetworkRequest::ContentDispositionHeader, QStringLiteral("form-data; name=\"file\"; filename=\"image\""));
+	part.setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
+	part.setBodyDevice(file);
+	multipart->append(part);
+
+	QNetworkRequest request(QUrl("https://www.pastviewer.com/api/v1/admin/assets"));
+	request.setRawHeader("X-Admin-Token", ADMIN_TOKEN);
+	request.setRawHeader("X-Asset-Kind", "image");
+	auto * reply = m_impl->networkManager.post(request, multipart.get());
+	multipart.release()->setParent(reply);
+	connect(reply, &QNetworkReply::finished, this, [this, reply] {
+		reply->deleteLater();
+		if (reply->error() != QNetworkReply::NoError)
+		{
+			emit ImageUploadFailed(reply->errorString());
+			return;
+		}
+
+		QJsonParseError parseError;
+		const auto document = QJsonDocument::fromJson(reply->readAll(), &parseError);
+		const auto assetId = document.object().value("id").toString();
+		static const QRegularExpression assetIdPattern(QStringLiteral("\\Aast_[a-f0-9]{16}\\z"));
+		if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 201
+			|| parseError.error != QJsonParseError::NoError || !document.isObject()
+			|| !assetIdPattern.match(assetId).hasMatch())
+		{
+			emit ImageUploadFailed(tr("The server returned an invalid image upload response."));
+			return;
+		}
+		emit ImageUploaded(assetId);
+	});
 }
