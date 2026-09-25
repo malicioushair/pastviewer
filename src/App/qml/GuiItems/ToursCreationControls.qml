@@ -69,17 +69,30 @@ Rectangle {
                     id: recID
 
                     property bool inProgress: false
+                    property bool freshRecording: true
 
                     Layout.fillWidth: true
                     Layout.preferredWidth: parent.width / 2
 
-                    text: inProgress ? qsTr("Pause") : qsTr("Start recording")
+                    text: {
+                        if (freshRecording)
+                            return qsTr("Start recording")
+                        else if (inProgress)
+                            return qsTr("Pause")
+                        else
+                            return qsTr("Unpause")
+                    }
                     reversedColors: inProgress
                     onClicked: {
-                        if (inProgress)
+                        if (freshRecording) {
+                            TourController.StartRecording()
+                            freshRecording = false
+                        }
+                        else if (inProgress)
                             TourController.PauseRecording()
                         else
-                            TourController.StartRecording()
+                            TourController.UnpauseRecording()
+
                         inProgress = !inProgress
                     }
                 }
@@ -99,13 +112,19 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 30
 
-                StyledButton {
-                    id: saveDraftID
-
+                Item {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                }
 
-                    onClicked: TourController.SaveDraft()
+                StyledButton {
+                    id: publishButtonID
+
+                    text: qsTr("Finish")
+
+                    onClicked: {
+                        mainWindowID.openDrafts()
+                        mapPageID.mode = GuiController.MapMode.Main
+                    }
                 }
             }
         }

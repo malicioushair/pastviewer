@@ -37,10 +37,20 @@ BasePage {
                     height: 40
                     text: model.Title
                 }
+
                 StyledButton {
                     width: 40
                     height: 40
-                    text: "del"
+                    text: qsTr("Publish")
+                    onClicked: {
+                        TourController.PublishTour(index)
+                    }
+                }
+
+                StyledButton {
+                    width: 40
+                    height: 40
+                    text: qsTr("del")
                     onClicked: model.Delete = true
                 }
             }

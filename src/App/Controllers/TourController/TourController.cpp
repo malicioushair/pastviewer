@@ -1,17 +1,21 @@
 #include "TourController.h"
 
+#include <algorithm>
+
 #include <QDir>
 #include <QFile>
 #include <QGeoCoordinate>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QStandardPaths>
 #include <QTimer>
 
-#include <algorithm>
-
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
+#include "App/Models/BaseModel.h"
 #include "App/Models/TourDraftsModel/TourDraftsModel.h"
 #include "App/Tours/Tours.h"
 #include "App/Utils/JsonHelpers.h"
@@ -24,6 +28,7 @@ struct TourController::Impl
 	double distance {};
 	QTimer timer {};
 	TourDraftsModel tourDraftsModel {};
+	QNetworkAccessManager networkManager {};
 };
 
 TourController::TourController(const PositionSourceAdapter & positionSource, QObject * parent)
@@ -40,6 +45,7 @@ TourController::TourController(const PositionSourceAdapter & positionSource, QOb
 		m_impl->tourPath.emplace_back(currentPos);
 		emit TourPathChanged();
 	});
+	connect(&m_impl->networkManager, &QNetworkAccessManager::finished, this, &TourController::OnNetworkReplyFinished);
 }
 
 TourController::~TourController() = default;
@@ -73,9 +79,9 @@ void TourController::CreateNewTour(const QString & title, const QString & descri
 	m_impl->tourDraftsModel.AddTour(Tours::Tour {
 		.id = NextTourId(),
 		.title = title,
-		.descrption = description,
+		.description = description,
 		.stops = {},
-		.isDraft = true });
+	});
 
 	SaveDraft(m_impl->tourDraftsModel.GetTourDrafts().back());
 }
@@ -89,11 +95,13 @@ void TourController::CreateTourStop(const QString & title, const QString & descr
 		.title = title,
 		.description = description,
 		.imageFile = imageFile,
-		.audioFile = audioFile
+		.audioFile = audioFile,
+		.coords = m_impl->positionSource.Coordinate()
 	};
 	currentTour.stops.emplace_back(tourStop);
 
 	SaveDraft(currentTour);
+	m_impl->tourDraftsModel.Update();
 }
 
 QAbstractListModel * TourController::GetDraftsModel() const
@@ -114,11 +122,11 @@ QString TourController::GetDistance() const
 void TourController::SaveDraft(const Tours::Tour & tour)
 {
 	QJsonObject tourObj;
+	tourObj["schemaVersion"] = 1;
 	tourObj["id"] = static_cast<qint64>(tour.id);
 	tourObj["title"] = tour.title;
-	tourObj["description"] = tour.descrption;
+	tourObj["description"] = tour.description;
 	tourObj["imageFile"] = tour.imageFile.toString();
-	tourObj["isDraft"] = tour.isDraft;
 
 	QJsonArray stops;
 	std::ranges::transform(
@@ -131,6 +139,7 @@ void TourController::SaveDraft(const Tours::Tour & tour)
 			stopObj["description"] = stop.description;
 			stopObj["imageFile"] = stop.imageFile.toString();
 			stopObj["audioFile"] = stop.audioFile.toString();
+			stopObj["coords"] = QString("%1, %2").arg(stop.coords.latitude()).arg(stop.coords.longitude());
 			return stopObj;
 		});
 
@@ -138,6 +147,31 @@ void TourController::SaveDraft(const Tours::Tour & tour)
 
 	QJsonDocument doc(tourObj);
 	JsonHelpers::SaveJson(doc, tour.title);
+}
+
+void TourController::OnNetworkReplyFinished(QNetworkReply * reply)
+{
+	const auto row = reply->property("row").toInt();
+	const auto tourTitle = reply->property("tourTitle").toString();
+	if (reply->error() != QNetworkReply::NoError)
+	{
+		emit TourPublished(row, false, reply->errorString());
+		reply->deleteLater();
+		return;
+	}
+	const auto body = reply->readAll();
+	reply->deleteLater();
+	QJsonParseError parseError;
+	if (parseError.error != QJsonParseError::NoError)
+	{
+		emit TourPublished(row, false, parseError.errorString());
+		return;
+	}
+	LOG(INFO) << "Published tour '" << tourTitle.toStdString()
+			  << "': " << body.toStdString();
+	QFile(Tours::GetDraftFileLocation(tourTitle)).remove();
+	m_impl->tourDraftsModel.setData(m_impl->tourDraftsModel.index(row), true, TourDraftsModel::Roles::Delete);
+	emit TourPublished(row, true, {});
 }
 
 QList<QGeoCoordinate> TourController::GetTourPath() const
@@ -153,7 +187,17 @@ int64_t TourController::NextTourId() const
 	return newTourID + 1;
 }
 
-void TourController::SaveDraft()
+void TourController::PublishTour(int row)
 {
-	SaveDraft();
+	const auto drafts = m_impl->tourDraftsModel.GetTourDrafts();
+	const auto & tour = drafts.at(row);
+	QUrl url("https://www.pastviewer.com/api/v1/admin/tours");
+	QNetworkRequest request(url);
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	request.setRawHeader("X-Admin-Token", ADMIN_TOKEN);
+	const auto payload = QJsonDocument(Tours::TourToJson(tour, /*forPublish=*/true))
+							 .toJson(QJsonDocument::Compact);
+	auto * reply = m_impl->networkManager.post(request, payload);
+	reply->setProperty("row", row);
+	reply->setProperty("tourTitle", tour.title);
 }

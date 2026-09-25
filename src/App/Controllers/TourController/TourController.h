@@ -11,6 +11,7 @@
 class PositionSourceAdapter;
 class QQmlEngine;
 class QJSEngine;
+class QNetworkReply;
 
 namespace Tours {
 struct Tour;
@@ -31,6 +32,7 @@ public:
 signals:
 	void TourPathChanged();
 	void DistanceChanged();
+	void TourPublished(int row, bool success, const QString & errorMessage);
 
 public:
 	Q_INVOKABLE void StartRecording();
@@ -41,13 +43,14 @@ public:
 	Q_INVOKABLE void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
 	Q_INVOKABLE QAbstractListModel * GetDraftsModel() const;
 	Q_INVOKABLE void UpdateModel();
-	Q_INVOKABLE void SaveDraft();
+	Q_INVOKABLE void PublishTour(int row);
 
 private:
 	QList<QGeoCoordinate> GetTourPath() const;
 	QString GetDistance() const;
 	int64_t NextTourId() const;
 	void SaveDraft(const Tours::Tour & tour);
+	void OnNetworkReplyFinished(QNetworkReply * reply);
 
 private:
 	struct Impl;

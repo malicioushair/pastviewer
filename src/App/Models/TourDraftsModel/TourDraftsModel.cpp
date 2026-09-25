@@ -4,13 +4,14 @@
 #include <cassert>
 #include <iterator>
 #include <memory>
+#include <vector>
 
 #include <QDir>
 #include <QJSonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QNetworkAccessManager>
 #include <QStandardPaths>
-#include <vector>
 
 #include "App/Tours/Tours.h"
 #include "App/Utils/JsonHelpers.h"
@@ -46,7 +47,7 @@ QVariant TourDraftsModel::data(const QModelIndex & index, int role) const
 		case Title:
 			return item.title;
 		case Description:
-			return item.descrption;
+			return item.description;
 		default:
 			assert(false && "Unknown role");
 	}
@@ -64,7 +65,6 @@ bool TourDraftsModel::setData(const QModelIndex & index, const QVariant & value,
 		case Delete:
 		{
 			const auto filePath = Tours::GetDraftFileLocation(item.title);
-
 			if (QFile file(filePath); !file.remove())
 			{
 				LOG(WARNING) << std::format("Could not remove the file: {} with error: {}",
@@ -110,19 +110,24 @@ void TourDraftsModel::Update()
 	{
 		const auto json = JsonHelpers::ReadJson(dirEntry.absoluteFilePath());
 		Tours::Tour tour {
-			.id = json["id"].toInt(),
-			.title = json["title"].toString(),
-			.descrption = json["description"].toString(),
-			.isDraft = json["isDraft"].isBool(),
+#define PROPERTY(NAME) .NAME = json[#NAME]
+			PROPERTY(id).toInt(),
+			PROPERTY(title).toString(),
+			PROPERTY(description).toString(),
+#undef PROPERTY
 		};
 		const auto stops = json["stops"].toArray();
 		std::ranges::transform(stops, std::back_inserter(tour.stops), [](decltype(stops)::const_reference value) {
+			const auto parts = value["coords"].toString().split(',');
 			return Tours::TourStop {
-				.id = value["id"].toInt(),
-				.title = value["title"].toString(),
-				.description = value["description"].toString(),
-				.audioFile = value["audioFile"].toString(),
-				.imageFile = value["imageFile"].toString(),
+#define PROPERTY(NAME) .NAME = value[#NAME]
+				PROPERTY(id).toInt(),
+				PROPERTY(title).toString(),
+				PROPERTY(description).toString(),
+				PROPERTY(audioFile).toString(),
+				PROPERTY(imageFile).toString(),
+#undef PROPERTY
+				.coords = QGeoCoordinate(parts.value(0).toDouble(), parts.value(1).toDouble()),
 			};
 		});
 		if (std::ranges::none_of(m_impl->tours, [&](const Tours::Tour & item) { return item.id == tour.id; }))

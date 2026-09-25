@@ -114,6 +114,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE SENTRY_DSN="${SENTRY_DSN}") #
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MAJOR="${CMAKE_PROJECT_VERSION_MAJOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MINOR="${CMAKE_PROJECT_VERSION_MINOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_PATCH="${CMAKE_PROJECT_VERSION_PATCH}")
+target_compile_definitions(${PROJECT_NAME} PRIVATE ADMIN_TOKEN="${ADMIN_TOKEN}")
 
 set(_pastviewer_apple_tip_product_ids_list "${TIP_PRODUCT_IDS}")
 string(REPLACE "\\;" ";" _pastviewer_apple_tip_product_ids_list "${_pastviewer_apple_tip_product_ids_list}")
