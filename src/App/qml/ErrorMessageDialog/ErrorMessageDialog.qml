@@ -14,8 +14,6 @@ Dialog {
 
     standardButtons: Dialog.Ok
 
-    onAccepted: Qt.quit()
-
     ColumnLayout {
         RowLayout {
             Rectangle {
@@ -35,7 +33,7 @@ Dialog {
             }
 
             Text {
-                text: qsTr("Critical error")
+                text: qsTr("Error")
                 color: "white"
                 font.pixelSize: 24
             }

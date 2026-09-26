@@ -227,6 +227,7 @@ GuiController::GuiController()
 				PlatformDependentLogic::ShowPhotoProximityNotification(std::move(title), std::move(body), id);
 			});
 	});
+	connect(&m_impl->tourController, &TourController::ImageUploadFailed, this, &GuiController::showErrorDialog);
 
 	PlatformDependentLogic::InitializeNotifications([&](int photoId) {
 		if (!m_impl->pastVuModelController)

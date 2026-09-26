@@ -20,13 +20,14 @@ signals:
 	void PositionAvailableChanged();
 
 public:
-	explicit PositionSourceAdapter(const QGeoPositionInfoSource & source, QObject * parent = nullptr);
+	explicit PositionSourceAdapter(const QGeoPositionInfoSource * const source, QObject * parent = nullptr);
 	~PositionSourceAdapter();
 
 	QGeoPositionInfo Position() const;
 	QGeoCoordinate Coordinate() const;
 	double Bearing() const;
 	bool IsPositionAvailable() const;
+	bool IsSourceAvailable() const;
 
 private slots:
 	void OnPositionUpdated(const QGeoPositionInfo & info);

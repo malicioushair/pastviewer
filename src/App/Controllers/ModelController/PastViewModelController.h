@@ -65,6 +65,7 @@ public:
 	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
 	Q_PROPERTY(Range timelineRange READ GetTimelineRange);
 	Q_PROPERTY(Range userSelectedTimelineRange READ GetUserSelectedTimelineRange WRITE SetUserSelectedTimelineRange NOTIFY UserSelectedTimelineRangeChanged);
+	Q_PROPERTY(bool hasPositionSource READ GetHasPositionSource CONSTANT);
 
 	Q_INVOKABLE QString GetMapHostApiKey();
 	Q_INVOKABLE PositionSourceAdapter * GetPositionSource();
@@ -102,6 +103,8 @@ private:
 	Range GetTimelineRange() const;
 	Range GetUserSelectedTimelineRange() const;
 	void SetUserSelectedTimelineRange(const Range & range);
+
+	bool GetHasPositionSource() const;
 
 private:
 	struct Impl;

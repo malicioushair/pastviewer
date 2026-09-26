@@ -286,6 +286,7 @@ BasePage {
 
             SettingWithHint {
                 description: qsTr("Browse and create tours")
+                visible: PastVuModelController.hasPositionSource
 
                 StyledButton {
                     id: toursID

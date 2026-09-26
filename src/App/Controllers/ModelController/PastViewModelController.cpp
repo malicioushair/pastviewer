@@ -47,6 +47,8 @@ struct PastVuModelController::Impl
 		QJSEngine::setObjectOwnership(clusterModelScreen.get(), QJSEngine::CppOwnership);
 		QJSEngine::setObjectOwnership(nearestObjectsModel.get(), QJSEngine::CppOwnership);
 
+		positionSourceAdapter = std::make_unique<PositionSourceAdapter>(source.get());
+		QJSEngine::setObjectOwnership(positionSourceAdapter.get(), QJSEngine::CppOwnership);
 		if (!source)
 		{
 			const auto message = "POSITION SOURCE EMPTY!";
@@ -56,8 +58,6 @@ struct PastVuModelController::Impl
 			});
 			return;
 		}
-		positionSourceAdapter = std::make_unique<PositionSourceAdapter>(*source);
-		QJSEngine::setObjectOwnership(positionSourceAdapter.get(), QJSEngine::CppOwnership);
 
 		QLocationPermission permission;
 		permission.setAccuracy(QLocationPermission::Precise);
@@ -253,6 +253,11 @@ void PastVuModelController::SetUserSelectedTimelineRange(const Range & range)
 	m_impl->settings.setValue(YEARS_FROM, range.min);
 	m_impl->settings.setValue(YEARS_TO, range.max);
 	emit UserSelectedTimelineRangeChanged(range);
+}
+
+bool PastVuModelController::GetHasPositionSource() const
+{
+	return m_impl->positionSourceAdapter->IsSourceAvailable();
 }
 
 void PastVuModelController::ToggleOnlyNearestObjects()
