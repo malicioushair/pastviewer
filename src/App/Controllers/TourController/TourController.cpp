@@ -196,6 +196,16 @@ void TourController::PublishTour(int row)
 {
 	const auto drafts = m_impl->tourDraftsModel.GetTourDrafts();
 	const auto & tour = drafts.at(row);
+
+	if (!UploadAsset(tour.imageFile))
+		return;
+
+	if (const auto anyUploadFails = std::ranges::any_of(tour.stops, [&](decltype(tour.stops)::const_reference stop) { return !UploadAsset(stop.imageFile); }))
+		return;
+
+	if (const auto anyUploadFails = std::ranges::any_of(tour.stops, [&](decltype(tour.stops)::const_reference stop) { return !UploadAsset(stop.audioFile); }))
+		return;
+
 	QUrl url("https://www.pastviewer.com/api/v1/admin/tours");
 	QNetworkRequest request(url);
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -208,38 +218,42 @@ void TourController::PublishTour(int row)
 	connect(reply, &QNetworkReply::finished, this, [this, reply] { OnNetworkReplyFinished(reply); });
 }
 
-void TourController::UploadImage(const QUrl & imageFile)
+bool TourController::UploadAsset(const QUrl & assetFile)
 {
-	if (!imageFile.isLocalFile())
+	if (!assetFile.isLocalFile())
 	{
 		emit ImageUploadFailed(tr("Please select a local image file."));
-		return;
+		return false;
 	}
 
 	auto multipart = std::make_unique<QHttpMultiPart>(QHttpMultiPart::FormDataType);
-	auto * file = new QFile(imageFile.toLocalFile(), multipart.get());
+	auto * file = new QFile(assetFile.toLocalFile(), multipart.get());
 	if (!file->open(QIODevice::ReadOnly))
 	{
 		emit ImageUploadFailed(file->errorString());
-		return;
+		return false;
 	}
 
 	const auto mimeType = QMimeDatabase().mimeTypeForFile(file->fileName(), QMimeDatabase::MatchContent).name();
-	if (!mimeType.startsWith("image/"))
+	if (!mimeType.startsWith("image/") && !mimeType.startsWith("audio/"))
 	{
-		emit ImageUploadFailed(tr("The selected file is not an image."));
-		return;
+		emit ImageUploadFailed(tr("The selected file is not an image or audio."));
+		return false;
 	}
 
+	const auto assetType = mimeType.startsWith("image/") ? "image"
+						 : mimeType.startsWith("audio/")
+							 ? "audio"
+							 : "";
 	QHttpPart part;
-	part.setHeader(QNetworkRequest::ContentDispositionHeader, QStringLiteral("form-data; name=\"file\"; filename=\"image\""));
+	part.setHeader(QNetworkRequest::ContentDispositionHeader, QStringLiteral("form-data; name=\"file\"; filename=\"%1\"").arg(assetFile.fileName()));
 	part.setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
 	part.setBodyDevice(file);
 	multipart->append(part);
 
 	QNetworkRequest request(QUrl("https://www.pastviewer.com/api/v1/admin/assets"));
 	request.setRawHeader("X-Admin-Token", ADMIN_TOKEN);
-	request.setRawHeader("X-Asset-Kind", "image");
+	request.setRawHeader("X-Asset-Kind", assetType);
 	auto * reply = m_impl->networkManager.post(request, multipart.get());
 	multipart.release()->setParent(reply);
 	connect(reply, &QNetworkReply::finished, this, [this, reply] {
@@ -263,4 +277,5 @@ void TourController::UploadImage(const QUrl & imageFile)
 		}
 		emit ImageUploaded(assetId);
 	});
+	return true;
 }
