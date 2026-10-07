@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QtCore/qabstractitemmodel.h>
+#include <QtCore/qtmetamacros.h>
 #include <memory>
 
 #include <QAbstractListModel>
@@ -49,6 +51,7 @@ public:
 	Q_INVOKABLE void UpdateModel();
 	Q_INVOKABLE void PublishTour(int row);
 	Q_INVOKABLE void UploadAsset(const QUrl & assetFile);
+	Q_INVOKABLE QAbstractListModel * GetAvailableToursModel() const;
 
 private:
 	QList<QGeoCoordinate> GetTourPath() const;

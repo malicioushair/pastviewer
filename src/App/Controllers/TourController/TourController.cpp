@@ -1,5 +1,7 @@
 #include "TourController.h"
 
+#include <QtQml/qjsengine.h>
+#include <QtQml/qqmlengine.h>
 #include <algorithm>
 
 #include <QCryptographicHash>
@@ -17,9 +19,11 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTimer>
+#include <memory>
 #include <vector>
 
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
+#include "App/Models/AvailableToursModel/AvailableToursModel.h"
 #include "App/Models/BaseModel.h"
 #include "App/Models/TourDraftsModel/TourDraftsModel.h"
 #include "App/Tours/Tours.h"
@@ -33,6 +37,7 @@ struct TourController::Impl
 	double distance {};
 	QTimer timer {};
 	TourDraftsModel tourDraftsModel {};
+	AvailableToursModel availableToursModel {};
 	QNetworkAccessManager networkManager {};
 };
 
@@ -217,6 +222,12 @@ void TourController::PublishTour(int row)
 				  << "': " << body.toStdString();
 		m_impl->tourDraftsModel.setData(m_impl->tourDraftsModel.index(row), true, TourDraftsModel::Roles::Delete);
 	});
+}
+
+QAbstractListModel * TourController::GetAvailableToursModel() const
+{
+	QQmlEngine::setObjectOwnership(&m_impl->availableToursModel, QJSEngine::CppOwnership);
+	return &m_impl->availableToursModel;
 }
 
 void TourController::UploadAsset(const QUrl & assetFile)

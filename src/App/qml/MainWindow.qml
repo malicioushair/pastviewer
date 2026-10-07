@@ -43,6 +43,10 @@ Rectangle {
         stackViewID.push("Views/Tours.qml")
     }
 
+    function openAvailableTours() {
+        stackViewID.push("Views/AvailableTours.qml")
+    }
+
     function openCreateTour() {
         stackViewID.push("Views/TourDescription.qml")
     }

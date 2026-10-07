@@ -40,7 +40,7 @@ BasePage {
 
                 StyledButton {
                     text: qsTr("Browse tours")
-                    onClicked: print("Browse tours")
+                    onClicked: mainWindowID.openAvailableTours()
                 }
             }
 

@@ -5,7 +5,6 @@ import QtQuick.Dialogs
 
 import "../GuiItems"
 import "Helpers"
-import "../Helpers/colors.js" as Colors
 
 import PastViewer
 import TourController
