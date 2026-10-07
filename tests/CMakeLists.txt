@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 
 # Find required packages
 find_package(GTest REQUIRED)
-find_package(Qt6 COMPONENTS Core Location REQUIRED)
+find_package(Qt6 COMPONENTS Core Location Network Positioning REQUIRED)
 
 # Enable testing
 enable_testing()
@@ -10,12 +10,16 @@ enable_testing()
 # Create test executable
 add_executable(PastViewerTests
     DirectionUtilsTest.cpp
+    FileHashTest.cpp
     PhotoNotificationCoordinatorTest.cpp
     PhotoNotificationPresenterTest.cpp
     PhotoNotificationSettingsTest.cpp
     PhotoProximityTrackerTest.cpp
     UniqueCircularBufferTest.cpp
     ClusterModelTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/TourController/TourController.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PositionSourceAdapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Models/TourDraftsModel/TourDraftsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/ClusterModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/ScreenObjectsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/BaseModel.cpp
@@ -32,11 +36,15 @@ target_include_directories(PastViewerTests PRIVATE
 )
 
 # Link against gtest and the required libraries
+target_compile_definitions(PastViewerTests PRIVATE "ADMIN_TOKEN=\"test-token\"")
+
 target_link_libraries(PastViewerTests PRIVATE
     GTest::gtest
     GTest::gtest_main
     Qt6::Core
     Qt6::Location
+    Qt6::Network
+    Qt6::Positioning
     glog::glog
 )
 

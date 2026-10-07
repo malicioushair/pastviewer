@@ -74,11 +74,17 @@ BasePage {
 
                 title: qsTr("Please add an image")
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)
-                onAccepted: {
-                    console.log("Selected file: " + addImageDialogID.selectedFile)
-                }
+                onAccepted: print("Added:", addImageDialogID.selectedFile) //TourController.UploadAsset(addImageDialogID.selectedFile)
                 onRejected: {
                     console.log("Canceled")
+                }
+            }
+
+            Connections {
+                target: TourController
+
+                onAssetUploadFinished: {
+                    uploadImageIndicatorID.visible = true
                 }
             }
 
@@ -89,16 +95,41 @@ BasePage {
                 onClicked: addImageDialogID.open()
             }
 
+            RowLayout {
+                StyledButton {
+                    id: uploadImageButtonID
+
+                    text: qsTr("Upload Image")
+                    onClicked: TourController.UploadAsset(addImageDialogID.selectedFile)
+                }
+                Rectangle {
+                    id: uploadImageIndicatorID
+
+                    Layout.preferredHeight: 10
+                    Layout.preferredWidth: 10
+
+                    radius: width
+                    color: "green"
+                    visible: false
+                }
+            }
+
             FileDialog {
                 id: addAudioDialogID
 
                 title: qsTr("Please add an audio")
                 currentFolder: StandardPaths.standardLocations(StandardPaths.MusicLocation)
-                onAccepted: {
-                    console.log("Selected file: " + addAudioDialogID.selectedFile)
-                }
+                onAccepted: TourController.UploadAsset(addAudioDialogID.selectedFile)
                 onRejected: {
                     console.log("Canceled")
+                }
+            }
+
+            Connections {
+                target: TourController
+
+                onAssetUploadFinished: {
+                    uploadAudioIndicatorID.visible = true
                 }
             }
 
@@ -107,6 +138,25 @@ BasePage {
 
                 text: qsTr("Add audio")
                 onClicked: addAudioDialogID.open()
+            }
+
+            RowLayout {
+                StyledButton {
+                    id: uploadAudioButtonID
+
+                    text: qsTr("Upload Audio")
+                    onClicked: TourController.UploadAsset(addAudioDialogID.selectedFile) // @todo: handle audio / image upload indications
+                }
+                Rectangle {
+                    id: uploadAudioIndicatorID
+
+                    Layout.preferredHeight: 10
+                    Layout.preferredWidth: 10
+
+                    radius: width
+                    color: "green"
+                    visible: false
+                }
             }
 
             RowLayout {

@@ -44,6 +44,8 @@ QVariant TourDraftsModel::data(const QModelIndex & index, int role) const
 	const auto item = m_impl->tours.at(index.row());
 	switch (role)
 	{
+		case Id:
+			return item.id;
 		case Title:
 			return item.title;
 		case Description:
@@ -59,9 +61,15 @@ bool TourDraftsModel::setData(const QModelIndex & index, const QVariant & value,
 	if (!index.isValid())
 		return assert(false && "invalid index"), false;
 
-	const auto item = m_impl->tours.at(index.row());
+	auto item = m_impl->tours.at(index.row());
 	switch (role)
 	{
+		case AddStop:
+		{
+			m_impl->tours.at(index.row()).stops.emplace_back(value.value<Tours::TourStop>());
+			emit dataChanged(index, index);
+			return true;
+		}
 		case Delete:
 		{
 			const auto filePath = Tours::GetDraftFileLocation(item.title);
@@ -114,7 +122,8 @@ void TourDraftsModel::Update()
 			PROPERTY(id).toInt(),
 			PROPERTY(title).toString(),
 			PROPERTY(description).toString(),
-			PROPERTY(imageFile).toString(),
+			PROPERTY(localImagePath).toString(),
+			PROPERTY(imageFileHash).toString(),
 #undef PROPERTY
 		};
 		const auto stops = json["stops"].toArray();
@@ -125,8 +134,10 @@ void TourDraftsModel::Update()
 				PROPERTY(id).toInt(),
 				PROPERTY(title).toString(),
 				PROPERTY(description).toString(),
-				PROPERTY(audioFile).toString(),
-				PROPERTY(imageFile).toString(),
+				PROPERTY(localImagePath).toString(),
+				PROPERTY(imageFileHash).toString(),
+				PROPERTY(localAudioPath).toString(),
+				PROPERTY(audioFileHash).toString(),
 #undef PROPERTY
 				.coords = QGeoCoordinate(parts.value(0).toDouble(), parts.value(1).toDouble()),
 			};
@@ -136,6 +147,12 @@ void TourDraftsModel::Update()
 			beginInsertRows({}, rowCount(), rowCount());
 			m_impl->tours.push_back(tour);
 			endInsertRows();
+		}
+		else if (const auto it = std::ranges::find_if(m_impl->tours, [&](const Tours::Tour & item) { return item.id == tour.id; }); it != m_impl->tours.cend())
+		{
+			const auto matchIndices = match(this->index(0, 0), Roles::Id, tour.id);
+			const auto index = matchIndices.front();
+			(void)setData(index, QVariant::fromValue(tour.stops.last()), Roles::AddStop);
 		}
 	}
 }

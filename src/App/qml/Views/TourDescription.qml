@@ -81,7 +81,6 @@ BasePage {
                         console.log("Canceled")
                     }
                 }
-
             }
         }
 
@@ -100,6 +99,35 @@ BasePage {
             text: qsTr("Add title image")
             onClicked: addImageDialogID.open()
         }
+
+        Connections {
+            target: TourController
+
+            onAssetUploadFinished: {
+                uploadIndicator.visible = true
+            }
+        }
+
+        RowLayout {
+            StyledButton {
+                id: uploadImageButtonID
+
+                text: qsTr("Upload image")
+
+                onClicked: TourController.UploadAsset(addImageDialogID.selectedFile)
+            }
+            Rectangle {
+                id: uploadIndicator
+
+                Layout.preferredHeight: 10
+                Layout.preferredWidth: 10
+
+                radius: width
+                color: "green"
+                visible: false
+            }
+        }
+
         Item { Layout.fillHeight: true }
         RowLayout {
             Layout.alignment: Qt.AlignBottom

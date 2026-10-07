@@ -12,8 +12,13 @@ class TourDraftsModel
 public:
 	enum Roles
 	{
-		Title = Qt::UserRole + 1,
+		// Getters
+		Id = Qt::UserRole + 1,
+		Title,
 		Description,
+
+		// Setters
+		AddStop,
 		Delete,
 	};
 

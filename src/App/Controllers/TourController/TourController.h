@@ -33,8 +33,10 @@ signals:
 	void TourPathChanged();
 	void DistanceChanged();
 	void TourPublished(int row, bool success, const QString & errorMessage);
-	void ImageUploaded(const QString & assetId);
 	void ImageUploadFailed(const QString & errorMessage);
+	void UploadTour();
+
+	void assetUploadFinished();
 
 public:
 	Q_INVOKABLE void StartRecording();
@@ -46,14 +48,13 @@ public:
 	Q_INVOKABLE QAbstractListModel * GetDraftsModel() const;
 	Q_INVOKABLE void UpdateModel();
 	Q_INVOKABLE void PublishTour(int row);
+	Q_INVOKABLE void UploadAsset(const QUrl & assetFile);
 
 private:
 	QList<QGeoCoordinate> GetTourPath() const;
 	QString GetDistance() const;
 	int64_t NextTourId() const;
-	void SaveDraft(const Tours::Tour & tour);
-	void OnNetworkReplyFinished(QNetworkReply * reply);
-	bool UploadAsset(const QUrl & imageFile);
+	bool SaveDraft(const Tours::Tour & tour);
 
 private:
 	struct Impl;
