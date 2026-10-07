@@ -27,6 +27,9 @@ public: // QAbstractListModel
 	QVariant data(const QModelIndex & index, int role) const override;
 	QHash<int, QByteArray> roleNames() const override;
 
+public:
+	void Update();
+
 private:
 	void OnNetworkReplyFinished(QNetworkReply * reply);
 

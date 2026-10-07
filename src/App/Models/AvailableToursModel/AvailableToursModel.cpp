@@ -35,10 +35,8 @@ AvailableToursModel::AvailableToursModel(QObject * parent)
 	: QAbstractListModel(parent)
 	, m_impl(std::make_unique<Impl>())
 {
-	QNetworkRequest request({ URL });
-	auto * reply = m_impl->networkManager.get(request);
-
 	connect(&m_impl->networkManager, &QNetworkAccessManager::finished, this, &AvailableToursModel::OnNetworkReplyFinished);
+	Update();
 }
 
 AvailableToursModel::~AvailableToursModel() = default;
@@ -66,6 +64,8 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
 
 	const auto root = jsonDoc.object();
 	const auto items = root.value("items").toArray();
+	// The model is yet small, we can afford to reload it for now
+	m_impl->items.clear();
 	for (const auto & item : items)
 	{
 		const auto itemObj = item.toObject();
@@ -77,6 +77,12 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
 		});
 		endResetModel();
 	}
+}
+
+void AvailableToursModel::Update()
+{
+	QNetworkRequest request({ URL });
+	m_impl->networkManager.get(request);
 }
 
 int AvailableToursModel::rowCount(const QModelIndex & parent) const

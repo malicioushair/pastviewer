@@ -226,6 +226,7 @@ void TourController::PublishTour(int row)
 
 QAbstractListModel * TourController::GetAvailableToursModel() const
 {
+	m_impl->availableToursModel.Update();
 	QQmlEngine::setObjectOwnership(&m_impl->availableToursModel, QJSEngine::CppOwnership);
 	return &m_impl->availableToursModel;
 }
