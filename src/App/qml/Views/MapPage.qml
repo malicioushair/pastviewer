@@ -153,7 +153,7 @@ Item {
             SettingsButton {
                 id: settingsButtonID
 
-            anchors {
+                anchors {
                     top: parent.top
                     left: parent.left
                     margins: 12
@@ -231,15 +231,15 @@ Item {
                     restoreMode: Binding.RestoreNone
                 }
 
-                MapPolyline {
-                    id: tourPathID
+                // MapPolyline { // has to be created only in a separate view when Tour exists
+                //     id: tourPathID
 
-                    path: TourController.tourPath
-                    line.width: 4
-                    line.color: Colors.palette.accent
+                //     path: TourController.tourPath
+                //     line.width: 4
+                //     line.color: Colors.palette.accent
 
-                    visible: path.length >= 2
-                }
+                //     visible: path.length >= 2
+                // }
 
                 MapItemView {
                     id: mapItemViewID

@@ -60,10 +60,7 @@ BasePage {
 
                 StyledButton {
                     text: qsTr("My draft tours")
-                    onClicked: {
-                        TourController.UpdateModel()
-                        mainWindowID.openDrafts()
-                    }
+                    onClicked: mainWindowID.openDrafts()
                 }
             }
         }

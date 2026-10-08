@@ -1,40 +1,73 @@
 #pragma once
 
-#include "App/Tours/Tours.h"
 #include <QAbstractListModel>
 
-#include <QtCore/qvariant.h>
+#include "App/Tours/Tours.h"
+#include "App/Utils/NonCopyMovable.h"
+#include "PositionSourceAdapter.h"
+
 #include <memory>
+
+class PositionSourceAdapter;
 
 class TourDraftsModel
 	: public QAbstractListModel
 {
 public:
-	enum Roles
-	{
-		// Getters
-		Id = Qt::UserRole + 1,
-		Title,
-		Description,
+    Q_OBJECT
+    NON_COPY_MOVABLE(TourDraftsModel)
 
-		// Setters
-		AddStop,
-		Delete,
-	};
+public:
+    enum Roles
+    {
+        // Getters
+        Id = Qt::UserRole + 1,
+        Title,
+        Description,
+        Distance,
 
-	explicit TourDraftsModel(QObject * parent = nullptr);
-	~TourDraftsModel();
+        // Setters
+        AddStop,
+        Publish,
+        Delete,
+    };
+
+    TourDraftsModel(const PositionSourceAdapter & positionSource, QObject * parent = nullptr);
+    ~TourDraftsModel();
+
+signals:
+    void CurrentDistanceChanged();
+    void CurrentTourPathChanged();
+    void AssetUploadFinished();
+    void ImageUploadFailed(const QString & errorMessage);
+    void StopsUpdated();
 
 public: // QAbstractListModel
-	int rowCount(const QModelIndex & parent = {}) const override;
-	QVariant data(const QModelIndex & index, int role) const override;
-	bool setData(const QModelIndex & index, const QVariant & value, int role) override;
-	QHash<int, QByteArray> roleNames() const override;
+    int rowCount(const QModelIndex & parent = {}) const override;
+    QVariant data(const QModelIndex & index, int role) const override;
+    bool setData(const QModelIndex & index, const QVariant & value, int role) override;
+    QHash<int, QByteArray> roleNames() const override;
 
 public:
 	void Update();
 	std::vector<Tours::Tour> GetTourDrafts() const;
 	void AddTour(const Tours::Tour & tour);
+    void UpdateTourPath(const QGeoCoordinate & coords);
+    QList<QGeoCoordinate> GetTourPath() const;
+    void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile);
+    void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
+    QString GetCurrentStops() const;
+    void UploadAsset(const QUrl & assetFile);
+
+    void StartRecording();
+    void PauseRecording();
+    void ResumeRecording();
+    void StopRecording();
+
+    QString GetDistance();
+
+private:
+    void DeleteTourItem(const QModelIndex & index);
 
 private:
 	struct Impl;

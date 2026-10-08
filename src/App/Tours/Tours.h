@@ -12,6 +12,8 @@
 #include <QString>
 #include <QUrl>
 
+#include "App/Utils/JsonHelpers.h"
+
 namespace Tours {
 
 inline QString GetDraftsLocation()
@@ -41,9 +43,11 @@ struct Tour
 	int64_t id {};
 	QString title {};
 	QString description {};
-	QUrl localImagePath {};
-	QString imageFileHash {};
-	QList<TourStop> stops {};
+    double distance {};
+    QUrl localImagePath {};
+    QString imageFileHash {};
+    QList<QGeoCoordinate> tourPath {};
+    QList<TourStop> stops {};
 };
 
 inline std::optional<QString> ChosenFileContentHash(const QUrl & fileUrl)
@@ -100,15 +104,58 @@ inline QJsonObject TourToJson(const Tour & tour, bool forPublish = false)
 			return {};
 		stops.append(*stopJson);
 	}
-	return {
-		{ "schemaVersion", 1							  },
-		{ "id",            static_cast<qint64>(tour.id)   },
-		{ "title",         tour.title                     },
-		{ "description",   tour.description               },
-		{ "imageFile",     tour.localImagePath.toString() },
-		{ "imageFileHash", *imageFileHash                 },
-		{ "isDraft",       !forPublish                    },
-		{ "stops",         stops						  },
-	};
+    QJsonArray tourPath;
+    for (const auto & item : tourPath)
+        tourPath.append(item);
+
+    return {
+        { "schemaVersion", 1                              },
+        { "id",            static_cast<qint64>(tour.id)   },
+        { "title",         tour.title                     },
+        { "description",   tour.description               },
+        { "imageFile",     tour.localImagePath.toString() },
+        { "imageFileHash", *imageFileHash                 },
+        { "isDraft",       !forPublish                    },
+        { "tourPath",      tourPath                       },
+        { "stops",         stops                          },
+    };
+}
+
+inline bool SaveDraft(const Tours::Tour & tour)
+{
+    QJsonArray stops;
+    for (auto & stop : tour.stops)
+    {
+        QJsonObject stopObj;
+        stopObj["id"] = static_cast<qint64>(stop.id);
+        stopObj["title"] = stop.title;
+        stopObj["description"] = stop.description;
+        stopObj["localImagePath"] = stop.localImagePath.toString();
+        stopObj["imageFileHash"] = stop.imageFileHash;
+        stopObj["localAudioPath"] = stop.localAudioPath.toString();
+        stopObj["audioFileHash"] = stop.audioFileHash;
+        stopObj["coords"] = QString("%1, %2").arg(stop.coords.latitude()).arg(stop.coords.longitude());
+        stops.append(stopObj);
+    }
+
+    QJsonArray tourPath;
+    std::ranges::transform(tour.tourPath, std::back_inserter(tourPath), [](decltype(tour.tourPath)::const_reference item) {
+        return QString("%1, %2").arg(item.latitude()).arg(item.longitude());
+    });
+
+    const auto qq = tourPath.size();
+    QJsonObject tourObj;
+    tourObj["schemaVersion"] = 1;
+    tourObj["id"] = static_cast<qint64>(tour.id);
+    tourObj["title"] = tour.title;
+    tourObj["description"] = tour.description;
+    tourObj["distance"] = tour.distance;
+    tourObj["localImagePath"] = tour.localImagePath.toString();
+    tourObj["imageFileHash"] = tour.imageFileHash;
+    tourObj["tourPath"] = tourPath;
+    tourObj["stops"] = stops;
+
+    QJsonDocument doc(tourObj);
+    return JsonHelpers::SaveJson(doc, Tours::GetDraftFileLocation(tour.title));
 }
 }

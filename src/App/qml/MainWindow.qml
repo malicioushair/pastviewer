@@ -56,7 +56,7 @@ Rectangle {
     }
 
     function openDrafts() {
-        stackViewID.push("Views/Drafts.qml")
+        stackViewID.push("Views/DraftTours.qml")
     }
 
     function hasPendingPrompt() {

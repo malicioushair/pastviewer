@@ -43,7 +43,7 @@ BasePage {
                     height: 40
                     text: qsTr("Publish")
                     onClicked: {
-                        TourController.PublishTour(index)
+                        model.Publish = true
                     }
                 }
 

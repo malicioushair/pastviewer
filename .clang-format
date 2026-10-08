@@ -120,7 +120,7 @@ Standard: Latest
 StatementMacros:
   - Q_NAMESPACE
 TabWidth: 4
-UseTab: ForContinuationAndIndentation
+UseTab: Never
 AllowAllArgumentsOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false
 BitFieldColonSpacing: Both

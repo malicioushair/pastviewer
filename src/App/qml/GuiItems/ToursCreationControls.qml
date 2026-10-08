@@ -58,7 +58,7 @@ Rectangle {
                     Layout.fillHeight: true
 
                     infoText: qsTr("Stops")
-                    valueText: "0"
+                    valueText: TourController.currentStops
                 }
             }
 
@@ -80,7 +80,7 @@ Rectangle {
                         else if (inProgress)
                             return qsTr("Pause")
                         else
-                            return qsTr("Unpause")
+                            return qsTr("Resume")
                     }
                     reversedColors: inProgress
                     onClicked: {
@@ -91,7 +91,7 @@ Rectangle {
                         else if (inProgress)
                             TourController.PauseRecording()
                         else
-                            TourController.UnpauseRecording()
+                            TourController.ResumeRecording()
 
                         inProgress = !inProgress
                     }

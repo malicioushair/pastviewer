@@ -5,21 +5,19 @@
 #include <QJsonObject>
 #include <QString>
 
-#include "App/Tours/Tours.h"
-
 #include "glog/logging.h"
 
 namespace JsonHelpers {
 
-inline bool SaveJson(const QJsonDocument & json, const QString & prefix)
+inline bool SaveJson(const QJsonDocument & json, const QString & filePath)
 {
-	QDir().mkpath(Tours::GetDraftsLocation());
-	QFile file(Tours::GetDraftFileLocation(prefix));
-	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-		return false;
+    QDir().mkpath(QFileInfo(filePath).absolutePath());
+    QFile file(QFileInfo(filePath).absoluteFilePath());
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        return false;
 
-	const auto data = json.toJson(QJsonDocument::Compact);
-	return file.write(data) == data.size();
+    const auto data = json.toJson(QJsonDocument::Compact);
+    return file.write(data) == data.size();
 }
 
 inline QJsonObject ReadJson(const QString & path)
