@@ -61,6 +61,19 @@ BasePage {
                         anchors.centerIn: parent
                         text: model.Title
                     }
+                    TapHandler {
+                        grabPermissions: PointerHandler.TakeOverForbidden
+                        onTapped: {
+                            const tour = {
+                                title: model.Title,
+                                description: model.Description,
+                                imageUrl: model.ImageUrl,
+                                distance: model.Distance,
+                                stops: model.Stops,
+                            }
+                            mainWindowID.openTourInfoView(tour)
+                        }
+                    }
                 }
             }
         }

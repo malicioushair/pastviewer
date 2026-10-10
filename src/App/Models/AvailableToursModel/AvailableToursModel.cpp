@@ -21,6 +21,8 @@ struct Item
 	QString title {};
 	QString description {};
 	QString imageUrl {};
+    int distance {};
+    int stopCount {};
 };
 
 }
@@ -70,13 +72,15 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
 	{
 		const auto itemObj = item.toObject();
 		beginResetModel();
-		m_impl->items.push_back({
-			.title = itemObj.value("title").toString(),
-			.description = itemObj.value("description").toString(),
-			.imageUrl = itemObj.value("imageUrl").toString(),
-		});
-		endResetModel();
-	}
+        m_impl->items.push_back({
+            .title = itemObj.value("title").toString(),
+            .description = itemObj.value("description").toString(),
+            .imageUrl = itemObj.value("imageUrl").toString(),
+            .distance = itemObj.value("distance").toInt(),
+            .stopCount = itemObj.value("stopCount").toInt(),
+        });
+        endResetModel();
+    }
 }
 
 void AvailableToursModel::Update()
@@ -103,10 +107,14 @@ QVariant AvailableToursModel::data(const QModelIndex & index, int role) const
 			return item.description;
 		case ImageUrl:
 			return item.imageUrl;
-		default:
-			assert(false && "unknown role");
-	}
-	return {};
+        case Distance:
+            return item.distance;
+        case Stops:
+            return item.stopCount;
+        default:
+            assert(false && "unknown role");
+    }
+    return {};
 }
 
 QHash<int, QByteArray> AvailableToursModel::roleNames() const
@@ -115,10 +123,12 @@ QHash<int, QByteArray> AvailableToursModel::roleNames() const
 	{                      \
 		Roles::NAME, #NAME \
 	}
-	return {
-		ROLENAME(Title),
-		ROLENAME(Description),
-		ROLENAME(ImageUrl),
-	};
+    return {
+        ROLENAME(Title),
+        ROLENAME(Description),
+        ROLENAME(ImageUrl),
+        ROLENAME(Distance),
+        ROLENAME(Stops),
+    };
 #undef ROLENAME
 }

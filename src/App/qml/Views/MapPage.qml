@@ -403,6 +403,7 @@ Item {
 
             Layout.fillWidth: true
             Layout.preferredHeight: 210
+            Layout.margins: 10
 
             sourceComponent: mapPageID.mode === GuiController.MapMode.Main ? photosNearID : tourCreationID
 
@@ -417,7 +418,11 @@ Item {
             Component {
                 id: tourCreationID
 
-                ToursCreationControls {}
+                TourInfoPanel {
+                    mode: GuiController.TourInfoMode.Edit
+                    stops: TourController.currentStops
+                    distance: TourController.distance
+                }
             }
         }
     }

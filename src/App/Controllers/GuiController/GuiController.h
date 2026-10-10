@@ -30,12 +30,19 @@ public:
 	};
 	Q_ENUM(MapMode)
 
+    enum class TourInfoMode
+    {
+        Info,
+        Edit,
+    };
+    Q_ENUM(TourInfoMode)
+
 signals:
-	void
-	PermissionGranted(const QPermission & permission);
-	void showErrorDialog(const QString & errorMessage);
-	void onboardingReset();
-	void tipsPromptRequested();
+    void
+    PermissionGranted(const QPermission & permission);
+    void showErrorDialog(const QString & errorMessage);
+    void onboardingReset();
+    void tipsPromptRequested();
 	void tipJarRequested();
 	void tipProductsChanged();
 	void tipProductsLoadingChanged();

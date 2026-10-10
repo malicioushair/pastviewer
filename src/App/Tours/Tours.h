@@ -113,10 +113,11 @@ inline QJsonObject TourToJson(const Tour & tour, bool forPublish = false)
         { "id",            static_cast<qint64>(tour.id)   },
         { "title",         tour.title                     },
         { "description",   tour.description               },
+        { "distance",      tour.distance                  },
         { "imageFile",     tour.localImagePath.toString() },
         { "imageFileHash", *imageFileHash                 },
         { "isDraft",       !forPublish                    },
-        { "tourPath",      tourPath                       },
+        { "path",          tourPath                       },
         { "stops",         stops                          },
     };
 }
@@ -143,7 +144,6 @@ inline bool SaveDraft(const Tours::Tour & tour)
         return QString("%1, %2").arg(item.latitude()).arg(item.longitude());
     });
 
-    const auto qq = tourPath.size();
     QJsonObject tourObj;
     tourObj["schemaVersion"] = 1;
     tourObj["id"] = static_cast<qint64>(tour.id);
@@ -152,7 +152,7 @@ inline bool SaveDraft(const Tours::Tour & tour)
     tourObj["distance"] = tour.distance;
     tourObj["localImagePath"] = tour.localImagePath.toString();
     tourObj["imageFileHash"] = tour.imageFileHash;
-    tourObj["tourPath"] = tourPath;
+    tourObj["path"] = tourPath;
     tourObj["stops"] = stops;
 
     QJsonDocument doc(tourObj);

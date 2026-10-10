@@ -59,6 +59,10 @@ Rectangle {
         stackViewID.push("Views/DraftTours.qml")
     }
 
+    function openTourInfoView(tour) {
+        stackViewID.push("Views/TourInfo.qml", {tour: tour})
+    }
+
     function hasPendingPrompt() {
         return changelogPromptPending || tipsPromptPending
     }

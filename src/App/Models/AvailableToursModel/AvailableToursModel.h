@@ -12,20 +12,22 @@ class AvailableToursModel
 	Q_OBJECT
 
 public:
-	enum Roles
-	{
-		Title = Qt::UserRole + 1,
-		Description,
-		ImageUrl,
-	};
+    enum Roles
+    {
+        Title = Qt::UserRole + 1,
+        Description,
+        ImageUrl,
+        Distance,
+        Stops,
+    };
 
-	explicit AvailableToursModel(QObject * parent = nullptr);
-	~AvailableToursModel();
+    explicit AvailableToursModel(QObject * parent = nullptr);
+    ~AvailableToursModel();
 
 public: // QAbstractListModel
 	int rowCount(const QModelIndex & parent = {}) const override;
 	QVariant data(const QModelIndex & index, int role) const override;
-	QHash<int, QByteArray> roleNames() const override;
+    QHash<int, QByteArray> roleNames() const override;
 
 public:
 	void Update();

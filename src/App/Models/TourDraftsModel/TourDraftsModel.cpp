@@ -73,11 +73,15 @@ TourDraftsModel::TourDraftsModel(const PositionSourceAdapter & positionSource, Q
         currentTour.distance += lastAddedPos.distanceTo(currentPos);
         emit CurrentDistanceChanged();
 
-        // static constexpr auto MIN_DISTANCE = 10;
-        // if (currentPos.distanceTo(m_impl->tourPath.last()) < MIN_DISTANCE)
-        // 	return;
+        static constexpr auto MIN_DISTANCE = 10;
+        if (currentPos.distanceTo(currentTour.tourPath.last()) < MIN_DISTANCE)
+            return;
+
         currentTour.tourPath.emplace_back(currentPos);
         emit CurrentTourPathChanged();
+    });
+    connect(this, &TourDraftsModel::CurrentTourPathChanged, this, [&] {
+        Tours::SaveDraft(m_impl->tours.back());
     });
 }
 

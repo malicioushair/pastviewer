@@ -15,6 +15,10 @@ import TourController
 Rectangle {
     id: rootID
 
+    required property int mode
+    required property string distance
+    required property string stops
+
     Layout.fillWidth: true
     Layout.preferredHeight: 210
 
@@ -22,16 +26,15 @@ Rectangle {
     color: Colors.palette.bg
 
     ColumnLayout {
-        anchors {
-            fill: parent
-            margins: 10
-        }
+        anchors.fill: parent
+
         spacing: 10
 
         Text {
             text: qsTr("Creating a tour")
             font.bold: true
             font.pixelSize: 18
+            visible: mode == GuiController.TourInfoMode.Edit
         }
 
         ColumnLayout {
@@ -48,7 +51,7 @@ Rectangle {
                     Layout.fillHeight: true
 
                     infoText: qsTr("Distance")
-                    valueText: TourController.distance
+                    valueText: rootID.distance
                 }
 
                 InfoLabel {
@@ -58,12 +61,14 @@ Rectangle {
                     Layout.fillHeight: true
 
                     infoText: qsTr("Stops")
-                    valueText: TourController.currentStops
+                    valueText: rootID.stops
                 }
             }
 
             RowLayout {
                 Layout.fillWidth: true
+
+                visible: mode == GuiController.TourInfoMode.Edit
 
                 StyledButton {
                     id: recID
@@ -111,6 +116,8 @@ Rectangle {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 30
+
+                visible: mode == GuiController.TourInfoMode.Edit
 
                 Item {
                     Layout.fillWidth: true
