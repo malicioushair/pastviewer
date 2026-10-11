@@ -21,6 +21,33 @@ Item {
     property alias map: mapViewID.internalMap
 
     property int mode: GuiController.MapMode.Main
+    property var tourPathItem: null
+
+    function showTourPath() {
+        if (tourPathItem) {
+            mapID.removeMapItem(tourPathItem)
+            tourPathItem.destroy()
+            tourPathItem = null
+        }
+        tourPathItem = tourPathComponent.createObject(mapID)
+        mapID.addMapItem(tourPathItem)
+    }
+
+    function hideTourPath() {
+        if (!tourPathItem)
+            return
+
+        mapID.removeMapItem(tourPathItem)
+        tourPathItem.destroy()
+        tourPathItem = null
+    }
+
+    onModeChanged: {
+        if (mode === GuiController.MapMode.DisplayTour)
+            showTourPath()
+        else
+            hideTourPath()
+    }
 
     Connections {
         target: GuiController
@@ -231,15 +258,10 @@ Item {
                     restoreMode: Binding.RestoreNone
                 }
 
-                // MapPolyline { // has to be created only in a separate view when Tour exists
-                //     id: tourPathID
-
-                //     path: TourController.tourPath
-                //     line.width: 4
-                //     line.color: Colors.palette.accent
-
-                //     visible: path.length >= 2
-                // }
+                Component {
+                    id: tourPathComponent
+                    TourPath {}
+                }
 
                 MapItemView {
                     id: mapItemViewID
@@ -405,7 +427,14 @@ Item {
             Layout.preferredHeight: 210
             Layout.margins: 10
 
-            sourceComponent: mapPageID.mode === GuiController.MapMode.Main ? photosNearID : tourCreationID
+            sourceComponent: {
+                switch (mapPageID.mode) {
+                    case GuiController.MapMode.Main: return photosNearID
+                    case GuiController.MapMode.TourCreation: return tourCreationID
+                    case GuiController.MapMode.DisplayTour: return displayTourID
+                    default: console.error("Unknonw map mode.")
+                }
+            }
 
             Component {
                 id: photosNearID
@@ -422,6 +451,16 @@ Item {
                     mode: GuiController.TourInfoMode.Edit
                     stops: TourController.currentStops
                     distance: TourController.distance
+                }
+            }
+
+            Component {
+                id: displayTourID
+
+                TourInfoPanel {
+                    mode: GuiController.TourInfoMode.Tour
+                    stops: GuiController.currentTour.stops
+                    distance: GuiController.currentTour.distance
                 }
             }
         }

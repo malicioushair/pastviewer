@@ -127,20 +127,21 @@ struct GuiController::Impl
 	TourController tourController { *pastVuModelController->GetPositionSource(), nullptr };
 	bool tipProductsLoading = false;
 	bool tipPurchaseInProgress = false;
+    QVariant currentTour {};
 
-	Impl()
-	{
-		if constexpr (Utils::IsAndroid())
-			backgroundLocationPermission = [] {
+    Impl()
+    {
+        if constexpr (Utils::IsAndroid())
+            backgroundLocationPermission = [] {
 				QLocationPermission p;
 				p.setAccuracy(QLocationPermission::Precise);
 				p.setAvailability(QLocationPermission::Always);
 				return p;
 			}();
-	}
+    }
 
-	void LoadQml()
-	{
+    void LoadQml()
+    {
 		engine.
 #ifndef NDEBUG
 			load(MAIN_QML)
@@ -560,4 +561,15 @@ void GuiController::RequestPermission(const QPermission & permission)
 void PastViewer::GuiController::ChangeMapMode(MapMode mode)
 {
 	emit mapModeChanged(mode);
+}
+
+QVariant PastViewer::GuiController::GetCurrentTour() const
+{
+    return m_impl->currentTour;
+}
+
+void PastViewer::GuiController::SetCurrentTour(const QVariant & tour)
+{
+    m_impl->currentTour = tour;
+    emit CurrentTourChanged();
 }

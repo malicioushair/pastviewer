@@ -21,6 +21,12 @@ Rectangle {
     property bool changelogPromptPending: false
     property bool tipsPromptPending: false
 
+    function toMainPage() {
+        while (stackViewID.depth != 1) {
+            stackViewID.pop()
+        }
+    }
+
     function openPhotoDetails(photo, thumbnail, title, year) {
         stackViewID.push("Views/PhotoDetails.qml", {
             imageSource: photo,

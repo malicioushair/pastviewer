@@ -9,7 +9,7 @@ import PastViewer
 import TourController
 
 BasePage {
-    id: toursPageID
+    id: rootID
 
     required property var tour
 
@@ -33,14 +33,14 @@ BasePage {
             Layout.preferredHeight: 200
             Layout.alignment: Qt.AlignHCenter
 
-            source: tour.imageUrl
+            source: rootID.tour.imageUrl
 
         }
 
         Label {
             Layout.fillWidth: true
 
-            text: tour.title
+            text: rootID.tour.title
             font.bold: true
             font.pixelSize: 20
         }
@@ -48,7 +48,7 @@ BasePage {
         Label {
             Layout.fillWidth: true
 
-            text: tour.description
+            text: rootID.tour.description
             wrapMode: Text.WordWrap
         }
 
@@ -58,8 +58,8 @@ BasePage {
 
             mode: GuiController.TourInfoMode.Info
 
-            stops: tour.stops
-            distance: tour.distance
+            stops: rootID.tour.stops
+            distance: rootID.tour.distance
         }
 
         StyledButton {
@@ -67,7 +67,11 @@ BasePage {
             Layout.preferredHeight: 50
 
             text: qsTr("Start tour")
-            onClicked: print("start")
+            onClicked: {
+                GuiController.currentTour = rootID.tour
+                GuiController.ChangeMapMode(GuiController.MapMode.DisplayTour)
+                mainWindowID.toMainPage()
+            }
         }
     }
 }

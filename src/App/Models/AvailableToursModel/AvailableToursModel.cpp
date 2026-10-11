@@ -3,6 +3,7 @@
 #include <cassert>
 #include <format>
 
+#include <QGeoCoordinate>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -21,6 +22,7 @@ struct Item
 	QString title {};
 	QString description {};
 	QString imageUrl {};
+    QList<QGeoCoordinate> tourPath {};
     int distance {};
     int stopCount {};
 };
@@ -71,14 +73,24 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
 	for (const auto & item : items)
 	{
 		const auto itemObj = item.toObject();
-		beginResetModel();
-        m_impl->items.push_back({
-            .title = itemObj.value("title").toString(),
+        const auto pathObj = itemObj.value("path").toObject();
+        const auto pathCoords = pathObj.value("coords").toArray();
+        QList<QGeoCoordinate> tourPath;
+        tourPath.reserve(pathCoords.size());
+        std::ranges::transform(pathCoords, std::back_inserter(tourPath), [&](decltype(pathCoords)::const_reference item) -> QGeoCoordinate {
+            const auto itemObj = item.toObject();
+            const auto lat = itemObj.value("latitude").toDouble();
+            const auto lon = itemObj.value("longitude").toDouble();
+            return { lat, lon };
+        });
+
+        beginResetModel();
+        m_impl->items.push_back({ .title = itemObj.value("title").toString(),
             .description = itemObj.value("description").toString(),
             .imageUrl = itemObj.value("imageUrl").toString(),
             .distance = itemObj.value("distance").toInt(),
             .stopCount = itemObj.value("stopCount").toInt(),
-        });
+            .tourPath = tourPath });
         endResetModel();
     }
 }
@@ -111,6 +123,8 @@ QVariant AvailableToursModel::data(const QModelIndex & index, int role) const
             return item.distance;
         case Stops:
             return item.stopCount;
+        case TourPath:
+            return QVariant::fromValue(item.tourPath);
         default:
             assert(false && "unknown role");
     }
@@ -129,6 +143,7 @@ QHash<int, QByteArray> AvailableToursModel::roleNames() const
         ROLENAME(ImageUrl),
         ROLENAME(Distance),
         ROLENAME(Stops),
+        ROLENAME(TourPath),
     };
 #undef ROLENAME
 }

@@ -19,6 +19,7 @@ public:
         ImageUrl,
         Distance,
         Stops,
+        TourPath,
     };
 
     explicit AvailableToursModel(QObject * parent = nullptr);

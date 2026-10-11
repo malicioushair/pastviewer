@@ -7,7 +7,8 @@
 #include <QQmlEngine>
 #include <QQuickItemGrabResult>
 #include <QVariantList>
-#include <qqmlintegration.h>
+
+#include "App/Utils/NonCopyMovable.h"
 
 namespace PastViewer {
 class GuiController
@@ -16,30 +17,34 @@ class GuiController
 	Q_OBJECT
 	QML_ELEMENT
 	QML_SINGLETON
-	Q_DISABLE_COPY(GuiController) // @TODO: make non-copy-movable
+    NON_COPY_MOVABLE(GuiController)
 
-	Q_PROPERTY(QVariantList tipProducts READ TipProducts NOTIFY tipProductsChanged)
-	Q_PROPERTY(bool tipProductsLoading READ TipProductsLoading NOTIFY tipProductsLoadingChanged)
-	Q_PROPERTY(bool tipPurchaseInProgress READ TipPurchaseInProgress NOTIFY tipPurchaseInProgressChanged)
+    Q_PROPERTY(QVariantList tipProducts READ TipProducts NOTIFY tipProductsChanged)
+    Q_PROPERTY(bool tipProductsLoading READ TipProductsLoading NOTIFY tipProductsLoadingChanged)
+    Q_PROPERTY(bool tipPurchaseInProgress READ TipPurchaseInProgress NOTIFY tipPurchaseInProgressChanged)
+    Q_PROPERTY(QVariant currentTour READ GetCurrentTour WRITE SetCurrentTour NOTIFY CurrentTourChanged) // @todo think on moving to a MapController
 
 public:
-	enum class MapMode
-	{
-		Main,
-		TourCreation,
-	};
-	Q_ENUM(MapMode)
+    enum class MapMode
+    {
+        Main,
+        TourCreation,
+        DisplayTour,
+    };
+    Q_ENUM(MapMode)
 
     enum class TourInfoMode
     {
         Info,
         Edit,
+        Tour,
     };
     Q_ENUM(TourInfoMode)
 
 signals:
-    void
-    PermissionGranted(const QPermission & permission);
+    void PermissionGranted(const QPermission & permission);
+    void CurrentTourChanged();
+
     void showErrorDialog(const QString & errorMessage);
     void onboardingReset();
     void tipsPromptRequested();
@@ -90,6 +95,8 @@ private:
 
 private:
 	void RequestPermission(const QPermission & permission);
+    QVariant GetCurrentTour() const;
+    void SetCurrentTour(const QVariant & tour);
 
 private:
 	struct Impl;

@@ -68,7 +68,7 @@ Rectangle {
             RowLayout {
                 Layout.fillWidth: true
 
-                visible: mode == GuiController.TourInfoMode.Edit
+                visible: rootID.mode == GuiController.TourInfoMode.Edit
 
                 StyledButton {
                     id: recID
@@ -77,7 +77,6 @@ Rectangle {
                     property bool freshRecording: true
 
                     Layout.fillWidth: true
-                    Layout.preferredWidth: parent.width / 2
 
                     text: {
                         if (freshRecording)
@@ -106,7 +105,6 @@ Rectangle {
                     id: addStopID
 
                     Layout.fillWidth: true
-                    Layout.preferredWidth: parent.width / 2
 
                     text: qsTr("Add stop")
                     onClicked: mainWindowID.openAddTourStopDescription()
