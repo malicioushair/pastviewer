@@ -69,8 +69,8 @@ BasePage {
             text: qsTr("Start tour")
             onClicked: {
                 GuiController.currentTour = rootID.tour
-                GuiController.ChangeMapMode(GuiController.MapMode.DisplayTour)
                 mainWindowID.toMainPage()
+                GuiController.ChangeMapMode(GuiController.MapMode.DisplayTour)
             }
         }
     }

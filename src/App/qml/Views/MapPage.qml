@@ -31,6 +31,26 @@ Item {
         }
         tourPathItem = tourPathComponent.createObject(mapID)
         mapID.addMapItem(tourPathItem)
+        mapID.follow = false
+        const raw = GuiController.currentTour?.tourPath
+        if (raw && raw.length > 0) {
+            const helper = mainWindowID.mapAnimationHelper
+            const start = QtPositioning.coordinate(raw[0].latitude, raw[0].longitude)
+            const here = mapPageID.positionSource.coordinate
+            const mid = QtPositioning.coordinate(
+                (start.latitude + here.latitude) / 2,
+                (start.longitude + here.longitude) / 2
+            )
+            function flyToStart() {
+                helper.animateMapCenterAndZoom(start, 17, start, 1500)
+            }
+            function onStep1Finished() {
+                helper.animationFinished.disconnect(onStep1Finished)
+                flyToStart()
+            }
+            helper.animationFinished.connect(onStep1Finished)
+            helper.animateMapCenterAndZoom(mid, 15, start, 3000)
+        }
     }
 
     function hideTourPath() {
@@ -241,7 +261,7 @@ Item {
                         if (!mainWindowID.mapAnimationHelper.running)
                             return
 
-                        mapID.center =  QtPositioning.coordinate(mainWindowID.mapAnimationHelper.animatedLat, mainWindowID.mapAnimationHelper.animatedLon)
+                        mapID.center = QtPositioning.coordinate(mainWindowID.mapAnimationHelper.animatedLat, mainWindowID.mapAnimationHelper.animatedLon)
                     }
                     function onAnimatedZoomChanged() {
                         mapID.zoomLevel = mainWindowID.mapAnimationHelper.animatedZoom

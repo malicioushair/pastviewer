@@ -6,7 +6,7 @@ import PastViewer 1.0
 import "../Helpers/colors.js" as Colors
 
 MapPolyline {
-    id: tourPathID
+    id: rootID
 
     path: GuiController.currentTour.tourPath
     line.width: 4
