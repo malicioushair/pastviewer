@@ -17,7 +17,7 @@ Rectangle {
 
     required property int mode
     required property string distance
-    required property string stops
+    required property string stopCount
 
     Layout.fillWidth: true
     Layout.preferredHeight: 210
@@ -61,7 +61,7 @@ Rectangle {
                     Layout.fillHeight: true
 
                     infoText: qsTr("Stops")
-                    valueText: rootID.stops
+                    valueText: rootID.stopCount
                 }
             }
 

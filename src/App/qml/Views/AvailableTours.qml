@@ -69,8 +69,9 @@ BasePage {
                                 description: model.Description,
                                 imageUrl: model.ImageUrl,
                                 distance: model.Distance,
-                                stops: model.Stops,
+                                stopCount: model.StopCount,
                                 tourPath: model.TourPath,
+                                stops: model.Stops,
                             }
                             mainWindowID.openTourInfoView(tour)
                         }

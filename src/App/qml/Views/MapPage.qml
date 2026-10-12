@@ -29,7 +29,7 @@ Item {
             tourPathItem.destroy()
             tourPathItem = null
         }
-        tourPathItem = tourPathComponent.createObject(mapID)
+        tourPathItem = tourPathComponentID.createObject(mapID)
         mapID.addMapItem(tourPathItem)
         mapID.follow = false
         const raw = GuiController.currentTour?.tourPath
@@ -279,8 +279,41 @@ Item {
                 }
 
                 Component {
-                    id: tourPathComponent
+                    id: tourPathComponentID
                     TourPath {}
+                }
+
+                MapItemView {
+                    id: tourStopsID
+
+                    property int selectedStopNumber: -1
+
+                    z: 1
+                    model: GuiController.currentTour ? GuiController.currentTour.stops : []
+                    visible: mapPageID.mode === GuiController.MapMode.DisplayTour
+                    delegate: MapQuickItem {
+                        id: stopID
+
+                        readonly property int itemSize: 20
+
+                        z: 1
+                        coordinate: QtPositioning.coordinate(modelData.coords.latitude, modelData.coords.longitude)
+                        anchorPoint: Qt.point(stopID.itemSize / 2, stopID.itemSize / 2)
+                        sourceItem: Rectangle {
+                            implicitWidth: 20
+                            implicitHeight: width
+                            radius: width
+                            color: modelData.sequenceNumber === tourStopsID.selectedStopNumber ? Colors.pallete.selected : "white"
+                            border {
+                                color: Colors.pallete.accentAlt
+                                width: 1
+                            }
+                            Label {
+                                anchors.centerIn: parent
+                                text: modelData.sequenceNumber
+                            }
+                        }
+                    }
                 }
 
                 MapItemView {
@@ -452,7 +485,7 @@ Item {
                     case GuiController.MapMode.Main: return photosNearID
                     case GuiController.MapMode.TourCreation: return tourCreationID
                     case GuiController.MapMode.DisplayTour: return displayTourID
-                    default: console.error("Unknonw map mode.")
+                    default: console.error("Unknown map mode.")
                 }
             }
 
@@ -469,7 +502,7 @@ Item {
 
                 TourInfoPanel {
                     mode: GuiController.TourInfoMode.Edit
-                    stops: TourController.currentStops
+                    stopCount: TourController.currentStops
                     distance: TourController.distance
                 }
             }
@@ -479,7 +512,7 @@ Item {
 
                 TourInfoPanel {
                     mode: GuiController.TourInfoMode.Tour
-                    stops: GuiController.currentTour.stops
+                    stopCount: GuiController.currentTour.stopCount
                     distance: GuiController.currentTour.distance
                 }
             }

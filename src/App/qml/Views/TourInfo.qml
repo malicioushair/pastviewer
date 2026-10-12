@@ -58,7 +58,7 @@ BasePage {
 
             mode: GuiController.TourInfoMode.Info
 
-            stops: rootID.tour.stops
+            stopCount: rootID.tour.stopCount
             distance: rootID.tour.distance
         }
 

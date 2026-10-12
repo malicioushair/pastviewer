@@ -16,23 +16,12 @@
 
 namespace {
 constexpr auto URL = "https://pastviewer.com/api/v1/tours";
-
-struct Item
-{
-	QString title {};
-	QString description {};
-	QString imageUrl {};
-    QList<QGeoCoordinate> tourPath {};
-    int distance {};
-    int stopCount {};
-};
-
 }
 
 struct AvailableToursModel::Impl
 {
 	QNetworkAccessManager networkManager {};
-	std::vector<Item> items;
+    std::vector<Tour> items;
 };
 
 AvailableToursModel::AvailableToursModel(QObject * parent)
@@ -84,12 +73,31 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
             return { lat, lon };
         });
 
+        const auto stops = itemObj.value("stops").toArray();
+        QList<TourStop> tourStops;
+        tourStops.reserve(stops.size());
+        std::ranges::transform(stops, std::back_inserter(tourStops), [&, sequenceNumber = 0](decltype(stops)::const_reference item) mutable -> TourStop {
+            const auto itemObj = item.toObject();
+
+            const auto coordsObj = itemObj.value("coords").toObject();
+            const auto lat = coordsObj.value("latitude").toDouble();
+            const auto lon = coordsObj.value("longitude").toDouble();
+            return {
+                .sequenceNumber = ++sequenceNumber,
+                .title = itemObj.value("title").toString(),
+                .description = itemObj.value("description").toString(),
+                .imageUrl = itemObj.value("imageUrl").toString(),
+                .coords = { lat, lon },
+            };
+        });
+
         beginResetModel();
         m_impl->items.push_back({ .title = itemObj.value("title").toString(),
             .description = itemObj.value("description").toString(),
             .imageUrl = itemObj.value("imageUrl").toString(),
             .distance = itemObj.value("distance").toInt(),
             .stopCount = itemObj.value("stopCount").toInt(),
+            .stops = tourStops,
             .tourPath = tourPath });
         endResetModel();
     }
@@ -121,8 +129,10 @@ QVariant AvailableToursModel::data(const QModelIndex & index, int role) const
 			return item.imageUrl;
         case Distance:
             return item.distance;
-        case Stops:
+        case StopCount:
             return item.stopCount;
+        case Stops:
+            return QVariant::fromValue(item.stops);
         case TourPath:
             return QVariant::fromValue(item.tourPath);
         default:
@@ -142,6 +152,7 @@ QHash<int, QByteArray> AvailableToursModel::roleNames() const
         ROLENAME(Description),
         ROLENAME(ImageUrl),
         ROLENAME(Distance),
+        ROLENAME(StopCount),
         ROLENAME(Stops),
         ROLENAME(TourPath),
     };

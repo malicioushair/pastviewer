@@ -1,7 +1,6 @@
 #include "TourController.h"
 
 #include <memory>
-#include <vector>
 
 #include <QCryptographicHash>
 #include <QDir>

@@ -26,7 +26,7 @@ inline QString GetDraftFileLocation(const QString & prefix)
 	return QString("%1/%2_draft.json").arg(GetDraftsLocation(), prefix);
 }
 
-struct TourStop // add path
+struct TourStop
 {
 	int64_t id {};
 	QString title {};
