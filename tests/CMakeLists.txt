@@ -66,3 +66,12 @@ add_custom_target(run_tests
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running unit tests..."
 )
+
+# Tooling metadata must follow the C++ API without changing runtime registration.
+add_test(NAME ImperativeQmlTypes
+    COMMAND ${CMAKE_COMMAND}
+        "-DMOC=$<TARGET_FILE:Qt6::moc>"
+        "-DREGISTRAR=$<TARGET_FILE:Qt6::qmltyperegistrar>"
+        "-DTEST_DIR=${CMAKE_CURRENT_BINARY_DIR}/imperative_qmltypes"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/TestImperativeQmlTypes.cmake"
+)
