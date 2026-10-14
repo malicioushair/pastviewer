@@ -73,7 +73,6 @@ public:
         Distance,
         StopCount,
         Stops,
-        TourPath, // @todo get from tour?
         TourObj,
     };
 

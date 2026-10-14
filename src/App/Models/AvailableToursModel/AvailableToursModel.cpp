@@ -133,8 +133,6 @@ QVariant AvailableToursModel::data(const QModelIndex & index, int role) const
             return tour.stopCount;
         case Stops:
             return QVariant::fromValue(tour.stops);
-        case TourPath:
-            return QVariant::fromValue(tour.tourPath);
         case TourObj:
             return QVariant::fromValue(tour);
         default:
@@ -156,7 +154,6 @@ QHash<int, QByteArray> AvailableToursModel::roleNames() const
         ROLENAME(Distance),
         ROLENAME(StopCount),
         ROLENAME(Stops),
-        ROLENAME(TourPath),
         ROLENAME(TourObj)
     };
 #undef ROLENAME
