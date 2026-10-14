@@ -70,6 +70,7 @@ void TourStopsModel::SetStops(QList<DisplayTourStop> stops)
     m_stops = std::move(stops);
     m_stops.front().selected = true;
     endResetModel();
+    emit SelectionChanged(m_stops.front());
 }
 
 bool TourStopsModel::UpdateStop(int row, const DisplayTourStop & stop)

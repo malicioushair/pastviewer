@@ -19,6 +19,8 @@ Rectangle {
     required property int distance
     required property string stopCount
 
+    property var tourStop: null
+
     Layout.fillWidth: true
     Layout.preferredHeight: 210
 
@@ -110,10 +112,18 @@ Rectangle {
                             Layout.fillWidth: true
                         }
 
+                        Connections {
+                            target: TourController
+                            function onSelectedStopChanged(stop) {
+                                rootID.tourStop = stop
+                            }
+                        }
+
                         StyledButton {
                             id: imHereButtonID
 
                             text: qsTr("I'm here")
+                            onClicked: mainWindowID.openTourStopInfo(rootID.tourStop)
                         }
                     }
                     RowLayout {

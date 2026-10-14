@@ -27,6 +27,10 @@ Rectangle {
         }
     }
 
+    function openInspectPhotos(photo) {
+        stackViewID.push("Views/InspectPhoto.qml", { imageSource: photo })
+    }
+
     function openPhotoDetails(photo, thumbnail, title, year) {
         stackViewID.push("Views/PhotoDetails.qml", {
             imageSource: photo,
@@ -51,6 +55,10 @@ Rectangle {
 
     function openAvailableTours() {
         stackViewID.push("Views/AvailableTours.qml")
+    }
+
+    function openTourStopInfo(tourStop) {
+        stackViewID.push("Views/TourStopInfo.qml", { tourStop: tourStop })
     }
 
     function openCreateTour() {

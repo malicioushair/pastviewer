@@ -44,8 +44,8 @@ TourController::TourController(const PositionSourceAdapter & positionSource, QOb
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::AssetUploadFinished, this, &TourController::assetUploadFinished);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::ImageUploadFailed, this, &TourController::ImageUploadFailed);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::StopsUpdated, this, &TourController::CurrentStopsChanged);
-    connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::SelectedStopTitleChanged);
-    connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::selectedStopChanged);
+    connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::SelectedStopTitleChanged, Qt::QueuedConnection);
+    connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::selectedStopChanged, Qt::QueuedConnection);
 }
 
 TourController::~TourController() = default;
