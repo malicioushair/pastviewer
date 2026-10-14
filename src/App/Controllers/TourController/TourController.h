@@ -8,7 +8,7 @@
 #include <QObject>
 #include <QUrl>
 
-#include "App/Models/AvailableToursModel/AvailableToursModel.h"
+#include "App/Tours/DisplayTours.h"
 
 class PositionSourceAdapter;
 class QQmlEngine;
@@ -44,7 +44,7 @@ signals:
     void CurrentTourChanged();
     void SelectedStopTitleChanged();
 
-    void selectedStopChanged(const TourStop & stop);
+    void selectedStopChanged(const DisplayTourStop & stop);
 
     // signals into qml
     void

@@ -61,7 +61,7 @@ QHash<int, QByteArray> TourStopsModel::roleNames() const
 #undef ROLENAME
 }
 
-void TourStopsModel::SetStops(QList<TourStop> stops)
+void TourStopsModel::SetStops(QList<DisplayTourStop> stops)
 {
     if (m_stops == stops)
         return;
@@ -72,7 +72,7 @@ void TourStopsModel::SetStops(QList<TourStop> stops)
     endResetModel();
 }
 
-bool TourStopsModel::UpdateStop(int row, const TourStop & stop)
+bool TourStopsModel::UpdateStop(int row, const DisplayTourStop & stop)
 {
     if (row < 0 || row >= m_stops.size())
         return false;
@@ -97,7 +97,7 @@ QString TourStopsModel::GetSelectedStopTitle() const
 
 void TourStopsModel::SelectNextStop()
 {
-    const auto current = std::ranges::find_if(m_stops, &TourStop::selected);
+    const auto current = std::ranges::find_if(m_stops, &DisplayTourStop::selected);
     assert(current != m_stops.cend());
 
     const auto next = std::ranges::next(current);
@@ -113,7 +113,7 @@ void TourStopsModel::SelectNextStop()
 
 void TourStopsModel::SelectPrevStop()
 {
-    const auto current = std::ranges::find_if(m_stops, &TourStop::selected);
+    const auto current = std::ranges::find_if(m_stops, &DisplayTourStop::selected);
     assert(current != m_stops.cend());
     if (current == m_stops.cbegin())
         return;

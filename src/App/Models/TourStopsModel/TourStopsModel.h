@@ -2,8 +2,7 @@
 
 #include <QAbstractListModel>
 
-#include "App/Models/AvailableToursModel/AvailableToursModel.h" // @TODO move TourStop to its own header
-
+#include "App/Tours/DisplayTours.h"
 class TourStopsModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -22,7 +21,7 @@ public:
     explicit TourStopsModel(QObject * parent = nullptr);
 
 signals:
-    void SelectionChanged(const TourStop & stop);
+    void SelectionChanged(const DisplayTourStop & stop);
 
 public: // QAbstractListModel
     int rowCount(const QModelIndex & parent = {}) const final;
@@ -30,12 +29,12 @@ public: // QAbstractListModel
     QHash<int, QByteArray> roleNames() const final;
 
 public:
-    void SetStops(QList<TourStop> stops);
-    bool UpdateStop(int row, const TourStop & stop);
+    void SetStops(QList<DisplayTourStop> stops);
+    bool UpdateStop(int row, const DisplayTourStop & stop);
     QString GetSelectedStopTitle() const;
     void SelectNextStop();
     void SelectPrevStop();
 
 private:
-    QList<TourStop> m_stops {};
+    QList<DisplayTourStop> m_stops {};
 };

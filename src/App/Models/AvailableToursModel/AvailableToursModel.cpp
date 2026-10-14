@@ -14,6 +14,8 @@
 
 #include "glog/logging.h"
 
+#include "App/Tours/DisplayTours.h"
+
 namespace {
 constexpr auto URL = "https://pastviewer.com/api/v1/tours";
 }
@@ -21,7 +23,7 @@ constexpr auto URL = "https://pastviewer.com/api/v1/tours";
 struct AvailableToursModel::Impl
 {
 	QNetworkAccessManager networkManager {};
-    std::vector<Tour> tours;
+    std::vector<DisplayTour> tours;
 };
 
 AvailableToursModel::AvailableToursModel(QObject * parent)
@@ -74,9 +76,9 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
         });
 
         const auto stops = itemObj.value("stops").toArray();
-        QList<TourStop> tourStops;
+        QList<DisplayTourStop> tourStops;
         tourStops.reserve(stops.size());
-        std::ranges::transform(stops, std::back_inserter(tourStops), [&, sequenceNumber = 0](decltype(stops)::const_reference item) mutable -> TourStop {
+        std::ranges::transform(stops, std::back_inserter(tourStops), [&, sequenceNumber = 0](decltype(stops)::const_reference item) mutable -> DisplayTourStop {
             const auto itemObj = item.toObject();
 
             const auto coordsObj = itemObj.value("coords").toObject();

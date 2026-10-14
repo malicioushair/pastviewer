@@ -142,13 +142,13 @@ void TourController::SetCurrentTour(const QVariant & tour)
 {
     m_impl->currentTour = tour;
 
-    if (!tour.canConvert<Tour>())
+    if (!tour.canConvert<DisplayTour>())
     {
         LOG(ERROR) << "Invalid tour";
         return assert(false && "Invalid tour");
     }
 
-    const auto selectedTour = tour.value<Tour>();
+    const auto selectedTour = tour.value<DisplayTour>();
     m_impl->tourStopsModel.SetStops(selectedTour.stops);
 
     emit CurrentTourChanged();
