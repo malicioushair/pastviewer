@@ -32,7 +32,7 @@ BasePage {
             spacing: 10
 
             delegate: RowLayout {
-                width: parent.width
+                width: ListView.view.width
                 height: 40
 
                 Rectangle {
@@ -63,18 +63,7 @@ BasePage {
                     }
                     TapHandler {
                         grabPermissions: PointerHandler.TakeOverForbidden
-                        onTapped: {
-                            const tour = {
-                                title: model.Title,
-                                description: model.Description,
-                                imageUrl: model.ImageUrl,
-                                distance: model.Distance,
-                                stopCount: model.StopCount,
-                                tourPath: model.TourPath,
-                                stops: model.Stops,
-                            }
-                            mainWindowID.openTourInfoView(tour)
-                        }
+                        onTapped: mainWindowID.openTourInfoView(model.TourObj)
                     }
                 }
             }

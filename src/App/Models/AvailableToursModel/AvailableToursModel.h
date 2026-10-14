@@ -73,7 +73,8 @@ public:
         Distance,
         StopCount,
         Stops,
-        TourPath,
+        TourPath, // @todo get from tour?
+        TourObj,
     };
 
     explicit AvailableToursModel(QObject * parent = nullptr);

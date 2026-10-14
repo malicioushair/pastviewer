@@ -8,6 +8,8 @@
 #include <QObject>
 #include <QUrl>
 
+#include "App/Models/AvailableToursModel/AvailableToursModel.h"
+
 class PositionSourceAdapter;
 class QQmlEngine;
 class QJSEngine;
@@ -27,8 +29,10 @@ public:
 	~TourController();
 
 	Q_PROPERTY(QList<QGeoCoordinate> tourPath READ GetTourPath NOTIFY TourPathChanged)
-	Q_PROPERTY(QString distance READ GetDistance NOTIFY DistanceChanged)
-    Q_PROPERTY(QString currentStops READ GetCurrentStops NOTIFY CurrentStopsChanged)
+    Q_PROPERTY(QString distance READ GetDistance NOTIFY DistanceChanged)             // @TODO creation distance?
+    Q_PROPERTY(QString currentStops READ GetCurrentStops NOTIFY CurrentStopsChanged) // @TODO creation stops?
+    Q_PROPERTY(QVariant currentTour READ GetCurrentTour WRITE SetCurrentTour NOTIFY CurrentTourChanged)
+    Q_PROPERTY(QString nextStopTitle READ GetSelectedStopTitle NOTIFY SelectedStopTitleChanged)
 
 signals:
     void TourPathChanged();
@@ -37,9 +41,14 @@ signals:
     void ImageUploadFailed(const QString & errorMessage);
     void UploadTour();
     void CurrentStopsChanged();
+    void CurrentTourChanged();
+    void SelectedStopTitleChanged();
+
+    void selectedStopChanged(const TourStop & stop);
 
     // signals into qml
-    void assetUploadFinished();
+    void
+    assetUploadFinished();
 
 public:
 	Q_INVOKABLE void StartRecording();
@@ -50,12 +59,18 @@ public:
     Q_INVOKABLE void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
     Q_INVOKABLE QAbstractListModel * GetDraftsModel() const;
     Q_INVOKABLE QAbstractListModel * GetAvailableToursModel() const;
+    Q_INVOKABLE QAbstractListModel * GetTourStopsModel() const;
     Q_INVOKABLE void UploadAsset(const QUrl & assetFile);
+    Q_INVOKABLE void HighlightNextStop();
+    Q_INVOKABLE void HighlightPrevStop();
 
 private:
 	QList<QGeoCoordinate> GetTourPath() const;
     QString GetDistance() const;
     QString GetCurrentStops() const;
+    QVariant GetCurrentTour() const;
+    void SetCurrentTour(const QVariant & tour);
+    QString GetSelectedStopTitle() const;
 
 private:
 	struct Impl;

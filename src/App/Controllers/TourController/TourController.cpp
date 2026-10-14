@@ -22,6 +22,7 @@
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
 #include "App/Models/AvailableToursModel/AvailableToursModel.h"
 #include "App/Models/TourDraftsModel/TourDraftsModel.h"
+#include "App/Models/TourStopsModel/TourStopsModel.h"
 #include "App/Tours/Tours.h"
 
 struct TourController::Impl
@@ -30,6 +31,8 @@ struct TourController::Impl
     QList<Tours::Tour> availableTours {};
     TourDraftsModel tourDraftsModel { positionSource };
     AvailableToursModel availableToursModel {};
+    TourStopsModel tourStopsModel {};
+    QVariant currentTour {};
 };
 
 TourController::TourController(const PositionSourceAdapter & positionSource, QObject * parent)
@@ -41,6 +44,8 @@ TourController::TourController(const PositionSourceAdapter & positionSource, QOb
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::AssetUploadFinished, this, &TourController::assetUploadFinished);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::ImageUploadFailed, this, &TourController::ImageUploadFailed);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::StopsUpdated, this, &TourController::CurrentStopsChanged);
+    connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::SelectedStopTitleChanged);
+    connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::selectedStopChanged);
 }
 
 TourController::~TourController() = default;
@@ -102,7 +107,49 @@ QAbstractListModel * TourController::GetAvailableToursModel() const
 	return &m_impl->availableToursModel;
 }
 
+QAbstractListModel * TourController::GetTourStopsModel() const
+{
+    QQmlEngine::setObjectOwnership(&m_impl->tourStopsModel, QJSEngine::CppOwnership);
+    return &m_impl->tourStopsModel;
+}
+
 void TourController::UploadAsset(const QUrl & assetFile)
 {
     m_impl->tourDraftsModel.UploadAsset(assetFile);
+}
+
+QString TourController::GetSelectedStopTitle() const
+{
+    return m_impl->tourStopsModel.GetSelectedStopTitle();
+}
+
+void TourController::HighlightNextStop()
+{
+    m_impl->tourStopsModel.SelectNextStop();
+}
+
+void TourController::HighlightPrevStop()
+{
+    m_impl->tourStopsModel.SelectPrevStop();
+}
+
+QVariant TourController::GetCurrentTour() const
+{
+    return m_impl->currentTour;
+}
+
+void TourController::SetCurrentTour(const QVariant & tour)
+{
+    m_impl->currentTour = tour;
+
+    if (!tour.canConvert<Tour>())
+    {
+        LOG(ERROR) << "Invalid tour";
+        return assert(false && "Invalid tour");
+    }
+
+    const auto selectedTour = tour.value<Tour>();
+    m_impl->tourStopsModel.SetStops(selectedTour.stops);
+
+    emit CurrentTourChanged();
 }

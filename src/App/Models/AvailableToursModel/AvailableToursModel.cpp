@@ -21,7 +21,7 @@ constexpr auto URL = "https://pastviewer.com/api/v1/tours";
 struct AvailableToursModel::Impl
 {
 	QNetworkAccessManager networkManager {};
-    std::vector<Tour> items;
+    std::vector<Tour> tours;
 };
 
 AvailableToursModel::AvailableToursModel(QObject * parent)
@@ -58,10 +58,10 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
 	const auto root = jsonDoc.object();
 	const auto items = root.value("items").toArray();
 	// The model is yet small, we can afford to reload it for now
-	m_impl->items.clear();
-	for (const auto & item : items)
-	{
-		const auto itemObj = item.toObject();
+    m_impl->tours.clear();
+    for (const auto & item : items)
+    {
+        const auto itemObj = item.toObject();
         const auto pathObj = itemObj.value("path").toObject();
         const auto pathCoords = pathObj.value("coords").toArray();
         QList<QGeoCoordinate> tourPath;
@@ -92,7 +92,7 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
         });
 
         beginResetModel();
-        m_impl->items.push_back({ .title = itemObj.value("title").toString(),
+        m_impl->tours.push_back({ .title = itemObj.value("title").toString(),
             .description = itemObj.value("description").toString(),
             .imageUrl = itemObj.value("imageUrl").toString(),
             .distance = itemObj.value("distance").toInt(),
@@ -111,30 +111,32 @@ void AvailableToursModel::Update()
 
 int AvailableToursModel::rowCount(const QModelIndex & parent) const
 {
-	return static_cast<int>(m_impl->items.size());
+    return static_cast<int>(m_impl->tours.size());
 }
 
 QVariant AvailableToursModel::data(const QModelIndex & index, int role) const
 {
 	assert(index.isValid());
 
-	const auto item = m_impl->items.at(index.row());
-	switch (role)
-	{
-		case Title:
-			return item.title;
-		case Description:
-			return item.description;
-		case ImageUrl:
-			return item.imageUrl;
+    const auto tour = m_impl->tours.at(index.row());
+    switch (role)
+    {
+        case Title:
+            return tour.title;
+        case Description:
+            return tour.description;
+        case ImageUrl:
+            return tour.imageUrl;
         case Distance:
-            return item.distance;
+            return tour.distance;
         case StopCount:
-            return item.stopCount;
+            return tour.stopCount;
         case Stops:
-            return QVariant::fromValue(item.stops);
+            return QVariant::fromValue(tour.stops);
         case TourPath:
-            return QVariant::fromValue(item.tourPath);
+            return QVariant::fromValue(tour.tourPath);
+        case TourObj:
+            return QVariant::fromValue(tour);
         default:
             assert(false && "unknown role");
     }
@@ -155,6 +157,7 @@ QHash<int, QByteArray> AvailableToursModel::roleNames() const
         ROLENAME(StopCount),
         ROLENAME(Stops),
         ROLENAME(TourPath),
+        ROLENAME(TourObj)
     };
 #undef ROLENAME
 }

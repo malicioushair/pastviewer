@@ -1,14 +1,14 @@
 import QtQuick
 import QtLocation
 
-import PastViewer 1.0
+import TourController
 
 import "../Helpers/colors.js" as Colors
 
 MapPolyline {
     id: rootID
 
-    path: GuiController.currentTour.tourPath
+    path: TourController.currentTour.tourPath
     line.width: 4
     line.color: Colors.palette.accent
 

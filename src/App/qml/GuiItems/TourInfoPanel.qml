@@ -16,7 +16,7 @@ Rectangle {
     id: rootID
 
     required property int mode
-    required property string distance
+    required property int distance
     required property string stopCount
 
     Layout.fillWidth: true
@@ -31,40 +31,139 @@ Rectangle {
         spacing: 10
 
         Text {
-            text: qsTr("Creating a tour")
+            Layout.alignment: Qt.AlignHCenter
+
+            text: {
+                switch(rootID.mode) {
+                    case GuiController.TourInfoMode.Edit: return qsTr("Creating a tour")
+                    case GuiController.TourInfoMode.Tour: return qsTr(TourController.currentTour.title)
+                    default: return ""
+                }
+            }
             font.bold: true
             font.pixelSize: 18
-            visible: mode == GuiController.TourInfoMode.Edit
         }
 
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            RowLayout {
+            Loader {
+                id: controlsLoaderID
+
                 Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                InfoLabel {
-                    id: distanceInfoID
+                sourceComponent: {
+                    switch (rootID.mode) {
+                        case GuiController.TourInfoMode.Info:
+                        case GuiController.TourInfoMode.Edit: return infoControlsID
+                        case GuiController.TourInfoMode.Tour: return tourCountrolsID
+                        default: {
+                            console.warn("Unknown TourInfoMode")
+                            return null
+                        }
+                    }
 
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    infoText: qsTr("Distance")
-                    valueText: rootID.distance
-                }
-
-                InfoLabel {
-                    id: stopsID
-
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    infoText: qsTr("Stops")
-                    valueText: rootID.stopCount
                 }
             }
 
+            Component {
+                id: tourCountrolsID
+
+                ColumnLayout {
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        InfoLabel {
+                            id: nextStopID
+
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+
+                            infoText: qsTr("Next Stop")
+                            valueText: TourController.nextStopTitle
+
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        StyledButton {
+                            id: prevStopButtonID
+
+                            text: "<"
+                            onClicked: TourController.HighlightPrevStop()
+                        }
+
+                        StyledButton {
+                            id: nextStopButtonID
+
+                            text: ">"
+                            onClicked: TourController.HighlightNextStop()
+                        }
+
+                        Item {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+
+                        StyledButton {
+                            id: imHereButtonID
+
+                            text: qsTr("I'm here")
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                        }
+
+                        Label {
+                            id: exitTourID
+
+                            text: qsTr("Exit Tour")
+                            TapHandler {
+                                onTapped: print("EXIT_TOUR")
+                            }
+                        }
+                    }
+                }
+            }
+
+            Component {
+                id: infoControlsID
+                RowLayout {
+                    InfoLabel {
+                        id: distanceInfoID
+
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        infoText: qsTr("Distance")
+                        valueText: rootID.distance
+                    }
+
+                    InfoLabel {
+                        id: stopsID
+
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        infoText: qsTr("Stops")
+                        valueText: rootID.stopCount
+                    }
+                }
+            }
+
+
+            // Buttons for tour recording
             RowLayout {
                 Layout.fillWidth: true
 
@@ -111,6 +210,7 @@ Rectangle {
                 }
             }
 
+            // Save tour
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 30

@@ -54,7 +54,7 @@ BasePage {
 
         TourInfoPanel {
             Layout.fillWidth: true
-            Layout.preferredHeight: 50
+            Layout.preferredHeight: 100
 
             mode: GuiController.TourInfoMode.Info
 
@@ -68,7 +68,7 @@ BasePage {
 
             text: qsTr("Start tour")
             onClicked: {
-                GuiController.currentTour = rootID.tour
+                TourController.currentTour = rootID.tour
                 mainWindowID.toMainPage()
                 GuiController.ChangeMapMode(GuiController.MapMode.DisplayTour)
             }

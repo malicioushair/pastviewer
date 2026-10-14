@@ -32,7 +32,7 @@ Item {
         tourPathItem = tourPathComponentID.createObject(mapID)
         mapID.addMapItem(tourPathItem)
         mapID.follow = false
-        const raw = GuiController.currentTour?.tourPath
+        const raw = TourController.currentTour?.tourPath
         if (raw && raw.length > 0) {
             const helper = mainWindowID.mapAnimationHelper
             const start = QtPositioning.coordinate(raw[0].latitude, raw[0].longitude)
@@ -77,6 +77,13 @@ Item {
         }
         function onMapModeChanged(mode) {
             mapPageID.mode = mode
+        }
+    }
+
+    Connections {
+        target: TourController
+        function onSelectedStopChanged(stop) {
+            mapAnimationHelperID.animateMapCenter(stop.coords)
         }
     }
 
@@ -286,10 +293,8 @@ Item {
                 MapItemView {
                     id: tourStopsID
 
-                    property int selectedStopNumber: -1
-
                     z: 1
-                    model: GuiController.currentTour ? GuiController.currentTour.stops : []
+                    model: TourController.GetTourStopsModel()
                     visible: mapPageID.mode === GuiController.MapMode.DisplayTour
                     delegate: MapQuickItem {
                         id: stopID
@@ -297,20 +302,20 @@ Item {
                         readonly property int itemSize: 20
 
                         z: 1
-                        coordinate: QtPositioning.coordinate(modelData.coords.latitude, modelData.coords.longitude)
+                        coordinate: QtPositioning.coordinate(model.Coords.latitude, model.Coords.longitude)
                         anchorPoint: Qt.point(stopID.itemSize / 2, stopID.itemSize / 2)
                         sourceItem: Rectangle {
                             implicitWidth: 20
                             implicitHeight: width
                             radius: width
-                            color: modelData.sequenceNumber === tourStopsID.selectedStopNumber ? Colors.pallete.selected : "white"
+                            color: model.Selected ? Colors.palette.selected : "white"
                             border {
-                                color: Colors.pallete.accentAlt
+                                color: Colors.palette.accentAlt
                                 width: 1
                             }
                             Label {
                                 anchors.centerIn: parent
-                                text: modelData.sequenceNumber
+                                text: model.SequenceNumber
                             }
                         }
                     }
@@ -471,8 +476,6 @@ Item {
             }
         }
 
-
-
         Loader {
             id: subAreaLoaderID
 
@@ -512,8 +515,8 @@ Item {
 
                 TourInfoPanel {
                     mode: GuiController.TourInfoMode.Tour
-                    stopCount: GuiController.currentTour.stopCount
-                    distance: GuiController.currentTour.distance
+                    stopCount: TourController.currentTour.stopCount
+                    distance: TourController.currentTour.distance
                 }
             }
         }

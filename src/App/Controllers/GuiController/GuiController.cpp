@@ -126,8 +126,7 @@ struct GuiController::Impl
 	QVariantList tipProducts;
 	TourController tourController { *pastVuModelController->GetPositionSource(), nullptr };
 	bool tipProductsLoading = false;
-	bool tipPurchaseInProgress = false;
-    QVariant currentTour {};
+    bool tipPurchaseInProgress = false;
 
     Impl()
     {
@@ -561,15 +560,4 @@ void GuiController::RequestPermission(const QPermission & permission)
 void PastViewer::GuiController::ChangeMapMode(MapMode mode)
 {
 	emit mapModeChanged(mode);
-}
-
-QVariant PastViewer::GuiController::GetCurrentTour() const
-{
-    return m_impl->currentTour;
-}
-
-void PastViewer::GuiController::SetCurrentTour(const QVariant & tour)
-{
-    m_impl->currentTour = tour;
-    emit CurrentTourChanged();
 }

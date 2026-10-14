@@ -22,7 +22,6 @@ class GuiController
     Q_PROPERTY(QVariantList tipProducts READ TipProducts NOTIFY tipProductsChanged)
     Q_PROPERTY(bool tipProductsLoading READ TipProductsLoading NOTIFY tipProductsLoadingChanged)
     Q_PROPERTY(bool tipPurchaseInProgress READ TipPurchaseInProgress NOTIFY tipPurchaseInProgressChanged)
-    Q_PROPERTY(QVariant currentTour READ GetCurrentTour WRITE SetCurrentTour NOTIFY CurrentTourChanged) // @todo think on moving to a MapController
 
 public:
     enum class MapMode
@@ -43,7 +42,6 @@ public:
 
 signals:
     void PermissionGranted(const QPermission & permission);
-    void CurrentTourChanged();
 
     void showErrorDialog(const QString & errorMessage);
     void onboardingReset();
@@ -94,9 +92,7 @@ private:
 	GuiController();
 
 private:
-	void RequestPermission(const QPermission & permission);
-    QVariant GetCurrentTour() const;
-    void SetCurrentTour(const QVariant & tour);
+    void RequestPermission(const QPermission & permission);
 
 private:
 	struct Impl;

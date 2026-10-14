@@ -4,10 +4,13 @@ import QtQuick.Layouts
 import "../Helpers/colors.js" as Colors
 
 Rectangle {
-    id: distanceID
+    id: rootID
 
-    property alias infoText: infoTextID.text
-    property alias valueText: valueTextID.text
+    required property string infoText
+    required property string valueText
+
+    implicitWidth: contentLayoutID.implicitWidth
+    implicitHeight: contentLayoutID.implicitHeight
 
     color: Colors.palette.selected
     radius: 10
@@ -17,6 +20,8 @@ Rectangle {
     }
 
     ColumnLayout {
+        id: contentLayoutID
+
         anchors.fill: parent
         spacing: 0
 
@@ -26,7 +31,7 @@ Rectangle {
             Layout.topMargin: 10
             Layout.alignment: Qt.AlignCenter
 
-            text: qsTr("Distance")
+            text: rootID.infoText
         }
         Text {
             id: valueTextID
@@ -34,7 +39,7 @@ Rectangle {
             Layout.bottomMargin: 20
             Layout.alignment: Qt.AlignCenter
 
-            text: qsTr("0 m")
+            text: rootID.valueText
         }
     }
 }
