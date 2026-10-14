@@ -130,7 +130,7 @@ Rectangle {
 
                             text: qsTr("Exit Tour")
                             TapHandler {
-                                onTapped: print("EXIT_TOUR")
+                                onTapped: mapPageID.mode = GuiController.MapMode.Main
                             }
                         }
                     }
