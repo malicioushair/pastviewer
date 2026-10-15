@@ -102,32 +102,33 @@ private:
 
 struct GuiController::Impl
 {
-	QQmlApplicationEngine engine;
-	// owned by qml
-	QPointer<I18nController> i18nController {
-		engine.singletonInstance<I18nController *>(
-			QStringLiteral("PastViewer"),
-			QStringLiteral("I18nController"))
-	};
-	QSettings settings;
-	TipPromptTracker tipPromptTracker;
-	QLocationPermission locationPermission { [] {
-		QLocationPermission p;
-		p.setAccuracy(QLocationPermission::Precise);
-		return p;
-	}() };
-	QLocationPermission backgroundLocationPermission;
-	QCameraPermission cameraPermission {};
-	// owned by qml
-	QPointer<PastVuModelController> pastVuModelController { engine.singletonInstance<PastVuModelController *>(
-		QStringLiteral("PastViewer"),
-		QStringLiteral("PastVuModelController")) };
-	std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
-	QString lastSavedImagePath;
-	QVariantList tipProducts;
-	TourController tourController { *pastVuModelController->GetPositionSource(), nullptr };
-	bool tipProductsLoading = false;
-    bool tipPurchaseInProgress = false;
+    QQmlApplicationEngine engine {};
+    // owned by qml
+    QPointer<I18nController> i18nController {
+        engine.singletonInstance<I18nController *>(
+            QStringLiteral("PastViewer"),
+            QStringLiteral("I18nController"))
+    };
+    QSettings settings {};
+    TipPromptTracker tipPromptTracker {};
+    QLocationPermission locationPermission { [] {
+        QLocationPermission p;
+        p.setAccuracy(QLocationPermission::Precise);
+        return p;
+    }() };
+    QLocationPermission backgroundLocationPermission {};
+    QCameraPermission cameraPermission {};
+    // owned by qml
+    QPointer<PastVuModelController> pastVuModelController { engine.singletonInstance<PastVuModelController *>(
+        QStringLiteral("PastViewer"),
+        QStringLiteral("PastVuModelController")) };
+    std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
+    QString lastSavedImagePath {};
+    QVariantList tipProducts {};
+    TourController tourController { *pastVuModelController->GetPositionSource(), nullptr };
+    bool tipProductsLoading { false };
+    bool tipPurchaseInProgress { false };
+    bool isAdmin { false };
 
     Impl()
     {
@@ -563,4 +564,18 @@ void GuiController::RequestPermission(const QPermission & permission)
 void PastViewer::GuiController::ChangeMapMode(MapMode mode)
 {
 	emit mapModeChanged(mode);
+}
+
+bool PastViewer::GuiController::GetIsAdmin() const
+{
+    if constexpr (!Utils::IsMobile())
+        return true;
+    else
+        return m_impl->isAdmin;
+}
+
+void PastViewer::GuiController::SetIsAdmin(bool value)
+{
+    m_impl->isAdmin = value;
+    emit isAdminChanged(m_impl->isAdmin);
 }

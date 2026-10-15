@@ -22,6 +22,7 @@ class GuiController
     Q_PROPERTY(QVariantList tipProducts READ TipProducts NOTIFY tipProductsChanged)
     Q_PROPERTY(bool tipProductsLoading READ TipProductsLoading NOTIFY tipProductsLoadingChanged)
     Q_PROPERTY(bool tipPurchaseInProgress READ TipPurchaseInProgress NOTIFY tipPurchaseInProgressChanged)
+    Q_PROPERTY(bool isAdmin READ GetIsAdmin WRITE SetIsAdmin NOTIFY isAdminChanged)
 
 public:
     enum class MapMode
@@ -54,6 +55,7 @@ signals:
 	void tipPurchasePending();
 	void tipOperationFailed();
 	void mapModeChanged(MapMode mode);
+    void isAdminChanged(bool value);
 
 public:
 	static std::unique_ptr<GuiController> Create();
@@ -93,6 +95,8 @@ private:
 
 private:
     void RequestPermission(const QPermission & permission);
+    bool GetIsAdmin() const;
+    void SetIsAdmin(bool value);
 
 private:
 	struct Impl;

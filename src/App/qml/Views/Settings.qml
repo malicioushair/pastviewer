@@ -22,6 +22,15 @@ BasePage {
 
     footer: Footer {
         text: qsTr("Version: ") + GuiController.GetAppVersion()
+        TapHandler {
+            property int adminCounter: 0
+            onTapped: {
+                if (++adminCounter > 15) {
+                    GuiController.isAdmin = !GuiController.isAdmin
+                    adminCounter = 0
+                }
+            }
+        }
     }
 
     ScrollView {
@@ -273,7 +282,7 @@ BasePage {
 
             SettingWithHint {
                 description: qsTr("Browse and create tours")
-                visible: PastVuModelController.hasPositionSource
+                visible: GuiController.isAdmin && PastVuModelController.hasPositionSource
 
                 StyledButton {
                     id: toursID
