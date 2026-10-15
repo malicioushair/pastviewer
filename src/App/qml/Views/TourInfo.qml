@@ -38,7 +38,7 @@ BasePage {
         }
 
         Label {
-            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
 
             text: rootID.tour.title
             font.bold: true

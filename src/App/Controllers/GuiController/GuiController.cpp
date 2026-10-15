@@ -19,6 +19,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 
+#include "App/Tours/DisplayTours.h"
 #include "glog/logging.h"
 
 #include "App/Controllers/GuiController/PhotoNotificationPresenter.h"
@@ -163,11 +164,13 @@ GuiController::GuiController()
 	qmlRegisterType<HoleItem>("PastViewer", 1, 0, "HoleItem");
 	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
 	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
-	qmlRegisterUncreatableMetaObject(ModelType::staticMetaObject, "PastViewer", 1, 0, "ModelType", "ModelType is an enum namespace");
-	qRegisterMetaType<QGeoCoordinate>();
-	qRegisterMetaType<QGeoPositionInfo>();
-	m_impl->engine.addImportPath("qrc:/qt/qml");
-	m_impl->engine.addUrlInterceptor(m_impl->interceptor.get());
+    qmlRegisterUncreatableType<DisplayTourStop>("TourController", 1, 0, "DisplayTourStop", "DisplayTourStop is not meant to be created in qml, it is only passed from C++ as a signal argument");
+    qmlRegisterUncreatableMetaObject(ModelType::staticMetaObject, "PastViewer", 1, 0, "ModelType", "ModelType is an enum namespace");
+    qRegisterMetaType<DisplayTourStop>();
+    qRegisterMetaType<QGeoCoordinate>();
+    qRegisterMetaType<QGeoPositionInfo>();
+    m_impl->engine.addImportPath("qrc:/qt/qml");
+    m_impl->engine.addUrlInterceptor(m_impl->interceptor.get());
 	m_impl->LoadQml();
 
 	if (m_impl->engine.rootObjects().isEmpty())

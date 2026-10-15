@@ -11,6 +11,7 @@ public:
     Q_PROPERTY(QString title MEMBER title)
     Q_PROPERTY(QString description MEMBER description)
     Q_PROPERTY(QString imageUrl MEMBER imageUrl)
+    Q_PROPERTY(QString audioUrl MEMBER audioUrl)
     Q_PROPERTY(QGeoCoordinate coords MEMBER coords)
     Q_PROPERTY(int sequenceNumber MEMBER sequenceNumber)
 
@@ -19,6 +20,7 @@ public:
         return title == other.title
             && description == other.description
             && imageUrl == other.imageUrl
+            && audioUrl == other.audioUrl
             && coords == other.coords
             && sequenceNumber == other.sequenceNumber;
     }
@@ -26,6 +28,7 @@ public:
     QString title {};
     QString description {};
     QString imageUrl {};
+    QString audioUrl {};
     QGeoCoordinate coords {};
     int sequenceNumber {};
     bool selected {};

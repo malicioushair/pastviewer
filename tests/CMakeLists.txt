@@ -17,9 +17,12 @@ add_executable(PastViewerTests
     PhotoProximityTrackerTest.cpp
     UniqueCircularBufferTest.cpp
     ClusterModelTest.cpp
+    StopAudioTest.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/TourController/TourController.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PositionSourceAdapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Models/AvailableToursModel/AvailableToursModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/TourDraftsModel/TourDraftsModel.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Models/TourStopsModel/TourStopsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/ClusterModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/ScreenObjectsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/BaseModel.cpp
@@ -27,12 +30,14 @@ add_executable(PastViewerTests
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PhotoNotificationCoordinator.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/GuiController/PhotoNotificationPresenter.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/GuiController/TipPromptTracker.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Tours/DisplayTours.h
     ${CMAKE_SOURCE_DIR}/src/App/Utils/Range.h
 )
 
 # Include directories
 target_include_directories(PastViewerTests PRIVATE
     ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController
 )
 
 # Link against gtest and the required libraries

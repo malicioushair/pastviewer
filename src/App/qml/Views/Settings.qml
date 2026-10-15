@@ -210,28 +210,15 @@ BasePage {
                     value: PastVuModelController.proximityNotificationDistance
                     onMoved: PastVuModelController.proximityNotificationDistance = Math.round(value)
 
-                    background: Rectangle {
-                        x: proximityDistanceSliderID.leftPadding
-                        y: proximityDistanceSliderID.topPadding + proximityDistanceSliderID.availableHeight / 2 - height / 2
-                        width: proximityDistanceSliderID.availableWidth
-                        height: 8
-                        radius: 4
-                        color: Colors.palette.sliderAlt
-
-                        Rectangle {
-                            width: proximityDistanceSliderID.visualPosition * parent.width
-                            height: parent.height
-                            color: Colors.palette.slider
-                            radius: 4
-                        }
+                    background: StyledSliderTrack {
+                        control: proximityDistanceSliderID
+                        fillTo: proximityDistanceSliderID.visualPosition
                     }
 
                     handle: StyledSliderHandle {
-                        yOffset: 10
-
+                        control: proximityDistanceSliderID
                         pressed: proximityDistanceSliderID.pressed
                         visualPosition: proximityDistanceSliderID.visualPosition
-                        availableWidth: proximityDistanceSliderID.availableWidth
                     }
                 }
             }

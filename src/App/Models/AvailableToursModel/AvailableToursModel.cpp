@@ -89,6 +89,7 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
                 .title = itemObj.value("title").toString(),
                 .description = itemObj.value("description").toString(),
                 .imageUrl = itemObj.value("imageUrl").toString(),
+                .audioUrl = itemObj.value("audioUrl").toString(),
                 .coords = { lat, lon },
             };
         });

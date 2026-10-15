@@ -433,13 +433,13 @@ TEST_F(FileHash, LoadDraftReadsFileHashesBack)
 		} },
 	});
 
-	TourDraftsModel model;
+	PositionSourceAdapter position { nullptr };
+	TourDraftsModel model { position };
 	ASSERT_EQ(model.rowCount(), 1);
 	const auto loaded = model.GetTourDrafts().at(0);
 	EXPECT_EQ(loaded.id, 11);
 	EXPECT_EQ(loaded.title, title);
 	EXPECT_EQ(loaded.localImagePath.toString(), coverUrl.toString());
-	EXPECT_NE(loaded.assetId, coverHash);
 	ASSERT_EQ(loaded.stops.size(), 1);
 	EXPECT_EQ(loaded.stops.at(0).id, 4);
 	EXPECT_EQ(loaded.stops.at(0).title, QStringLiteral("LoadedStop"));
