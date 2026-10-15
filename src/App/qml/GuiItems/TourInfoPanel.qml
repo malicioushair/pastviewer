@@ -20,6 +20,7 @@ Rectangle {
     required property string stopCount
 
     property var tourStop: null
+    readonly property Item controlsItem: controlsLoaderID
 
     Layout.fillWidth: true
     Layout.preferredHeight: 210

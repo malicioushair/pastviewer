@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import "../GuiItems"
+import "../Helpers"
 import "Helpers"
 
 import PastViewer
@@ -20,6 +21,46 @@ BasePage {
             bold: true
             pixelSize: 16
         }
+    }
+
+    Connections {
+        target: GuiController
+
+        function onOnboardingReset() {
+            tourInfoOnboardingID.currentIndex = 0
+            tourInfoOnboardingID.active = !GuiController.IsOnboardingStepCompleted(tourInfoOnboardingID.completionKey)
+        }
+    }
+
+    OnboardingOverlay {
+        id: tourInfoOnboardingID
+
+        anchors.fill: parent
+        z: 1000
+
+        completionKey: "TourInfoIntro"
+        active: !GuiController.IsOnboardingStepCompleted(completionKey)
+        topped: currentIndex === 1 || currentIndex === 2
+
+        highlightSteps: [
+            { target: tourInfoPanelID.controlsItem, stepIndex: 1 },
+            { target: startTourButtonID, stepIndex: 2 },
+        ]
+
+        steps: [
+            {
+                "title": qsTr("Get to know the tour"),
+                "body": qsTr("Look at the cover photo and read the description to discover what this tour is about.")
+            },
+            {
+                "title": qsTr("Plan your walk"),
+                "body": qsTr("Here you see distance and the number of stops the tour has.")
+            },
+            {
+                "title": qsTr("Start exploring"),
+                "body": qsTr("Tap Start tour to open the map with this tour's route and stops.")
+            }
+        ]
     }
 
     ColumnLayout {
@@ -53,6 +94,8 @@ BasePage {
         }
 
         TourInfoPanel {
+            id: tourInfoPanelID
+
             Layout.fillWidth: true
             Layout.preferredHeight: 100
 
@@ -63,6 +106,8 @@ BasePage {
         }
 
         StyledButton {
+            id: startTourButtonID
+
             Layout.fillWidth: true
             Layout.preferredHeight: 50
 
