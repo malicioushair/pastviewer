@@ -23,6 +23,13 @@ Item {
     property int mode: GuiController.MapMode.Main
     property var tourPathItem: null
 
+    function updateOnboarding() {
+        mapOnboardingID.active = mode === GuiController.MapMode.Main
+            && !GuiController.IsOnboardingStepCompleted(mapOnboardingID.completionKey)
+        displayTourOnboardingID.active = mode === GuiController.MapMode.DisplayTour
+            && !GuiController.IsOnboardingStepCompleted(displayTourOnboardingID.completionKey)
+    }
+
     function showTourPath() {
         if (tourPathItem) {
             mapID.removeMapItem(tourPathItem)
@@ -67,13 +74,17 @@ Item {
             showTourPath()
         else
             hideTourPath()
+
+        displayTourOnboardingID.currentIndex = 0
+        updateOnboarding()
     }
 
     Connections {
         target: GuiController
         function onOnboardingReset() {
             mapOnboardingID.currentIndex = 0
-            mapOnboardingID.active = !GuiController.IsOnboardingStepCompleted(mapOnboardingID.completionKey)
+            displayTourOnboardingID.currentIndex = 0
+            mapPageID.updateOnboarding()
         }
         function onMapModeChanged(mode) {
             mapPageID.mode = mode
@@ -96,7 +107,7 @@ Item {
         z: 1000
 
         completionKey: "MapPageIntro"
-        active: !GuiController.IsOnboardingStepCompleted(completionKey)
+        active: mapPageID.mode === GuiController.MapMode.Main && !GuiController.IsOnboardingStepCompleted(completionKey)
         centered: currentIndex === 4 || currentIndex === 2
         topped: currentIndex === 5 || currentIndex === 6
 
@@ -136,6 +147,44 @@ Item {
             {
                 "title": qsTr("Tune what you see"),
                 "body": qsTr("Open Settings in the top-left to change language, adjust the time range, or focus only on the nearest places.")
+            }
+        ]
+    }
+
+    OnboardingOverlay {
+        id: displayTourOnboardingID
+
+        anchors.fill: parent
+        z: 1000
+
+        completionKey: "DisplayTourIntro"
+        active: mapPageID.mode === GuiController.MapMode.DisplayTour
+            && !GuiController.IsOnboardingStepCompleted(completionKey)
+        centered: true
+
+        highlightSteps: mapPageID.mode === GuiController.MapMode.DisplayTour && subAreaLoaderID.item
+            ? subAreaLoaderID.item.tourOnboardingHighlights : []
+
+        steps: [
+            {
+                "title": qsTr("Follow the tour"),
+                "body": qsTr("The map shows the tour route and its numbered stops. Follow the route to explore each place.")
+            },
+            {
+                "title": qsTr("Your selected stop"),
+                "body": qsTr("This panel shows the name of the selected stop. The map highlights its number on the route.")
+            },
+            {
+                "title": qsTr("Browse the stops"),
+                "body": qsTr("Use the left and right arrows to select the previous or next stop. The map moves to the selected stop.")
+            },
+            {
+                "title": qsTr("Explore a stop"),
+                "body": qsTr("When you reach the selected stop, tap I'm here to open its details.")
+            },
+            {
+                "title": qsTr("Leave the tour"),
+                "body": qsTr("Tap Exit Tour to return to the regular map and nearby historical photos.")
             }
         ]
     }

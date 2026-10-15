@@ -21,6 +21,8 @@ Rectangle {
 
     property var tourStop: null
     readonly property Item controlsItem: controlsLoaderID
+    readonly property var tourOnboardingHighlights: mode === GuiController.TourInfoMode.Tour && controlsLoaderID.item
+        ? controlsLoaderID.item.onboardingHighlights : []
 
     Layout.fillWidth: true
     Layout.preferredHeight: 210
@@ -75,6 +77,13 @@ Rectangle {
                 id: tourCountrolsID
 
                 ColumnLayout {
+                    readonly property var onboardingHighlights: [
+                        { target: nextStopID, stepIndex: 1 },
+                        { target: stopNavigationID, stepIndex: 2 },
+                        { target: imHereButtonID, stepIndex: 3 },
+                        { target: exitTourID, stepIndex: 4 },
+                    ]
+
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -94,18 +103,22 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
-                        StyledButton {
-                            id: prevStopButtonID
+                        RowLayout {
+                            id: stopNavigationID
 
-                            text: "<"
-                            onClicked: TourController.HighlightPrevStop()
-                        }
+                            StyledButton {
+                                id: prevStopButtonID
 
-                        StyledButton {
-                            id: nextStopButtonID
+                                text: "<"
+                                onClicked: TourController.HighlightPrevStop()
+                            }
 
-                            text: ">"
-                            onClicked: TourController.HighlightNextStop()
+                            StyledButton {
+                                id: nextStopButtonID
+
+                                text: ">"
+                                onClicked: TourController.HighlightNextStop()
+                            }
                         }
 
                         Item {
