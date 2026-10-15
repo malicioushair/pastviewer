@@ -195,7 +195,7 @@ Item {
 
                 anchors {
                     top: parent.top
-                    right: parent.right
+                    left: parent.left
                     margins: 12
                 }
 
@@ -209,13 +209,27 @@ Item {
 
                 anchors {
                     top: parent.top
-                    left: parent.left
+                    right: parent.right
                     margins: 12
                 }
 
                 z: 999   // above the map
 
                 onClicked: mainWindowID.openSettings()
+            }
+
+            ToursButton {
+                id: toursButtonID
+
+                anchors {
+                    top: settingsButtonID.bottom
+                    right: parent.right
+                    margins: 12
+                }
+
+                z: 999   // above the map
+
+                onClicked: mainWindowID.openAvailableTours()
             }
 
             Map {
@@ -401,7 +415,7 @@ Item {
 
                     anchors {
                         bottom: parent.bottom
-                        right: parent.right
+                        left: parent.left
                         margins: 12
                     }
 
