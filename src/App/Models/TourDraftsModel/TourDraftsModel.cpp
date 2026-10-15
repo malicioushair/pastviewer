@@ -33,7 +33,7 @@ namespace {
 
 int64_t NextTourId(const std::vector<Tours::Tour> & tours)
 {
-    auto newTourID = 0ll;
+    int64_t newTourID = 0;
     for (const auto & tour : tours)
         newTourID = std::max(newTourID, tour.id);
     return newTourID + 1;
@@ -100,10 +100,10 @@ QVariant TourDraftsModel::data(const QModelIndex & index, int role) const
 	switch (role)
 	{
 		case Id:
-			return item.id;
-		case Title:
-			return item.title;
-		case Description:
+            return static_cast<qlonglong>(item.id);
+        case Title:
+            return item.title;
+        case Description:
 			return item.description;
         case Distance:
             return item.distance;
@@ -218,7 +218,7 @@ void TourDraftsModel::Update()
                                                                                                                                     && it != m_impl->tours.cend()
                                                                                                                                     && !tour.stops.empty())
         {
-            const auto matchIndices = match(this->index(0, 0), Roles::Id, tour.id);
+            const auto matchIndices = match(this->index(0, 0), Roles::Id, static_cast<qlonglong>(tour.id));
             const auto index = matchIndices.front();
             (void)setData(index, QVariant::fromValue(tour.stops.last()), Roles::AddStop);
         }
