@@ -97,14 +97,15 @@ Item {
 
         completionKey: "MapPageIntro"
         active: !GuiController.IsOnboardingStepCompleted(completionKey)
-        centered: currentIndex === 3
-        topped: currentIndex === 4 || currentIndex === 5
+        centered: currentIndex === 4 || currentIndex === 2
+        topped: currentIndex === 5 || currentIndex === 6
 
         highlightSteps: [
-            { target: recenterID, stepIndex: 2 },
-            { target: photosNearID, stepIndex: 3 },
-            { target: compassID, stepIndex: 4 },
-            { target: settingsButtonID, stepIndex: 5 },
+            { target: toursButtonID, stepIndex: 2 },
+            { target: recenterID, stepIndex: 3 },
+            { target: subAreaLoaderID.item, stepIndex: 4 },
+            { target: compassID, stepIndex: 5 },
+            { target: settingsButtonID, stepIndex: 6 },
         ]
 
         steps: [
@@ -115,6 +116,10 @@ Item {
             {
                 "title": qsTr("Use the map like any other"),
                 "body": qsTr("Drag with one finger to pan, pinch to zoom and rotate.")
+            },
+            {
+                "title": qsTr("Explore with a tour"),
+                "body": qsTr("Tap the Tours button below Settings to browse available tours. Choose a tour to read its description and start exploring its route and stops.")
             },
             {
                 "title": qsTr("Jump back to your position"),
