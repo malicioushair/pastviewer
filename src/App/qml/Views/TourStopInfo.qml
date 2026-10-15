@@ -4,10 +4,12 @@ import QtQuick.Layouts
 import QtMultimedia
 
 import "../GuiItems"
+import "../Helpers"
 import "../Helpers/colors.js" as Colors
 import "Helpers"
 
 import TourController
+import PastViewer
 
 BasePage {
     id: rootID
@@ -15,6 +17,7 @@ BasePage {
     required property var tourStop
     property bool audioControlsOpen: false
     property bool narrationActive: false
+    readonly property bool hasNarration: rootID.tourStop.audioUrl.length > 0
 
     title: qsTr("Stop Details")
 
@@ -48,6 +51,54 @@ BasePage {
         label.font {
             bold: true
             pixelSize: 16
+        }
+    }
+
+    Connections {
+        target: GuiController
+
+        function onOnboardingReset() {
+            stopInfoOnboardingID.currentIndex = 0
+            stopInfoOnboardingID.active = !GuiController.IsOnboardingStepCompleted(stopInfoOnboardingID.completionKey)
+        }
+    }
+
+    OnboardingOverlay {
+        id: stopInfoOnboardingID
+
+        anchors.fill: parent
+        z: 1000
+
+        completionKey: "TourStopInfoIntro"
+        active: !GuiController.IsOnboardingStepCompleted(completionKey)
+        topped: currentIndex > 0
+
+        highlightSteps: {
+            const highlights = []
+            if (rootID.hasNarration)
+                highlights.push({ target: rootID.audioControlsOpen ? playPauseButtonID : listenButtonID, stepIndex: 1 })
+            highlights.push({ target: nextStopButtonID, stepIndex: rootID.hasNarration ? 2 : 1 })
+            return highlights
+        }
+
+        steps: {
+            const tutorialSteps = [
+                {
+                    "title": qsTr("Explore this stop"),
+                    "body": qsTr("Read the description to learn about this place. Double-tap the photo to open it for a closer look.")
+                }
+            ]
+            if (rootID.hasNarration) {
+                tutorialSteps.push({
+                    "title": qsTr("Listen to the story"),
+                    "body": qsTr("Tap Listen to play the narration. You can then pause or resume playback and drag the slider to move through the recording.")
+                })
+            }
+            tutorialSteps.push({
+                "title": qsTr("Continue your tour"),
+                "body": qsTr("Tap the right arrow to return to the map and select the next stop. Audio stops when you leave this page.")
+            })
+            return tutorialSteps
         }
     }
 
@@ -92,9 +143,11 @@ BasePage {
             spacing: 8
 
             StyledButton {
+                id: listenButtonID
+
                 Layout.preferredHeight: 50
 
-                visible: !rootID.audioControlsOpen && rootID.tourStop.audioUrl.length > 0
+                visible: !rootID.audioControlsOpen && rootID.hasNarration
                 text: qsTr("Listen")
                 onClicked: {
                     rootID.audioControlsOpen = true
@@ -182,6 +235,8 @@ BasePage {
             }
 
             StyledButton {
+                id: nextStopButtonID
+
                 Layout.preferredHeight: 50
 
                 text: qsTr(">")
