@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import QtPositioning
 
 import "../GuiItems"
 import "Helpers"
@@ -12,6 +13,9 @@ import TourController
 
 BasePage {
     id: rootID
+
+    property geoCoordinate stopCoordinate
+    property bool placedStop: false
 
     title: qsTr("Add tour stop")
 
@@ -163,7 +167,10 @@ BasePage {
                 StyledButton {
                     text: qsTr("Create")
                     onClicked: {
-                        TourController.CreateTourStop(titleTextAreaID.text, descriptionTextAreaID.text, addImageDialogID.selectedFile, addAudioDialogID.selectedFile)
+                        if (rootID.placedStop)
+                            TourController.CreateTourStop(titleTextAreaID.text, descriptionTextAreaID.text, addImageDialogID.selectedFile, addAudioDialogID.selectedFile, rootID.stopCoordinate)
+                        else
+                            TourController.CreateTourStop(titleTextAreaID.text, descriptionTextAreaID.text, addImageDialogID.selectedFile, addAudioDialogID.selectedFile)
                         rootID.StackView.view.pop()
                     }
                 }

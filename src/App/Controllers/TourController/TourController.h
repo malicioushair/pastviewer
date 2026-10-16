@@ -7,6 +7,7 @@
 #include <QList>
 #include <QObject>
 #include <QUrl>
+#include <QVariant>
 
 #include "App/Tours/DisplayTours.h"
 
@@ -31,6 +32,7 @@ public:
 	Q_PROPERTY(QList<QGeoCoordinate> tourPath READ GetTourPath NOTIFY TourPathChanged)
     Q_PROPERTY(QString distance READ GetDistance NOTIFY DistanceChanged)             // @TODO creation distance?
     Q_PROPERTY(QString currentStops READ GetCurrentStops NOTIFY CurrentStopsChanged) // @TODO creation stops?
+    Q_PROPERTY(QVariantList placedStopMarkers READ GetPlacedStopMarkers NOTIFY CurrentStopsChanged)
     Q_PROPERTY(QVariant currentTour READ GetCurrentTour WRITE SetCurrentTour NOTIFY CurrentTourChanged)
     Q_PROPERTY(QString nextStopTitle READ GetSelectedStopTitle NOTIFY SelectedStopTitleChanged)
 
@@ -56,7 +58,9 @@ public:
     Q_INVOKABLE void ResumeRecording();
     Q_INVOKABLE void StopRecording();
     Q_INVOKABLE void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile);
-    Q_INVOKABLE void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
+    Q_INVOKABLE void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
+    Q_INVOKABLE void AddPoint(const QGeoCoordinate & coordinate);
+    Q_INVOKABLE void RemoveLastPoint();
     Q_INVOKABLE QAbstractListModel * GetDraftsModel() const;
     Q_INVOKABLE QAbstractListModel * GetAvailableToursModel() const;
     Q_INVOKABLE QAbstractListModel * GetTourStopsModel() const;
@@ -68,6 +72,7 @@ private:
 	QList<QGeoCoordinate> GetTourPath() const;
     QString GetDistance() const;
     QString GetCurrentStops() const;
+    QVariantList GetPlacedStopMarkers() const;
     QVariant GetCurrentTour() const;
     void SetCurrentTour(const QVariant & tour);
     QString GetSelectedStopTitle() const;

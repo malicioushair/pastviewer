@@ -70,6 +70,11 @@ Item {
     }
 
     onModeChanged: {
+        if (mode === GuiController.MapMode.PlaceTour) {
+            TourController.StopRecording()
+            mapID.follow = false
+        }
+
         if (mode === GuiController.MapMode.DisplayTour)
             showTourPath()
         else
@@ -305,6 +310,9 @@ Item {
 
                 copyrightsVisible: false
                 onBearingChanged: updateViewCoordinates()
+                // Mode-specific panels change the visible map area.
+                onWidthChanged: Qt.callLater(updateViewCoordinates)
+                onHeightChanged: Qt.callLater(updateViewCoordinates)
 
                 plugin: Plugin {
                     id: mapPluginID
@@ -356,6 +364,75 @@ Item {
                 Component {
                     id: tourPathComponentID
                     TourPath {}
+                }
+
+                MapPolyline {
+                    path: TourController.tourPath
+                    line.width: 4
+                    line.color: Colors.palette.accent
+                    autoFadeIn: false
+                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour && path.length >= 2
+                }
+
+                MapItemView {
+                    id: placedStopMarkersID
+
+                    z: 1
+                    model: TourController.placedStopMarkers
+                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour
+                    delegate: MapQuickItem {
+                        id: stopMarkerID
+
+                        readonly property int itemSize: 20
+                        readonly property int stopNumber: modelData.number
+
+                        z: 1
+                        coordinate: QtPositioning.coordinate(modelData.latitude, modelData.longitude)
+                        anchorPoint: Qt.point(stopMarkerID.itemSize / 2, stopMarkerID.itemSize / 2)
+                        sourceItem: Rectangle {
+                            implicitWidth: 20
+                            implicitHeight: width
+                            radius: width
+                            color: "white"
+                            border {
+                                color: Colors.palette.accentAlt
+                                width: 1
+                            }
+                            Label {
+                                anchors.centerIn: parent
+                                text: stopMarkerID.stopNumber
+                            }
+                        }
+                    }
+                }
+
+                Item {
+                    id: centerMarkerID
+
+                    anchors.centerIn: parent
+                    width: 28
+                    height: 28
+                    z: 2
+                    enabled: false
+                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 18
+                        height: 18
+                        radius: 9
+                        color: Colors.palette.accent
+                        border.color: "white"
+                        border.width: 2
+                    }
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 6
+                        height: 6
+                        radius: 3
+                        color: "white"
+                    }
                 }
 
                 MapItemView {
@@ -476,7 +553,16 @@ Item {
                     height: 48
                     width: 96
 
-                    onTapped: mapID.follow = true
+                    onTapped: {
+                        if (mapPageID.mode === GuiController.MapMode.PlaceTour) {
+                            if (positionSource.coordinate.isValid) {
+                                mapID.center = positionSource.coordinate
+                                mapID.updateViewCoordinates()
+                            }
+                        } else {
+                            mapID.follow = true
+                        }
+                    }
                 }
 
                 // Drag to pan (continuous)
@@ -548,13 +634,15 @@ Item {
             id: subAreaLoaderID
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 210
+            Layout.preferredHeight: mapPageID.mode === GuiController.MapMode.PlaceTour
+                ? (item ? item.implicitHeight : 0) : 210
             Layout.margins: 10
 
             sourceComponent: {
                 switch (mapPageID.mode) {
                     case GuiController.MapMode.Main: return photosNearID
                     case GuiController.MapMode.TourCreation: return tourCreationID
+                    case GuiController.MapMode.PlaceTour: return placeTourID
                     case GuiController.MapMode.DisplayTour: return displayTourID
                     default: console.error("Unknown map mode.")
                 }
@@ -565,6 +653,16 @@ Item {
 
                 PhotosNear {
                     map: mapID
+                }
+            }
+
+            Component {
+                id: placeTourID
+
+                PlaceTourControls {
+                    onAddPointRequested: TourController.AddPoint(mapID.center)
+                    onAddStopRequested: mainWindowID.openAddTourStopDescription(mapID.center)
+                    onFinishRequested: mainWindowID.finishPlacedTour()
                 }
             }
 

@@ -62,11 +62,29 @@ Rectangle {
     }
 
     function openCreateTour() {
-        stackViewID.push("Views/TourDescription.qml")
+        stackViewID.push("Views/CreateTourChoice.qml")
     }
 
-    function openAddTourStopDescription() {
-        stackViewID.push("Views/AddTourStopDescription.qml")
+    function openTourDescription(placeOnMap) {
+        stackViewID.push("Views/TourDescription.qml", { placeOnMap: placeOnMap })
+    }
+
+    function openPlaceTourPath() {
+        GuiController.ChangeMapMode(GuiController.MapMode.PlaceTour)
+        showMap()
+    }
+
+    function finishPlacedTour() {
+        GuiController.ChangeMapMode(GuiController.MapMode.Main)
+        showMap()
+        openDrafts()
+    }
+
+    function openAddTourStopDescription(coordinate) {
+        if (coordinate === undefined)
+            stackViewID.push("Views/AddTourStopDescription.qml")
+        else
+            stackViewID.push("Views/AddTourStopDescription.qml", { stopCoordinate: coordinate, placedStop: true })
     }
 
     function openDrafts() {

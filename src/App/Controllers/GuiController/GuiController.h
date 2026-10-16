@@ -30,6 +30,7 @@ public:
         Main,
         TourCreation,
         DisplayTour,
+        PlaceTour,
     };
     Q_ENUM(MapMode)
 

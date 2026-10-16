@@ -48,6 +48,13 @@ void DeleteTourFile(const Tours::Tour & tour)
             file.errorString().toStdString());
 }
 
+double StraightPathDistance(const QList<QGeoCoordinate> & path)
+{
+    auto distance = 0.0;
+    for (auto i = 1; i < path.size(); ++i)
+        distance += path.at(i - 1).distanceTo(path.at(i));
+    return distance;
+}
 }
 struct TourDraftsModel::Impl
 {
@@ -243,10 +250,67 @@ void TourDraftsModel::UpdateTourPath(const QGeoCoordinate & coords)
     currentTour.tourPath.emplace_back(coords);
 }
 
+void TourDraftsModel::AddPoint(const QGeoCoordinate & coordinate)
+{
+    auto & currentTour = m_impl->tours.back();
+    currentTour.tourPath.emplace_back(coordinate);
+    currentTour.distance = StraightPathDistance(currentTour.tourPath);
+    EmitCurrentTourPathEdited();
+}
+
+void TourDraftsModel::RemoveLastPoint()
+{
+    auto & currentTour = m_impl->tours.back();
+    if (currentTour.tourPath.isEmpty())
+    {
+        if (currentTour.distance != 0.0)
+        {
+            currentTour.distance = 0;
+            emit CurrentDistanceChanged();
+        }
+        return;
+    }
+
+    const auto removed = currentTour.tourPath.takeLast();
+    auto removedStop = false;
+    for (auto i = currentTour.stops.size() - 1; i >= 0; --i)
+    {
+        if (currentTour.stops.at(i).coords != removed)
+            continue;
+
+        currentTour.stops.removeAt(i);
+        removedStop = true;
+    }
+
+    currentTour.distance = StraightPathDistance(currentTour.tourPath);
+    EmitCurrentTourPathEdited();
+    if (removedStop)
+        emit StopsUpdated();
+}
+
+void TourDraftsModel::EmitCurrentTourPathEdited()
+{
+    const auto row = static_cast<int>(m_impl->tours.size()) - 1;
+    const auto modelIndex = index(row);
+    emit dataChanged(modelIndex, modelIndex);
+    emit CurrentDistanceChanged();
+    emit CurrentTourPathChanged();
+}
+
 QList<QGeoCoordinate> TourDraftsModel::GetTourPath() const
 {
     const auto & currentTour = m_impl->tours.back();
     return currentTour.tourPath;
+}
+
+QList<QGeoCoordinate> TourDraftsModel::GetCurrentStopCoordinates() const
+{
+    const auto & currentTour = m_impl->tours.back();
+    QList<QGeoCoordinate> coordinates;
+    coordinates.reserve(currentTour.stops.size());
+    for (const auto & stop : currentTour.stops)
+        coordinates.append(stop.coords);
+    return coordinates;
 }
 
 void TourDraftsModel::CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile)
@@ -273,9 +337,12 @@ void TourDraftsModel::CreateNewTour(const QString & title, const QString & descr
         return;
 
     m_impl->tours.emplace_back(newTour);
+    emit StopsUpdated();
+    emit CurrentTourPathChanged();
+    emit CurrentDistanceChanged();
 }
 
-void TourDraftsModel::CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile)
+void TourDraftsModel::CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate)
 {
     auto & currentTour = m_impl->tours.back();
     const auto imageFileHash = Tours::ChosenFileContentHash(imageFile);
@@ -300,14 +367,28 @@ void TourDraftsModel::CreateTourStop(const QString & title, const QString & desc
         .imageFileHash = imageFileHash.value(),
         .localAudioPath = audioFile,
         .audioFileHash = audioFileHash.value(),
-        .coords = m_impl->positionSource.Coordinate()
+        .coords = coordinate.isValid() ? coordinate : m_impl->positionSource.Coordinate()
     };
     currentTour.stops.emplace_back(tourStop);
+
+    auto appendedToPath { false };
+    if (coordinate.isValid())
+    {
+        const auto isSameAsLast = !currentTour.tourPath.isEmpty() && currentTour.tourPath.last() == coordinate;
+        if (!isSameAsLast)
+        {
+            currentTour.tourPath.emplace_back(coordinate);
+            currentTour.distance = StraightPathDistance(currentTour.tourPath);
+            appendedToPath = true;
+        }
+    }
 
     if (!SaveDraft(currentTour))
         return;
 
     emit StopsUpdated();
+    if (appendedToPath)
+        EmitCurrentTourPathEdited();
 }
 
 QString TourDraftsModel::GetCurrentStops() const

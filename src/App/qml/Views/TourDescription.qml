@@ -12,6 +12,8 @@ import TourController
 BasePage {
     id: rootID
 
+    property bool placeOnMap: false
+
     title: qsTr("Tour Description")
 
     header: Header {
@@ -134,9 +136,15 @@ BasePage {
             StyledButton {
                 text: qsTr("Next")
                 onClicked: {
+                    if (rootID.placeOnMap)
+                        TourController.StopRecording()
                     TourController.CreateNewTour(titleTextAreaID.text, descriptionTextAreaID.text, tourImageID.source)
-                    GuiController.ChangeMapMode(GuiController.MapMode.TourCreation)
-                    mainWindowID.showMap()
+                    if (rootID.placeOnMap) {
+                        mainWindowID.openPlaceTourPath()
+                    } else {
+                        GuiController.ChangeMapMode(GuiController.MapMode.TourCreation)
+                        mainWindowID.showMap()
+                    }
                 }
             }
             StyledButton {

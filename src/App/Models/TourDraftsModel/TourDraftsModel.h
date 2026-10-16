@@ -53,9 +53,12 @@ public:
 	std::vector<Tours::Tour> GetTourDrafts() const;
 	void AddTour(const Tours::Tour & tour);
     void UpdateTourPath(const QGeoCoordinate & coords);
+    void AddPoint(const QGeoCoordinate & coordinate);
+    void RemoveLastPoint();
     QList<QGeoCoordinate> GetTourPath() const;
+    QList<QGeoCoordinate> GetCurrentStopCoordinates() const;
     void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile);
-    void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
+    void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
     QString GetCurrentStops() const;
     void UploadAsset(const QUrl & assetFile);
 
@@ -68,6 +71,7 @@ public:
 
 private:
     void DeleteTourItem(const QModelIndex & index);
+    void EmitCurrentTourPathEdited();
 
 private:
 	struct Impl;

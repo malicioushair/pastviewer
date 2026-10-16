@@ -17,6 +17,8 @@ add_executable(PastViewerTests
     PhotoProximityTrackerTest.cpp
     UniqueCircularBufferTest.cpp
     ClusterModelTest.cpp
+    PlacedTourPathTest.cpp
+    PlacedTourStopTest.cpp
     StopAudioTest.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/TourController/TourController.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PositionSourceAdapter.cpp
