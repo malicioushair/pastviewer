@@ -2,7 +2,9 @@
 
 #include "App/Models/BaseModel.h"
 
+#include <algorithm>
 #include <functional>
+#include <limits>
 #include <numbers>
 #include <queue>
 #include <unordered_map>
@@ -10,12 +12,14 @@
 #include <vector>
 
 #include <QPointF>
+#include <QTimer>
 
 namespace {
 
 constexpr auto CLUSTER_THRESHOLD_PIXELS = 20.0;
 constexpr auto CLUSTER_THRESHOLD_SQUARED = CLUSTER_THRESHOLD_PIXELS * CLUSTER_THRESHOLD_PIXELS;
 constexpr auto NEIGHBOR_RADIUS = 1; // Check 3x3 grid of cells
+constexpr auto MAX_VISIBLE_CLUSTERS = 60;
 
 struct ClusterItem
 {
@@ -300,6 +304,8 @@ struct ClusterModel::Impl
 	std::vector<Node> nodes;
 	QGeoRectangle viewport;
 	int sourceChangeDepth { 0 };
+	bool slotsReady { false };
+	bool rebuildScheduled { false };
 };
 
 ClusterModel::ClusterModel(QAbstractItemModel * sourceModel, QObject * parent)
@@ -330,26 +336,38 @@ ClusterModel::ClusterModel(QAbstractItemModel * sourceModel, QObject * parent)
 	connect(this, &ClusterModel::rowsRemoved, this, [this] { emit CountChanged(); });
 	connect(this, &ClusterModel::modelReset, this, [this] { emit CountChanged(); });
 
-	beginResetModel();
-	m_impl->nodes = BuildClusters();
-	endResetModel();
+	PublishNodes(BuildClusters());
 }
 
 ClusterModel::~ClusterModel() = default;
 
 void ClusterModel::BeginSourceChange()
 {
-	if (m_impl->sourceChangeDepth++ == 0)
-		beginResetModel();
+	++m_impl->sourceChangeDepth;
 }
 
 void ClusterModel::EndSourceChange()
 {
 	if (--m_impl->sourceChangeDepth == 0)
+		PublishNodes(BuildClusters());
+}
+
+void ClusterModel::PublishNodes(std::vector<Node> nodes)
+{
+	if (nodes.size() < MAX_VISIBLE_CLUSTERS)
+		nodes.resize(MAX_VISIBLE_CLUSTERS);
+
+	if (!m_impl->slotsReady)
 	{
-		m_impl->nodes = BuildClusters();
-		endResetModel();
+		m_impl->nodes = std::move(nodes);
+		m_impl->slotsReady = true;
+		return;
 	}
+
+	m_impl->nodes = std::move(nodes);
+	const auto lastRow = static_cast<int>(m_impl->nodes.size()) - 1;
+	if (lastRow >= 0)
+		emit dataChanged(index(0), index(lastRow));
 }
 
 int ClusterModel::rowCount(const QModelIndex & parent) const
@@ -395,7 +413,14 @@ QVariant ClusterModel::data(const QModelIndex & index, int role) const
 	if (std::holds_alternative<IndividualNode>(node))
 	{
 		const auto & individualNode = std::get<IndividualNode>(node);
-		assert(individualNode.indexIntoSourceModel.isValid());
+		if (!individualNode.indexIntoSourceModel.isValid())
+		{
+			if (role == BaseModel::Coordinate)
+				return QVariant::fromValue(QGeoCoordinate {});
+			if (role == IsCluster)
+				return false;
+			return {};
+		}
 		return m_impl->sourceModel->data(individualNode.indexIntoSourceModel, role);
 	}
 	else if (std::holds_alternative<ClusterNode>(node))
@@ -445,30 +470,51 @@ std::vector<Node> ClusterModel::BuildClusters() const
 		nodes.push_back(CreateNode(items, members));
 	}
 
+	if (nodes.size() > MAX_VISIBLE_CLUSTERS && m_impl->viewport.isValid())
+	{
+		const auto center = m_impl->viewport.center();
+		const auto distanceToCenter = [&](const Node & node) {
+			const auto coordinate = std::holds_alternative<ClusterNode>(node)
+				? std::get<ClusterNode>(node).centroid
+				: m_impl->sourceModel->data(std::get<IndividualNode>(node).indexIntoSourceModel, BaseModel::Coordinate).value<QGeoCoordinate>();
+			return coordinate.isValid() ? coordinate.distanceTo(center) : std::numeric_limits<double>::max();
+		};
+		std::nth_element(nodes.begin(), nodes.begin() + MAX_VISIBLE_CLUSTERS, nodes.end(), [&](const Node & a, const Node & b) {
+			return distanceToCenter(a) < distanceToCenter(b);
+		});
+		nodes.resize(MAX_VISIBLE_CLUSTERS);
+	}
+
 	return nodes;
 }
 
 void ClusterModel::OnViewportChanged(const QGeoRectangle & viewport)
 {
 	m_impl->viewport = viewport;
+	if (m_impl->rebuildScheduled)
+		return;
 
-	const auto items = BuildClusterItems(*m_impl->sourceModel, viewport);
-	const auto gridMap = BuildGridMap(items);
+	m_impl->rebuildScheduled = true;
+	QTimer::singleShot(0, this, [this] {
+		m_impl->rebuildScheduled = false;
+		const auto viewport = m_impl->viewport;
 
-	const auto currentZoom = m_impl->sourceModel->data({}, BaseModel::ZoomLevel).toInt();
-	QHash<int, int> cidToZoom;
-	for (size_t i = 0; i < items.size(); ++i)
-	{
-		const auto sourceIndex = items[i].sourceIndex;
-		const auto cid = m_impl->sourceModel->data(sourceIndex, BaseModel::Cid).toInt();
-		const auto dPx = FindNearestNeighborDistancePx(items, gridMap, static_cast<int>(i));
-		const auto zoomToDecluster = ZoomToDeclusterFromNearestPx(dPx, currentZoom);
-		cidToZoom[cid] = zoomToDecluster;
-	}
+		const auto items = BuildClusterItems(*m_impl->sourceModel, viewport);
+		const auto gridMap = BuildGridMap(items);
 
-	emit ZoomsToDecluster(cidToZoom);
+		const auto currentZoom = m_impl->sourceModel->data({}, BaseModel::ZoomLevel).toInt();
+		QHash<int, int> cidToZoom;
+		for (size_t i = 0; i < items.size(); ++i)
+		{
+			const auto sourceIndex = items[i].sourceIndex;
+			const auto cid = m_impl->sourceModel->data(sourceIndex, BaseModel::Cid).toInt();
+			const auto dPx = FindNearestNeighborDistancePx(items, gridMap, static_cast<int>(i));
+			const auto zoomToDecluster = ZoomToDeclusterFromNearestPx(dPx, currentZoom);
+			cidToZoom[cid] = zoomToDecluster;
+		}
 
-	beginResetModel();
-	m_impl->nodes = BuildClusters();
-	endResetModel();
+		emit ZoomsToDecluster(cidToZoom);
+
+		PublishNodes(BuildClusters());
+	});
 }

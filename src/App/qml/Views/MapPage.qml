@@ -309,7 +309,10 @@ Item {
                 anchors.fill: parent
 
                 copyrightsVisible: false
-                onBearingChanged: updateViewCoordinates()
+                onBearingChanged: {
+                    if (!pinchHandlerID.active)
+                        updateViewCoordinates()
+                }
                 // Mode-specific panels change the visible map area.
                 onWidthChanged: Qt.callLater(updateViewCoordinates)
                 onHeightChanged: Qt.callLater(updateViewCoordinates)
@@ -327,7 +330,10 @@ Item {
 
                 activeMapType: supportedMapTypes.find((map) => { return map.style === MapType.CustomMap })
 
-                onZoomLevelChanged: (zoomLevel) => { PastVuModelController.zoomLevel = zoomLevel }
+                onZoomLevelChanged: (zoomLevel) => {
+                    if (!pinchHandlerID.active)
+                        PastVuModelController.zoomLevel = zoomLevel
+                }
                 Component.onCompleted: {
                     zoomLevel = PastVuModelController.zoomLevel
                     Utils.setTimeout(updateViewCoordinates, 300) // delaying the call to update to allow some time for the map to load (otherwise we'll get a bad reply)
@@ -486,6 +492,7 @@ Item {
                         readonly property int itemSize: 20
 
                         z: Selected ? 1 : 0
+                        visible: model.Coordinate.isValid
                         coordinate: model.Coordinate
                         anchorPoint: {
                             if (model.IsCluster) {
@@ -497,48 +504,32 @@ Item {
                             }
                         }
 
-                        sourceItem: Loader {
-                            id: itemLoaderID
-
-                            property bool isCluster: model.IsCluster
-
+                        sourceItem: Item {
                             width: mapItemID.itemSize
                             height: mapItemID.itemSize
 
-                            sourceComponent: isCluster ? clusterMarkerID : individualMarkerID
+                            PovDirection {
+                                visible: !model.IsCluster
+                                size: mapItemID.itemSize
+                                bearing: model.Bearing - compassID.bearing
+                                mapBearing: mapID.bearing
+                                selected: model.Selected
 
-                            Component {
-                                id: individualMarkerID
-
-                                PovDirection {
-                                    id: povDirectionID
-
-                                    size: mapItemID.itemSize
-                                    bearing: model.Bearing - compassID.bearing
-                                    mapBearing: mapID.bearing
-                                    selected: model.Selected
-
-                                    onClicked: mainWindowID.openPhotoDetails(model.Photo, model.Thumbnail, model.Title, model.Year)
-                                }
+                                onClicked: mainWindowID.openPhotoDetails(model.Photo, model.Thumbnail, model.Title, model.Year)
                             }
 
-                            Component {
-                                id: clusterMarkerID
+                            ClusterMarker {
+                                visible: model.IsCluster
+                                size: mapItemID.itemSize
+                                clusterCount: model.ClusterCount
+                                selected: model.Selected
 
-                                ClusterMarker {
-                                    id: clusterMarkerIDInstance
-
-                                    size: mapItemID.itemSize
-                                    clusterCount: model.ClusterCount
-                                    selected: model.Selected
-
-                                    onClicked: {
-                                        mapAnimationHelperID.animateMapCenterAndZoom(
-                                            model.Coordinate,
-                                            model.ZoomToDecluster,
-                                            model.Coordinate
-                                        )
-                                    }
+                                onClicked: {
+                                    mapAnimationHelperID.animateMapCenterAndZoom(
+                                        model.Coordinate,
+                                        model.ZoomToDecluster,
+                                        model.Coordinate
+                                    )
                                 }
                             }
                         }
@@ -593,8 +584,10 @@ Item {
                     onActiveChanged: {
                         if (active)
                             mapID.follow = false
-                        else
+                        else {
+                            PastVuModelController.zoomLevel = mapID.zoomLevel
                             mapID.updateViewCoordinates()
+                        }
 
                         mapID.startCentroid = mapID.toCoordinate(pinchHandlerID.centroid.position, false)
                     }
@@ -623,7 +616,7 @@ Item {
                 MapQuickItem {
                     id: youAreHereMarkerID
 
-                    anchorPoint: Qt.point(sourceItem.width / 2, sourceItem.height / 2)
+                    anchorPoint: Qt.point(7, 7)
                     coordinate: positionSource.coordinate
                     visible: coordinate.isValid
                     sourceItem: UserPosition {

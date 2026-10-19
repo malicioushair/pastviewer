@@ -96,12 +96,6 @@ PastVuModelController::PastVuModelController(QObject * parent)
 		m_impl->clusterModelScreen->OnViewportChanged(m_impl->viewPort);
 		m_impl->clusterModelNearest->OnViewportChanged(m_impl->viewPort);
 	});
-	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, m_impl->clusterModelScreen.get(), [&]() {
-		m_impl->clusterModelScreen->OnViewportChanged(m_impl->baseModel->GetLastKnownViewport());
-	});
-	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, m_impl->clusterModelNearest.get(), [&]() {
-		m_impl->clusterModelScreen->OnViewportChanged(m_impl->baseModel->GetLastKnownViewport());
-	});
 	connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, &PastVuModelController::EvaluatePhotoProximity);
 	const auto retryPendingPhotoSelection = [this] {
 		m_impl->photoNotificationCoordinator.RetryPendingPhotoSelection(GetModel(ModelType::Filtered));
