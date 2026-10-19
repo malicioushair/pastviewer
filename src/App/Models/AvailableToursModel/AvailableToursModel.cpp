@@ -94,15 +94,24 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
             };
         });
 
+        const auto purchaseInfoObj = itemObj.value("purchaseInfo").toObject();
         beginResetModel();
-        m_impl->tours.push_back({ .title = itemObj.value("title").toString(),
+        m_impl->tours.push_back({
+            .id = itemObj.value("id").toString(),
+            .title = itemObj.value("title").toString(),
             .description = itemObj.value("description").toString(),
             .imageUrl = itemObj.value("imageUrl").toString(),
             .distance = itemObj.value("distance").toInt(),
             .stopCount = itemObj.value("stopCount").toInt(),
             .stops = tourStops,
             .lang = itemObj.value("lang").toString(),
-            .tourPath = tourPath });
+            .purchaseInfo = {
+                             .paid = purchaseInfoObj.value("paid").toBool(),
+                             .appleId = purchaseInfoObj.value("appleId").toString(),
+                             .googleId = purchaseInfoObj.value("googleId").toString(),
+                             },
+            .tourPath = tourPath
+        });
         endResetModel();
     }
 }
