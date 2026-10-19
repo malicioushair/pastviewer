@@ -47,6 +47,7 @@ public:
     Q_PROPERTY(QList<DisplayTourStop> stops MEMBER stops)
     Q_PROPERTY(int distance MEMBER distance)
     Q_PROPERTY(int stopCount MEMBER stopCount)
+    Q_PROPERTY(QString lang MEMBER lang)
 
     QString title {};
     QString description {};
@@ -55,5 +56,6 @@ public:
     QList<DisplayTourStop> stops {};
     int distance {};
     int stopCount {};
+    QString lang {};
 };
 Q_DECLARE_METATYPE(DisplayTour)

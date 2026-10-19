@@ -3,11 +3,13 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 
+import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
 import PastViewer
 import TourController
+
 
 BasePage {
     id: rootID
@@ -129,6 +131,18 @@ BasePage {
             }
         }
 
+        RowLayout {
+            Label {
+                text: qsTr("Set tour language")
+            }
+
+            LanguageComboBox {
+                id: languageComboBoxID
+
+                Layout.fillWidth: true
+            }
+        }
+
         Item { Layout.fillHeight: true }
         RowLayout {
             Layout.alignment: Qt.AlignBottom
@@ -138,7 +152,7 @@ BasePage {
                 onClicked: {
                     if (rootID.placeOnMap)
                         TourController.StopRecording()
-                    TourController.CreateNewTour(titleTextAreaID.text, descriptionTextAreaID.text, tourImageID.source)
+                    TourController.CreateNewTour(titleTextAreaID.text, descriptionTextAreaID.text, tourImageID.source, languageComboBoxID.currentValue)
                     if (rootID.placeOnMap) {
                         mainWindowID.openPlaceTourPath()
                     } else {

@@ -66,6 +66,17 @@ BasePage {
                         onTapped: mainWindowID.openTourInfoView(model.TourObj)
                     }
                 }
+
+                Rectangle {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: 40
+
+                    color: Colors.palette.toolbar
+                    Label {
+                        anchors.centerIn: parent
+                        text: qsTr(model.Lang)
+                    }
+                }
             }
         }
     }

@@ -63,7 +63,7 @@ public:
     void RemoveLastPoint();
     QList<QGeoCoordinate> GetTourPath() const;
     QList<QGeoCoordinate> GetCurrentStopCoordinates() const;
-    void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile);
+    void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang);
     void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
     QString GetCurrentStops() const;
     void UploadAsset(const QUrl & assetFile);

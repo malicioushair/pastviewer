@@ -101,6 +101,7 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
             .distance = itemObj.value("distance").toInt(),
             .stopCount = itemObj.value("stopCount").toInt(),
             .stops = tourStops,
+            .lang = itemObj.value("lang").toString(),
             .tourPath = tourPath });
         endResetModel();
     }
@@ -138,6 +139,8 @@ QVariant AvailableToursModel::data(const QModelIndex & index, int role) const
             return QVariant::fromValue(tour.stops);
         case TourObj:
             return QVariant::fromValue(tour);
+        case Lang:
+            return tour.lang;
         default:
             assert(false && "unknown role");
     }
@@ -157,7 +160,8 @@ QHash<int, QByteArray> AvailableToursModel::roleNames() const
         ROLENAME(Distance),
         ROLENAME(StopCount),
         ROLENAME(Stops),
-        ROLENAME(TourObj)
+        ROLENAME(TourObj),
+        ROLENAME(Lang),
     };
 #undef ROLENAME
 }

@@ -49,6 +49,7 @@ struct Tour
     QString imageFileHash {};
     QList<QGeoCoordinate> tourPath {};
     QList<TourStop> stops {};
+    QString lang {};
 };
 
 inline std::optional<QString> ChosenFileContentHash(const QUrl & fileUrl)
@@ -120,6 +121,7 @@ inline QJsonObject TourToJson(const Tour & tour, bool forPublish = false)
         { "isDraft",       !forPublish                    },
         { "path",          tourPath                       },
         { "stops",         stops                          },
+        { "lang",          tour.lang                      },
     };
 }
 
@@ -155,6 +157,7 @@ inline bool SaveDraft(const Tours::Tour & tour)
     tourObj["imageFileHash"] = tour.imageFileHash;
     tourObj["path"] = tourPath;
     tourObj["stops"] = stops;
+    tourObj["lang"] = tour.lang;
 
     QJsonDocument doc(tourObj);
     return JsonHelpers::SaveJson(doc, Tours::GetDraftFileLocation(tour.title));

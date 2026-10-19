@@ -219,6 +219,7 @@ void TourDraftsModel::Update()
             PROPERTY(distance).toDouble(),
             PROPERTY(localImagePath).toString(),
             PROPERTY(imageFileHash).toString(),
+            PROPERTY(lang).toString(),
 #undef PROPERTY
         };
         for (const auto & point : json["path"].toArray())
@@ -478,7 +479,7 @@ QList<QGeoCoordinate> TourDraftsModel::GetCurrentStopCoordinates() const
     return coordinates;
 }
 
-void TourDraftsModel::CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile)
+void TourDraftsModel::CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang)
 {
     const auto imageFileHash = Tours::ChosenFileContentHash(imageFile);
     if (!imageFileHash)
@@ -496,6 +497,7 @@ void TourDraftsModel::CreateNewTour(const QString & title, const QString & descr
         .imageFileHash = imageFileHash.value(),
         .tourPath = {},
         .stops = {},
+        .lang = tourLang,
     };
 
     if (!Tours::SaveDraft(newTour))

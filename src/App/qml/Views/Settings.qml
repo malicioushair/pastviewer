@@ -64,96 +64,10 @@ BasePage {
                     }
                 }
 
-                ComboBox {
+                LanguageComboBox {
                     id: languageComboBoxID
 
-                    function setLanguage(language) {
-                        const value = language
-                        const index = languageComboBoxID.indexOfValue(value)
-                        languageComboBoxID.currentIndex = index
-                    }
-
                     Layout.fillWidth: true
-                    model: I18nController.languageModel
-                    textRole: "NameRole"
-                    valueRole: "CodeRole"
-                    currentIndex: {
-                        const index = I18nController.GetIndexOf(I18nController.GetCurrentLanguage())
-                        if (index >= 0)
-                            return index
-                    }
-
-                    background: Rectangle {
-                        color: Colors.palette.bg
-                        border {
-                            color: Colors.palette.border
-                            width: 1
-                        }
-                        radius: 8
-                    }
-
-                    contentItem: Text {
-                        text: languageComboBoxID.displayText
-                        color: Colors.palette.text
-                        font.pixelSize: 14
-                        leftPadding: 12
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    popup: Popup {
-                        y: languageComboBoxID.height
-                        width: languageComboBoxID.width
-                        implicitHeight: contentItem.implicitHeight
-                        padding: 1
-
-                        contentItem: ListView {
-                            clip: true
-                            implicitHeight: contentHeight
-                            model: languageComboBoxID.popup.visible ? languageComboBoxID.delegateModel : null
-                            currentIndex: languageComboBoxID.highlightedIndex
-
-                            ScrollIndicator.vertical: ScrollIndicator { }
-                        }
-
-                        background: Rectangle {
-                            color: Colors.palette.bg
-                            border {
-                                color: Colors.palette.border
-                                width: 1
-                            }
-                            radius: 8
-                        }
-                    }
-
-                    delegate: ItemDelegate {
-                        width: languageComboBoxID.width
-                        text: model.NameRole
-
-                        background: Rectangle {
-                            color: parent.hovered ? Colors.palette.accentAlt : Colors.palette.bg
-                            radius: 4
-                        }
-
-                        contentItem: Text {
-                            text: model.NameRole
-                            color: Colors.palette.text
-                            font.pixelSize: 14
-                            leftPadding: 12
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                    }
-
-                    Component.onCompleted: {
-                        languageComboBoxID.setLanguage(I18nController.GetCurrentLanguage())
-                    }
-
-                    Connections {
-                        target: I18nController
-                        function onCurrentLanguageChanged() {
-                            languageComboBoxID.setLanguage(I18nController.GetCurrentLanguage())
-                        }
-                    }
-
                     onActivated: I18nController.SetCurrentLanguage(languageComboBoxID.currentValue);
                 }
             }

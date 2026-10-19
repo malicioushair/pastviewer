@@ -57,7 +57,7 @@ public:
 	Q_INVOKABLE void PauseRecording();
     Q_INVOKABLE void ResumeRecording();
     Q_INVOKABLE void StopRecording();
-    Q_INVOKABLE void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile);
+    Q_INVOKABLE void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang);
     Q_INVOKABLE void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
     Q_INVOKABLE QVariantMap GetDraft(qlonglong id) const;
     Q_INVOKABLE QString UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile);

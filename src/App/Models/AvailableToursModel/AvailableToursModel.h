@@ -22,6 +22,7 @@ public:
         StopCount,
         Stops,
         TourObj,
+        Lang,
     };
 
     explicit AvailableToursModel(QObject * parent = nullptr);

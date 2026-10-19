@@ -14,3 +14,4 @@ InfoLabel 1.0 InfoLabel.qml
 AddTourStopDescription 1.0 AddTourStopDescription.qml
 TourDescription 1.0 TourDescription.qml
 StyledTextArea 1.0 StyledTextArea.qml
+LanguageComboBox 1.0 LanguageComboBox.qml
