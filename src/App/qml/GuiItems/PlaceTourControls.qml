@@ -10,6 +10,8 @@ import "../Helpers/colors.js" as Colors
 Rectangle {
     id: rootID
 
+    property bool editingDraft: false
+
     signal addPointRequested()
     signal addStopRequested()
     signal finishRequested()
@@ -35,10 +37,18 @@ Rectangle {
         Text {
             Layout.alignment: Qt.AlignHCenter
 
-            text: qsTr("Place the path")
+            text: rootID.editingDraft ? qsTr("Edit route") : qsTr("Place the path")
             color: Colors.palette.text
             font.bold: true
             font.pixelSize: 18
+        }
+
+        Label {
+            Layout.fillWidth: true
+            visible: rootID.editingDraft
+            text: qsTr("Tap a numbered stop to edit it. Map changes are saved automatically.")
+            wrapMode: Text.Wrap
+            color: Colors.palette.text
         }
 
         RowLayout {

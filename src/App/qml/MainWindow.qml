@@ -6,6 +6,7 @@ import QtPositioning
 import QtQuick.Shapes
 
 import PastViewer 1.0
+import TourController 1.0
 
 import "ErrorMessageDialog"
 import "GuiItems"
@@ -18,6 +19,7 @@ Rectangle {
     id: mainWindowID
 
     property alias mapAnimationHelper: mapAnimationHelperID
+    property var editingDraftId: null
     property bool changelogPromptPending: false
     property bool tipsPromptPending: false
 
@@ -69,7 +71,30 @@ Rectangle {
         stackViewID.push("Views/TourDescription.qml", { placeOnMap: placeOnMap })
     }
 
+    function openDraftEditor(id) {
+        const record = TourController.GetDraft(id)
+        if (record.id !== undefined)
+            stackViewID.push("Views/DraftTourEdit.qml", { record: record })
+    }
+
+    function openEditDraftMap(id) {
+        if (!TourController.SelectDraft(id))
+            return
+        editingDraftId = id
+        GuiController.ChangeMapMode(GuiController.MapMode.PlaceTour)
+        showMap()
+        if (TourController.tourPath.length > 0)
+            mapPageInstance.map.center = TourController.tourPath[0]
+    }
+
+    function openDraftStopEditor(id) {
+        const record = TourController.GetDraftStop(id)
+        if (record.id !== undefined)
+            stackViewID.push("Views/DraftTourEdit.qml", { record: record, editingStop: true })
+    }
+
     function openPlaceTourPath() {
+        editingDraftId = null
         GuiController.ChangeMapMode(GuiController.MapMode.PlaceTour)
         showMap()
     }
@@ -77,7 +102,14 @@ Rectangle {
     function finishPlacedTour() {
         GuiController.ChangeMapMode(GuiController.MapMode.Main)
         showMap()
-        openDrafts()
+        const returnDraftId = editingDraftId
+        editingDraftId = null
+        if (returnDraftId !== null) {
+            stackViewID.push("Views/DraftTours.qml", StackView.Immediate)
+            openDraftEditor(returnDraftId)
+        } else {
+            openDrafts()
+        }
     }
 
     function openAddTourStopDescription(coordinate) {

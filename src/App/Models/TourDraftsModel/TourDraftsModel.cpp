@@ -62,7 +62,24 @@ struct TourDraftsModel::Impl
     QNetworkAccessManager networkManager {};
     QTimer timer {};
     std::vector<Tours::Tour> tours {};
-    int64_t editedTourId {}; // @todo needed?
+    int64_t editedTourId { -1 };
+
+    int CurrentRow() const
+    {
+        if (tours.empty())
+            return -1;
+
+        for (int row = 0; row < static_cast<int>(tours.size()); ++row)
+            if (tours[row].id == editedTourId)
+                return row;
+        return -1;
+    }
+
+    Tours::Tour * CurrentTour()
+    {
+        const auto row = CurrentRow();
+        return row < 0 ? nullptr : &tours[row];
+    }
 };
 
 TourDraftsModel::TourDraftsModel(const PositionSourceAdapter & positionSource, QObject * parent)
@@ -73,8 +90,10 @@ TourDraftsModel::TourDraftsModel(const PositionSourceAdapter & positionSource, Q
 
     m_impl->timer.setInterval(5000);
     connect(&m_impl->timer, &QTimer::timeout, this, [&] {
-        assert(!m_impl->tours.empty());
-        auto & currentTour = m_impl->tours.back();
+        auto * tour = m_impl->CurrentTour();
+        if (!tour || tour->tourPath.isEmpty())
+            return;
+        auto & currentTour = *tour;
         const auto lastAddedPos = currentTour.tourPath.last();
         const auto currentPos = m_impl->positionSource.Coordinate();
         currentTour.distance += lastAddedPos.distanceTo(currentPos);
@@ -88,7 +107,8 @@ TourDraftsModel::TourDraftsModel(const PositionSourceAdapter & positionSource, Q
         emit CurrentTourPathChanged();
     });
     connect(this, &TourDraftsModel::CurrentTourPathChanged, this, [&] {
-        Tours::SaveDraft(m_impl->tours.back());
+        if (const auto * tour = m_impl->CurrentTour())
+            Tours::SaveDraft(*tour);
     });
 }
 
@@ -173,6 +193,7 @@ QHash<int, QByteArray> TourDraftsModel::roleNames() const
 		Roles::NAME, #NAME \
 	}
     return {
+        ROLENAME(Id),
         ROLENAME(Title),
         ROLENAME(Description),
         ROLENAME(Delete),
@@ -190,17 +211,23 @@ void TourDraftsModel::Update()
 	for (const auto & dirEntry : QDirListing(dirPath))
 	{
 		const auto json = JsonHelpers::ReadJson(dirEntry.absoluteFilePath());
-		Tours::Tour tour {
+        Tours::Tour tour {
 #define PROPERTY(NAME) .NAME = json[#NAME]
-			PROPERTY(id).toInt(),
-			PROPERTY(title).toString(),
-			PROPERTY(description).toString(),
-			PROPERTY(localImagePath).toString(),
-			PROPERTY(imageFileHash).toString(),
+            PROPERTY(id).toInt(),
+            PROPERTY(title).toString(),
+            PROPERTY(description).toString(),
+            PROPERTY(distance).toDouble(),
+            PROPERTY(localImagePath).toString(),
+            PROPERTY(imageFileHash).toString(),
 #undef PROPERTY
-		};
-		const auto stops = json["stops"].toArray();
-		std::ranges::transform(stops, std::back_inserter(tour.stops), [](decltype(stops)::const_reference value) {
+        };
+        for (const auto & point : json["path"].toArray())
+        {
+            const auto parts = point.toString().split(',');
+            tour.tourPath.append(QGeoCoordinate(parts.value(0).toDouble(), parts.value(1).toDouble()));
+        }
+        const auto stops = json["stops"].toArray();
+        std::ranges::transform(stops, std::back_inserter(tour.stops), [](decltype(stops)::const_reference value) {
 			const auto parts = value["coords"].toString().split(',');
 			return Tours::TourStop {
 #define PROPERTY(NAME) .NAME = value[#NAME]
@@ -219,15 +246,7 @@ void TourDraftsModel::Update()
 		{
 			beginInsertRows({}, rowCount(), rowCount());
 			m_impl->tours.push_back(tour);
-			endInsertRows();
-		}
-        else if (const auto it = std::ranges::find_if(m_impl->tours, [&](const Tours::Tour & item) { return item.id == tour.id; }); true
-                                                                                                                                    && it != m_impl->tours.cend()
-                                                                                                                                    && !tour.stops.empty())
-        {
-            const auto matchIndices = match(this->index(0, 0), Roles::Id, static_cast<qlonglong>(tour.id));
-            const auto index = matchIndices.front();
-            (void)setData(index, QVariant::fromValue(tour.stops.last()), Roles::AddStop);
+            endInsertRows();
         }
     }
 }
@@ -241,18 +260,156 @@ void TourDraftsModel::AddTour(const Tours::Tour & tour)
 {
 	beginInsertRows({}, rowCount(), rowCount());
 	m_impl->tours.emplace_back(tour);
-	endInsertRows();
+    m_impl->editedTourId = tour.id;
+    endInsertRows();
+}
+
+QVariantList TourDraftsModel::GetPlacedStopMarkers() const
+{
+    QVariantList markers;
+    const auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return markers;
+    for (const auto & stop : tour->stops)
+        markers.append(QVariantMap {
+            { "id",        static_cast<qlonglong>(stop.id)      },
+            { "latitude",  stop.coords.latitude()               },
+            { "longitude", stop.coords.longitude()              },
+            { "number",    static_cast<int>(markers.size() + 1) }
+        });
+    return markers;
+}
+
+QVariantMap TourDraftsModel::GetDraft(qlonglong id) const
+{
+    const auto it = std::ranges::find(m_impl->tours, id, &Tours::Tour::id);
+    if (it == m_impl->tours.end())
+        return {};
+    return {
+        { "id",          id                 },
+        { "title",       it->title          },
+        { "description", it->description    },
+        { "imageFile",   it->localImagePath }
+    };
+}
+
+QString TourDraftsModel::UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile)
+{
+    const auto it = std::ranges::find(m_impl->tours, id, &Tours::Tour::id);
+    if (it == m_impl->tours.end())
+        return tr("This draft no longer exists.");
+    const auto cleanTitle = title.trimmed();
+    if (cleanTitle.isEmpty() || cleanTitle.contains('/') || cleanTitle.contains('\\'))
+        return tr("Enter a title without slashes.");
+    auto updated = *it;
+    updated.title = cleanTitle;
+    updated.description = description;
+    if (imageFile != updated.localImagePath)
+    {
+        const auto hash = Tours::ChosenFileContentHash(imageFile);
+        if (!hash)
+            return tr("Cannot read the selected cover image.");
+        updated.localImagePath = imageFile;
+        updated.imageFileHash = *hash;
+    }
+    const auto oldPath = Tours::GetDraftFileLocation(it->title);
+    const auto newPath = Tours::GetDraftFileLocation(updated.title);
+    if (oldPath != newPath && QFile::exists(newPath))
+        return tr("A draft with this title already exists.");
+    if (!Tours::SaveDraft(updated))
+        return tr("Could not save the draft.");
+    if (oldPath != newPath && QFile::exists(oldPath) && !QFile::remove(oldPath))
+    {
+        QFile::remove(newPath);
+        return tr("Could not rename the draft file.");
+    }
+    *it = std::move(updated);
+    const auto row = static_cast<int>(std::distance(m_impl->tours.begin(), it));
+    emit dataChanged(index(row), index(row));
+    return {};
+}
+
+bool TourDraftsModel::SelectDraft(qlonglong id)
+{
+    if (std::ranges::find(m_impl->tours, id, &Tours::Tour::id) == m_impl->tours.end())
+        return false;
+    StopRecording();
+    m_impl->editedTourId = id;
+    emit StopsUpdated();
+    emit CurrentTourPathChanged();
+    emit CurrentDistanceChanged();
+    return true;
+}
+
+QVariantMap TourDraftsModel::GetDraftStop(qlonglong id) const
+{
+    const auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return {};
+    const auto it = std::ranges::find(tour->stops, id, &Tours::TourStop::id);
+    if (it == tour->stops.end())
+        return {};
+    return {
+        { "id",          id                 },
+        { "title",       it->title          },
+        { "description", it->description    },
+        { "imageFile",   it->localImagePath },
+        { "audioFile",   it->localAudioPath }
+    };
+}
+
+QString TourDraftsModel::UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile)
+{
+    auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return tr("This draft no longer exists.");
+    auto updated = *tour;
+    auto it = std::ranges::find(updated.stops, id, &Tours::TourStop::id);
+    if (it == updated.stops.end())
+        return tr("This stop no longer exists.");
+    if (title.trimmed().isEmpty())
+        return tr("Enter a stop title.");
+    if (it->localImagePath != imageFile)
+    {
+        const auto hash = Tours::ChosenFileContentHash(imageFile);
+        if (!hash)
+            return tr("Cannot read the selected image.");
+        it->localImagePath = imageFile;
+        it->imageFileHash = *hash;
+    }
+    if (it->localAudioPath != audioFile)
+    {
+        const auto hash = Tours::ChosenFileContentHash(audioFile);
+        if (!hash)
+            return tr("Cannot read the selected audio.");
+        it->localAudioPath = audioFile;
+        it->audioFileHash = *hash;
+    }
+    it->title = title.trimmed();
+    it->description = description;
+    if (!Tours::SaveDraft(updated))
+        return tr("Could not save the stop.");
+    *tour = std::move(updated);
+    emit StopsUpdated();
+    emit dataChanged(index(m_impl->CurrentRow()), index(m_impl->CurrentRow()));
+    return {};
 }
 
 void TourDraftsModel::UpdateTourPath(const QGeoCoordinate & coords)
 {
-    auto & currentTour = m_impl->tours.back();
+    auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return;
+    auto & currentTour = *tour;
     currentTour.tourPath.emplace_back(coords);
 }
 
 void TourDraftsModel::AddPoint(const QGeoCoordinate & coordinate)
 {
-    auto & currentTour = m_impl->tours.back();
+    auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return;
+    auto & currentTour = *tour;
     currentTour.tourPath.emplace_back(coordinate);
     currentTour.distance = StraightPathDistance(currentTour.tourPath);
     EmitCurrentTourPathEdited();
@@ -260,7 +417,10 @@ void TourDraftsModel::AddPoint(const QGeoCoordinate & coordinate)
 
 void TourDraftsModel::RemoveLastPoint()
 {
-    auto & currentTour = m_impl->tours.back();
+    auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return;
+    auto & currentTour = *tour;
     if (currentTour.tourPath.isEmpty())
     {
         if (currentTour.distance != 0.0)
@@ -290,7 +450,9 @@ void TourDraftsModel::RemoveLastPoint()
 
 void TourDraftsModel::EmitCurrentTourPathEdited()
 {
-    const auto row = static_cast<int>(m_impl->tours.size()) - 1;
+    const auto row = m_impl->CurrentRow();
+    if (row < 0)
+        return;
     const auto modelIndex = index(row);
     emit dataChanged(modelIndex, modelIndex);
     emit CurrentDistanceChanged();
@@ -299,13 +461,16 @@ void TourDraftsModel::EmitCurrentTourPathEdited()
 
 QList<QGeoCoordinate> TourDraftsModel::GetTourPath() const
 {
-    const auto & currentTour = m_impl->tours.back();
-    return currentTour.tourPath;
+    const auto * tour = m_impl->CurrentTour();
+    return tour ? tour->tourPath : QList<QGeoCoordinate> {};
 }
 
 QList<QGeoCoordinate> TourDraftsModel::GetCurrentStopCoordinates() const
 {
-    const auto & currentTour = m_impl->tours.back();
+    const auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return {};
+    const auto & currentTour = *tour;
     QList<QGeoCoordinate> coordinates;
     coordinates.reserve(currentTour.stops.size());
     for (const auto & stop : currentTour.stops)
@@ -336,7 +501,8 @@ void TourDraftsModel::CreateNewTour(const QString & title, const QString & descr
     if (!Tours::SaveDraft(newTour))
         return;
 
-    m_impl->tours.emplace_back(newTour);
+    StopRecording();
+    AddTour(newTour);
     emit StopsUpdated();
     emit CurrentTourPathChanged();
     emit CurrentDistanceChanged();
@@ -344,7 +510,10 @@ void TourDraftsModel::CreateNewTour(const QString & title, const QString & descr
 
 void TourDraftsModel::CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate)
 {
-    auto & currentTour = m_impl->tours.back();
+    auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return;
+    auto & currentTour = *tour;
     const auto imageFileHash = Tours::ChosenFileContentHash(imageFile);
     const auto audioFileHash = Tours::ChosenFileContentHash(audioFile);
     if (!imageFileHash)
@@ -393,16 +562,18 @@ void TourDraftsModel::CreateTourStop(const QString & title, const QString & desc
 
 QString TourDraftsModel::GetCurrentStops() const
 {
-    auto & currentTour = m_impl->tours.back();
-    return QString::number(currentTour.stops.size());
+    const auto * tour = m_impl->CurrentTour();
+    return QString::number(tour ? tour->stops.size() : 0);
 }
 
 void TourDraftsModel::StartRecording()
 {
-    m_impl->tours.back().distance = 0;
+    auto * tour = m_impl->CurrentTour();
+    if (!tour)
+        return;
+    auto & currentTour = *tour;
+    currentTour.distance = 0;
     emit CurrentDistanceChanged();
-
-    auto & currentTour = m_impl->tours.back();
     currentTour.tourPath.clear();
     currentTour.tourPath.emplace_back(m_impl->positionSource.Coordinate());
     emit CurrentTourPathChanged();
@@ -426,8 +597,8 @@ void TourDraftsModel::StopRecording()
 
 QString TourDraftsModel::GetDistance()
 {
-    const auto & currentTour = m_impl->tours.back();
-    return TourDraftsModel::tr("%1 %2").arg(QString::number(currentTour.distance, 'f', 0), "m");
+    const auto * tour = m_impl->CurrentTour();
+    return TourDraftsModel::tr("%1 %2").arg(QString::number(tour ? tour->distance : 0, 'f', 0), "m");
 }
 
 void TourDraftsModel::DeleteTourItem(const QModelIndex & index)
@@ -437,9 +608,19 @@ void TourDraftsModel::DeleteTourItem(const QModelIndex & index)
         || index.row() >= m_impl->tours.size())
         return;
 
+    const bool wasCurrent = m_impl->CurrentRow() == index.row();
+    if (wasCurrent)
+        StopRecording();
     beginRemoveRows({}, index.row(), index.row());
     m_impl->tours.erase(m_impl->tours.cbegin() + index.row());
     endRemoveRows();
+    if (wasCurrent)
+    {
+        m_impl->editedTourId = -1;
+        emit StopsUpdated();
+        emit CurrentTourPathChanged();
+        emit CurrentDistanceChanged();
+    }
 }
 
 void TourDraftsModel::UploadAsset(const QUrl & assetFile)

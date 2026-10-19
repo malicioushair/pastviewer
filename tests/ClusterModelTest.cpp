@@ -98,6 +98,26 @@ public:
 		endResetModel();
 	}
 
+	void removeItem(int row)
+	{
+		beginRemoveRows({}, row, row);
+		m_items.erase(m_items.begin() + row);
+		endRemoveRows();
+	}
+
+	void changeCoordinate(int row, const QGeoCoordinate & coordinate)
+	{
+		m_items.at(row).coord = coordinate;
+		emit dataChanged(index(row), index(row), { BaseModel::Coordinate });
+	}
+
+	void replaceItems(std::vector<MockItem> items)
+	{
+		beginResetModel();
+		m_items = std::move(items);
+		endResetModel();
+	}
+
 private:
 	std::vector<MockItem> m_items;
 	int m_zoomLevel;
@@ -249,3 +269,75 @@ TEST_F(ClusterModelTest, InvalidIndex)
 }
 
 #include "ClusterModelTest.moc"
+
+TEST_F(ClusterModelTest, SourceInsertAndRemoveRebuildClusterRowsWithPairedResets)
+{
+    QObject observer;
+    int resetsStarted = 0;
+    int resetsFinished = 0;
+    int forwardedRowSignals = 0;
+    QObject::connect(clusterModel, &QAbstractItemModel::modelAboutToBeReset, &observer, [&] {
+        EXPECT_EQ(resetsStarted, resetsFinished);
+        ++resetsStarted;
+    });
+    QObject::connect(clusterModel, &QAbstractItemModel::modelReset, &observer, [&] {
+        EXPECT_EQ(resetsStarted, resetsFinished + 1);
+        ++resetsFinished;
+        // A view must be able to read every published row immediately.
+        for (int row = 0; row < clusterModel->rowCount(); ++row)
+            EXPECT_TRUE(clusterModel->data(clusterModel->index(row), BaseModel::Coordinate).value<QGeoCoordinate>().isValid());
+    });
+    QObject::connect(clusterModel, &QAbstractItemModel::rowsInserted, &observer, [&] { ++forwardedRowSignals; });
+    QObject::connect(clusterModel, &QAbstractItemModel::rowsRemoved, &observer, [&] { ++forwardedRowSignals; });
+
+    mockModel->addItem(1, QGeoCoordinate(55.7558, 37.6173));
+    mockModel->addItem(2, QGeoCoordinate(55.7558, 37.6173));
+    ASSERT_EQ(clusterModel->rowCount(), 1);
+    EXPECT_EQ(clusterModel->data(clusterModel->index(0), ClusterModel::ClusterCount).toInt(), 2);
+    QPersistentModelIndex oldIndex(clusterModel->index(0));
+    mockModel->removeItem(1);
+    EXPECT_FALSE(oldIndex.isValid());
+    ASSERT_EQ(clusterModel->rowCount(), 1);
+    EXPECT_FALSE(clusterModel->data(clusterModel->index(0), ClusterModel::IsCluster).toBool());
+    EXPECT_EQ(clusterModel->data(clusterModel->index(0), BaseModel::Cid).toInt(), 1);
+    mockModel->removeItem(0);
+    EXPECT_EQ(clusterModel->rowCount(), 0);
+    EXPECT_EQ(resetsStarted, 4);
+    EXPECT_EQ(resetsFinished, 4);
+    EXPECT_EQ(forwardedRowSignals, 0);
+}
+
+TEST_F(ClusterModelTest, SourceResetReplacesNodesBeforeNotifyingViews)
+{
+    mockModel->addItem(1, QGeoCoordinate(55.7558, 37.6173));
+    QObject observer;
+    bool aboutToReset = false;
+    int visibleCid = -1;
+    QObject::connect(clusterModel, &QAbstractItemModel::modelAboutToBeReset, &observer, [&] {
+        aboutToReset = true;
+        EXPECT_EQ(clusterModel->data(clusterModel->index(0), BaseModel::Cid).toInt(), 1);
+    });
+    QObject::connect(clusterModel, &QAbstractItemModel::modelReset, &observer, [&] {
+        EXPECT_TRUE(aboutToReset);
+        visibleCid = clusterModel->data(clusterModel->index(0), BaseModel::Cid).toInt();
+    });
+    mockModel->replaceItems({{99, QGeoCoordinate(48.8566, 2.3522), 2000, 13}});
+    EXPECT_EQ(visibleCid, 99);
+}
+
+TEST_F(ClusterModelTest, SourceCoordinateChangeReclustersWithoutForwardingSourceIndexes)
+{
+    mockModel->addItem(1, QGeoCoordinate(55.7558, 37.6173));
+    mockModel->addItem(2, QGeoCoordinate(55.7558, 37.6173));
+    ASSERT_EQ(clusterModel->rowCount(), 1);
+    QObject observer;
+    int forwardedDataChanges = 0;
+    int resets = 0;
+    QObject::connect(clusterModel, &QAbstractItemModel::dataChanged, &observer, [&] { ++forwardedDataChanges; });
+    QObject::connect(clusterModel, &QAbstractItemModel::modelReset, &observer, [&] { ++resets; });
+    mockModel->changeCoordinate(1, QGeoCoordinate(48.8566, 2.3522));
+    EXPECT_EQ(clusterModel->rowCount(), 2);
+    EXPECT_EQ(clusterModel->rowCount(clusterModel->index(0)), 0);
+    EXPECT_EQ(forwardedDataChanges, 0);
+    EXPECT_EQ(resets, 1);
+}

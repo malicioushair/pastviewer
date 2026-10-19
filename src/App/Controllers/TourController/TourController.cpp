@@ -81,6 +81,31 @@ void TourController::CreateTourStop(const QString & title, const QString & descr
     m_impl->tourDraftsModel.CreateTourStop(title, description, imageFile, audioFile, coordinate);
 }
 
+QVariantMap TourController::GetDraft(qlonglong id) const
+{
+    return m_impl->tourDraftsModel.GetDraft(id);
+}
+
+QString TourController::UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile)
+{
+    return m_impl->tourDraftsModel.UpdateDraftDetails(id, title, description, imageFile);
+}
+
+bool TourController::SelectDraft(qlonglong id)
+{
+    return m_impl->tourDraftsModel.SelectDraft(id);
+}
+
+QVariantMap TourController::GetDraftStop(qlonglong id) const
+{
+    return m_impl->tourDraftsModel.GetDraftStop(id);
+}
+
+QString TourController::UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile)
+{
+    return m_impl->tourDraftsModel.UpdateDraftStop(id, title, description, imageFile, audioFile);
+}
+
 void TourController::AddPoint(const QGeoCoordinate & coordinate)
 {
     m_impl->tourDraftsModel.AddPoint(coordinate);
@@ -108,19 +133,7 @@ QString TourController::GetCurrentStops() const
 
 QVariantList TourController::GetPlacedStopMarkers() const
 {
-    const auto coordinates = m_impl->tourDraftsModel.GetCurrentStopCoordinates();
-    QVariantList markers;
-    markers.reserve(coordinates.size());
-    for (auto i = 0; i < coordinates.size(); ++i)
-    {
-        const auto & coordinate = coordinates.at(i);
-        markers.append(QVariantMap {
-            { "latitude",  coordinate.latitude()   },
-            { "longitude", coordinate.longitude()  },
-            { "number",    static_cast<int>(i + 1) },
-        });
-    }
-    return markers;
+    return m_impl->tourDraftsModel.GetPlacedStopMarkers();
 }
 
 QList<QGeoCoordinate> TourController::GetTourPath() const

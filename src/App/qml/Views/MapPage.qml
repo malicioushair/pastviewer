@@ -385,6 +385,7 @@ Item {
 
                         readonly property int itemSize: 20
                         readonly property int stopNumber: modelData.number
+                        readonly property var stopId: modelData.id
 
                         z: 1
                         coordinate: QtPositioning.coordinate(modelData.latitude, modelData.longitude)
@@ -401,6 +402,9 @@ Item {
                             Label {
                                 anchors.centerIn: parent
                                 text: stopMarkerID.stopNumber
+                            }
+                            TapHandler {
+                                onTapped: mainWindowID.openDraftStopEditor(stopMarkerID.stopId)
                             }
                         }
                     }
@@ -660,6 +664,7 @@ Item {
                 id: placeTourID
 
                 PlaceTourControls {
+                    editingDraft: mainWindowID.editingDraftId !== null
                     onAddPointRequested: TourController.AddPoint(mapID.center)
                     onAddStopRequested: mainWindowID.openAddTourStopDescription(mapID.center)
                     onFinishRequested: mainWindowID.finishPlacedTour()

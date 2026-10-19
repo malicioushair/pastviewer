@@ -54,6 +54,9 @@ public slots:
 	void OnViewportChanged(const QGeoRectangle & viewport);
 
 private:
+	void BeginSourceChange();
+	void EndSourceChange();
+
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
 };

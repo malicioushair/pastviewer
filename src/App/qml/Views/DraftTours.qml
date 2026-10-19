@@ -36,6 +36,7 @@ BasePage {
 
                     height: 40
                     text: model.Title
+                    onClicked: mainWindowID.openDraftEditor(model.Id)
                 }
 
                 StyledButton {
@@ -56,11 +57,5 @@ BasePage {
             }
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout. preferredHeight: 50
-
-            color: "red"
-        }
     }
 }

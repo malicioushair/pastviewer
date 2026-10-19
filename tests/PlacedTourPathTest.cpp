@@ -276,3 +276,65 @@ TEST_F(PlacedTourPath, RemoveLastPointOnEmptyPathLeavesPathEmptyAndDistanceZero)
 	EXPECT_DOUBLE_EQ(Distance(*model), 0.0);
 	EXPECT_TRUE(CurrentTour(*model).stops.isEmpty());
 }
+
+TEST_F(PlacedTourPath, EditingAnOlderDraftPreservesOtherDraftsAndSurvivesReload)
+{
+    const QGeoCoordinate first { 52.3676, 4.9041 };
+    const QGeoCoordinate second { 52.3702, 4.8952 };
+    model->AddTour({ .id = 11, .title = QStringLiteral("Older"),
+        .distance = first.distanceTo(second), .tourPath = { first, second },
+        .stops = { Stop(7, QStringLiteral("Square"), second) } });
+    model->AddTour({ .id = 12, .title = QStringLiteral("Newer"), .tourPath = { first } });
+    ASSERT_TRUE(model->SelectDraft(11));
+    EXPECT_TRUE(model->UpdateDraftDetails(11, QStringLiteral("Renamed"), QStringLiteral("New description"), {}).isEmpty());
+    EXPECT_TRUE(model->UpdateDraftStop(7, QStringLiteral("New stop title"), QStringLiteral("Stop description"), {}, {}).isEmpty());
+    const QGeoCoordinate third { 52.3731, 4.8922 };
+    model->AddPoint(third);
+    const auto drafts = model->GetTourDrafts();
+    ASSERT_EQ(drafts.size(), 2);
+    EXPECT_EQ(drafts[0].title, QStringLiteral("Renamed"));
+    EXPECT_EQ(drafts[0].stops[0].id, 7);
+    EXPECT_EQ(drafts[0].stops[0].coords, second);
+    EXPECT_EQ(drafts[0].stops[0].title, QStringLiteral("New stop title"));
+    ExpectPath(drafts[1].tourPath, { first });
+    EXPECT_EQ(drafts[1].title, QStringLiteral("Newer"));
+    EXPECT_FALSE(QFile::exists(Tours::GetDraftFileLocation(QStringLiteral("Older"))));
+
+    TourDraftsModel reloaded(*position);
+    ASSERT_TRUE(reloaded.SelectDraft(11));
+    ExpectPath(reloaded.GetTourPath(), { first, second, third });
+    EXPECT_EQ(reloaded.GetDraft(11)["description"].toString(), QStringLiteral("New description"));
+    EXPECT_EQ(reloaded.GetDraftStop(7)["title"].toString(), QStringLiteral("New stop title"));
+    EXPECT_EQ(reloaded.GetPlacedStopMarkers()[0].toMap()["id"].toLongLong(), 7);
+    EXPECT_NEAR(reloaded.GetTourDrafts()[0].distance, first.distanceTo(second) + second.distanceTo(third), 0.01);
+    reloaded.Update();
+    EXPECT_EQ(reloaded.GetCurrentStopCoordinates().size(), 1);
+}
+
+TEST_F(PlacedTourPath, FailedDetailEditsLeaveDraftAndOtherFilesUntouched)
+{
+    model->CreateNewTour(QStringLiteral("First"), QStringLiteral("Original"), {});
+    model->CreateNewTour(QStringLiteral("Second"), QStringLiteral("Other"), {});
+    const auto firstId = model->GetTourDrafts().front().id;
+    EXPECT_FALSE(model->UpdateDraftDetails(firstId, QStringLiteral("Second"), QStringLiteral("Changed"), {}).isEmpty());
+    EXPECT_FALSE(model->UpdateDraftDetails(firstId, QStringLiteral("../escape"), {}, {}).isEmpty());
+    EXPECT_FALSE(model->UpdateDraftDetails(firstId, QStringLiteral("First"), {}, QUrl::fromLocalFile("/missing-cover.png")).isEmpty());
+    EXPECT_EQ(model->GetDraft(firstId)["title"].toString(), QStringLiteral("First"));
+    EXPECT_EQ(model->GetDraft(firstId)["description"].toString(), QStringLiteral("Original"));
+    EXPECT_TRUE(QFile::exists(Tours::GetDraftFileLocation(QStringLiteral("Second"))));
+    EXPECT_FALSE(model->SelectDraft(999));
+    EXPECT_FALSE(model->UpdateDraftDetails(999, QStringLiteral("Missing"), {}, {}).isEmpty());
+}
+
+TEST_F(PlacedTourPath, EmptyOrDeletedSelectionExposesNoStaleMapData)
+{
+    EXPECT_TRUE(model->GetTourPath().isEmpty());
+    EXPECT_TRUE(model->GetPlacedStopMarkers().isEmpty());
+    model->CreateNewTour(QStringLiteral("Disposable"), {}, {});
+    model->AddPoint(QGeoCoordinate(52.3676, 4.9041));
+    ASSERT_TRUE(model->setData(model->index(0), true, TourDraftsModel::Delete));
+    EXPECT_TRUE(model->GetTourPath().isEmpty());
+    EXPECT_TRUE(model->GetPlacedStopMarkers().isEmpty());
+    model->AddPoint(QGeoCoordinate(52.3702, 4.8952));
+    EXPECT_EQ(model->rowCount(), 0);
+}

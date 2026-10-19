@@ -93,7 +93,8 @@ QPointF GeoToScreenCoords(const QGeoRectangle & viewport, int zoomLevel, const Q
 {
 	const auto worldSize = WorldSizeForZoom(zoomLevel);
 
-	auto topLeft = GeoToWorldPx(viewport.topLeft(), zoomLevel);
+	// Source changes can arrive before the map supplies its first viewport.
+	auto topLeft = GeoToWorldPx(viewport.isValid() ? viewport.topLeft() : QGeoCoordinate(0, 0), zoomLevel);
 	auto currentPoint = GeoToWorldPx(geoCoord, zoomLevel);
 
 	currentPoint.setX(AlignWrappedX(currentPoint.x(), topLeft.x(), worldSize));
@@ -298,6 +299,7 @@ struct ClusterModel::Impl
 	QAbstractItemModel * sourceModel;
 	std::vector<Node> nodes;
 	QGeoRectangle viewport;
+	int sourceChangeDepth { 0 };
 };
 
 ClusterModel::ClusterModel(QAbstractItemModel * sourceModel, QObject * parent)
@@ -305,10 +307,24 @@ ClusterModel::ClusterModel(QAbstractItemModel * sourceModel, QObject * parent)
 	, m_impl(std::make_unique<Impl>(sourceModel))
 
 {
-	connect(m_impl->sourceModel, &QAbstractItemModel::modelReset, this, &ClusterModel::modelReset);
-	connect(m_impl->sourceModel, &QAbstractItemModel::rowsInserted, this, &ClusterModel::rowsInserted);
-	connect(m_impl->sourceModel, &QAbstractItemModel::rowsRemoved, this, &ClusterModel::rowsRemoved);
-	connect(m_impl->sourceModel, &QAbstractItemModel::dataChanged, this, &ClusterModel::dataChanged);
+	// Source rows are not cluster rows. Keep our reset open while source indexes
+	// change, then rebuild the nodes before exposing the new model to views.
+	connect(sourceModel, &QAbstractItemModel::modelAboutToBeReset, this, &ClusterModel::BeginSourceChange);
+	connect(sourceModel, &QAbstractItemModel::modelReset, this, &ClusterModel::EndSourceChange);
+	connect(sourceModel, &QAbstractItemModel::rowsAboutToBeInserted, this, &ClusterModel::BeginSourceChange);
+	connect(sourceModel, &QAbstractItemModel::rowsInserted, this, &ClusterModel::EndSourceChange);
+	connect(sourceModel, &QAbstractItemModel::rowsAboutToBeRemoved, this, &ClusterModel::BeginSourceChange);
+	connect(sourceModel, &QAbstractItemModel::rowsRemoved, this, &ClusterModel::EndSourceChange);
+	connect(sourceModel, &QAbstractItemModel::rowsAboutToBeMoved, this, &ClusterModel::BeginSourceChange);
+	connect(sourceModel, &QAbstractItemModel::rowsMoved, this, &ClusterModel::EndSourceChange);
+	connect(sourceModel, &QAbstractItemModel::layoutAboutToBeChanged, this, &ClusterModel::BeginSourceChange);
+	connect(sourceModel, &QAbstractItemModel::layoutChanged, this, &ClusterModel::EndSourceChange);
+	connect(sourceModel, &QAbstractItemModel::dataChanged, this, [this] {
+		if (m_impl->sourceChangeDepth != 0)
+			return;
+		BeginSourceChange();
+		EndSourceChange();
+	});
 
 	connect(this, &ClusterModel::rowsInserted, this, [this] { emit CountChanged(); });
 	connect(this, &ClusterModel::rowsRemoved, this, [this] { emit CountChanged(); });
@@ -321,9 +337,24 @@ ClusterModel::ClusterModel(QAbstractItemModel * sourceModel, QObject * parent)
 
 ClusterModel::~ClusterModel() = default;
 
+void ClusterModel::BeginSourceChange()
+{
+	if (m_impl->sourceChangeDepth++ == 0)
+		beginResetModel();
+}
+
+void ClusterModel::EndSourceChange()
+{
+	if (--m_impl->sourceChangeDepth == 0)
+	{
+		m_impl->nodes = BuildClusters();
+		endResetModel();
+	}
+}
+
 int ClusterModel::rowCount(const QModelIndex & parent) const
 {
-	return static_cast<int>(m_impl->nodes.size());
+	return parent.isValid() ? 0 : static_cast<int>(m_impl->nodes.size());
 }
 
 QVariant ClusterModel::data(const QModelIndex & index, int role) const

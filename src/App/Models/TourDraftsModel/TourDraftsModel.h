@@ -52,6 +52,12 @@ public:
 	void Update();
 	std::vector<Tours::Tour> GetTourDrafts() const;
 	void AddTour(const Tours::Tour & tour);
+    QVariantList GetPlacedStopMarkers() const;
+    QVariantMap GetDraft(qlonglong id) const;
+    QString UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile);
+    bool SelectDraft(qlonglong id);
+    QVariantMap GetDraftStop(qlonglong id) const;
+    QString UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
     void UpdateTourPath(const QGeoCoordinate & coords);
     void AddPoint(const QGeoCoordinate & coordinate);
     void RemoveLastPoint();

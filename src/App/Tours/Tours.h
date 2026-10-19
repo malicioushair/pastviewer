@@ -8,6 +8,7 @@
 #include <QGeoCoordinate>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QSaveFile>
 #include <QStandardPaths>
 #include <QString>
 #include <QUrl>
