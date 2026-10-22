@@ -59,7 +59,7 @@ qt_add_executable(${PROJECT_NAME} ${SOURCES} ${QT_RESOURCES})
 
 if(IOS)
     add_library(PastViewerStoreKitBridge STATIC
-        "${CMAKE_CURRENT_LIST_DIR}/Controllers/GuiController/platform/ios/StoreKitBridge.swift"
+        "${CMAKE_CURRENT_LIST_DIR}/Controllers/PurchaseController/platform/ios/StoreKitBridge.swift"
     )
     set_target_properties(PastViewerStoreKitBridge PROPERTIES
         AUTOMOC OFF
@@ -238,6 +238,7 @@ qt_add_qml_module(${PROJECT_NAME}
         ${REL_QML}
 )
 add_qml_singleton_tooling(TourController)
+add_qml_singleton_tooling(PurchaseController)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/Controllers/GuiController"

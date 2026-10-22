@@ -92,6 +92,8 @@ function(add_qml_singleton_tooling class_name)
     # A source dependency avoids feeding this target back into AUTOMOC.
     set_source_files_properties("${_qmltypes}" PROPERTIES HEADER_FILE_ONLY TRUE SKIP_AUTOGEN TRUE)
     target_sources("${arg_TARGET}" PRIVATE "${_qmltypes}")
+    add_dependencies("${_tooling_target}" "${arg_TARGET}")
+
     if(NOT TARGET all_qmltyperegistrations)
         add_custom_target(all_qmltyperegistrations)
     endif()

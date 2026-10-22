@@ -17,46 +17,36 @@ class GuiController
 	Q_OBJECT
 	QML_ELEMENT
 	QML_SINGLETON
-    NON_COPY_MOVABLE(GuiController)
+	NON_COPY_MOVABLE(GuiController)
 
-    Q_PROPERTY(QVariantList tipProducts READ TipProducts NOTIFY tipProductsChanged)
-    Q_PROPERTY(bool tipProductsLoading READ TipProductsLoading NOTIFY tipProductsLoadingChanged)
-    Q_PROPERTY(bool tipPurchaseInProgress READ TipPurchaseInProgress NOTIFY tipPurchaseInProgressChanged)
-    Q_PROPERTY(bool isAdmin READ GetIsAdmin WRITE SetIsAdmin NOTIFY isAdminChanged)
+	Q_PROPERTY(bool isAdmin READ GetIsAdmin WRITE SetIsAdmin NOTIFY isAdminChanged)
 
 public:
-    enum class MapMode
-    {
-        Main,
-        TourCreation,
-        DisplayTour,
-        PlaceTour,
-    };
-    Q_ENUM(MapMode)
+	enum class MapMode
+	{
+		Main,
+		TourCreation,
+		DisplayTour,
+		PlaceTour,
+	};
+	Q_ENUM(MapMode)
 
-    enum class TourInfoMode
-    {
-        Info,
-        Edit,
-        Tour,
-    };
-    Q_ENUM(TourInfoMode)
+	enum class TourInfoMode
+	{
+		Info,
+		Edit,
+		Tour,
+	};
+	Q_ENUM(TourInfoMode)
 
 signals:
-    void PermissionGranted(const QPermission & permission);
+	void PermissionGranted(const QPermission & permission);
 
-    void showErrorDialog(const QString & errorMessage);
-    void onboardingReset();
-    void tipsPromptRequested();
-	void tipJarRequested();
-	void tipProductsChanged();
-	void tipProductsLoadingChanged();
-	void tipPurchaseInProgressChanged();
-	void tipPurchaseSucceeded();
-	void tipPurchasePending();
-	void tipOperationFailed();
+	void showErrorDialog(const QString & errorMessage);
+	void onboardingReset();
+	void tipsPromptRequested();
 	void mapModeChanged(MapMode mode);
-    void isAdminChanged(bool value);
+	void isAdminChanged(bool value);
 
 public:
 	static std::unique_ptr<GuiController> Create();
@@ -69,10 +59,6 @@ public:
 	Q_INVOKABLE QString GetAppVersion();
 	Q_INVOKABLE bool ShouldShowChangelog() const;
 	Q_INVOKABLE void MarkChangelogShown();
-	Q_INVOKABLE bool HasTipSupport() const;
-	Q_INVOKABLE void RequestTipFlow();
-	Q_INVOKABLE void LoadTipProducts();
-	Q_INVOKABLE void PurchaseTip(const QString & productId);
 	Q_INVOKABLE bool ShouldShowTipsPrompt();
 	Q_INVOKABLE void NotifyCameraModeLeft();
 	Q_INVOKABLE void MarkTipsPromptShown();
@@ -82,9 +68,6 @@ public:
 	Q_INVOKABLE QString SaveImage(const QQuickItemGrabResult * grabResult);
 	Q_INVOKABLE bool ShareImage();
 	Q_INVOKABLE void ChangeMapMode(MapMode mode);
-	QVariantList TipProducts() const;
-	bool TipProductsLoading() const;
-	bool TipPurchaseInProgress() const;
 
 	Q_INVOKABLE bool IsOnboardingStepCompleted(const QString & key);
 	Q_INVOKABLE void SetOnboardingStepCompleted(const QString & key);
@@ -95,9 +78,9 @@ private:
 	GuiController();
 
 private:
-    void RequestPermission(const QPermission & permission);
-    bool GetIsAdmin() const;
-    void SetIsAdmin(bool value);
+	void RequestPermission(const QPermission & permission);
+	bool GetIsAdmin() const;
+	void SetIsAdmin(bool value);
 
 private:
 	struct Impl;

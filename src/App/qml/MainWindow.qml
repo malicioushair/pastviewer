@@ -6,6 +6,7 @@ import QtPositioning
 import QtQuick.Shapes
 
 import PastViewer 1.0
+import PurchaseController 1.0
 import TourController 1.0
 
 import "ErrorMessageDialog"
@@ -240,7 +241,7 @@ Rectangle {
         anchors.centerIn: Overlay.overlay
 
         onAccepted: {
-            GuiController.RequestTipFlow()
+            PurchaseController.RequestTipFlow()
             if (mainWindowID.hasPendingPrompt())
                 mainWindowID.schedulePromptCheck()
         }
@@ -272,6 +273,15 @@ Rectangle {
 
         function onTipsPromptRequested() {
             mainWindowID.scheduleTipsPrompt()
+        }
+    }
+
+    Connections {
+        target: PurchaseController
+
+        function onShowErrorDialog(message) {
+            errorDialogID.errorMessage = message
+            errorDialogID.open()
         }
 
         function onTipJarRequested() {

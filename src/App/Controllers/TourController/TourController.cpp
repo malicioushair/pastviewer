@@ -17,9 +17,7 @@
 #include <QQmlEngine>
 #include <QRegularExpression>
 #include <QStandardPaths>
-#include <QTimer>
 #include <QVariant>
-
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
 #include "App/Models/AvailableToursModel/AvailableToursModel.h"
 #include "App/Models/TourDraftsModel/TourDraftsModel.h"

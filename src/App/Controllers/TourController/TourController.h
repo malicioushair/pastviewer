@@ -49,8 +49,7 @@ signals:
     void selectedStopChanged(const DisplayTourStop & stop);
 
     // signals into qml
-    void
-    assetUploadFinished();
+    void assetUploadFinished();
 
 public:
 	Q_INVOKABLE void StartRecording();

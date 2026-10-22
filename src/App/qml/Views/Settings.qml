@@ -7,6 +7,7 @@ import "../GuiItems"
 import "Helpers"
 
 import PastViewer
+import PurchaseController
 
 BasePage {
     id: rootID
@@ -161,14 +162,14 @@ BasePage {
             }
 
             SettingWithHint {
-                visible: GuiController.HasTipSupport()
+                visible: PurchaseController.HasTipSupport()
                 description: qsTr("By leaving a tip, you support PastViewer's continued development and keep it FREE")
 
                 StyledButton {
                     id: supportButtonID
 
                     text: qsTr("Support us 💰")
-                    onClicked: GuiController.RequestTipFlow()
+                    onClicked: PurchaseController.RequestTipFlow()
                 }
             }
 
