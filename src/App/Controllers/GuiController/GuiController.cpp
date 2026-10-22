@@ -15,19 +15,19 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStringLiteral>
-#include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
 
-#include "App/Tours/DisplayTours.h"
 #include "glog/logging.h"
 
+#include "App/Tours/DisplayTours.h"
 #include "App/Controllers/GuiController/PhotoNotificationPresenter.h"
 #include "App/Controllers/GuiController/TipPromptTracker.h"
 #include "App/Controllers/GuiController/platform/Logic.h"
 #include "App/Controllers/I18nController/I18nController.h"
 #include "App/Controllers/ModelController/PastViewModelController.h"
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
+#include "App/Controllers/PurchaseController/PurchaseController.h"
 #include "App/Controllers/TourController/TourController.h"
 #include "App/Utils/HoleItem.h"
 #include "App/Utils/PlatformUtils.h"
@@ -45,16 +45,6 @@ constexpr auto LAST_SHOWN_CHANGELOG_VERSION_KEY = "Changelog/LastShownVersion";
 QString AppVersion()
 {
 	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
-}
-
-QStringList NativeTipProductIds()
-{
-#if defined(Q_OS_ANDROID) || defined(Q_OS_APPLE)
-	return QString::fromUtf8(TIP_PRODUCT_IDS)
-		.split(QLatin1Char(','), Qt::SkipEmptyParts);
-#else
-	return {};
-#endif
 }
 
 class HotReloadUrlInterceptor
@@ -110,7 +100,7 @@ struct GuiController::Impl
             QStringLiteral("I18nController"))
     };
     QSettings settings {};
-    TipPromptTracker tipPromptTracker {};
+    TipPromptTracker purchasePromptTracker {};
     QLocationPermission locationPermission { [] {
         QLocationPermission p;
         p.setAccuracy(QLocationPermission::Precise);
@@ -124,10 +114,8 @@ struct GuiController::Impl
         QStringLiteral("PastVuModelController")) };
     std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
     QString lastSavedImagePath {};
-    QVariantList tipProducts {};
     TourController tourController { *pastVuModelController->GetPositionSource(), nullptr };
-    bool tipProductsLoading { false };
-    bool tipPurchaseInProgress { false };
+    PurchaseController purchaseController {};
     bool isAdmin { false };
 
     Impl()
@@ -162,6 +150,7 @@ GuiController::GuiController()
 	s_guiController = this;
 
 	qmlRegisterSingletonInstance("TourController", 1, 0, "TourController", &m_impl->tourController);
+	qmlRegisterSingletonInstance("PurchaseController", 1, 0, "PurchaseController", &m_impl->purchaseController);
 	qmlRegisterType<HoleItem>("PastViewer", 1, 0, "HoleItem");
 	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
 	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
@@ -232,18 +221,17 @@ GuiController::GuiController()
 			});
 	});
 	connect(&m_impl->tourController, &TourController::ImageUploadFailed, this, &GuiController::showErrorDialog);
-
+	m_impl->purchaseController.SetTipPromptTracker(&m_impl->purchasePromptTracker);
 	PlatformDependentLogic::InitializeNotifications([&](int photoId) {
 		if (!m_impl->pastVuModelController)
 			return;
 
 		m_impl->pastVuModelController->SelectPhoto(photoId);
 	});
-	PlatformDependentLogic::InitializeTipPurchases(NativeTipProductIds());
 	RequestPermission(m_impl->locationPermission);
-	requestBackgroundLocationPermission();
-	updateBackgroundLocationTracking();
-	RequestCameraPermission();
+    requestBackgroundLocationPermission();
+    updateBackgroundLocationTracking();
+    RequestCameraPermission();
 }
 
 GuiController::~GuiController() = default;
@@ -303,132 +291,13 @@ void GuiController::MarkChangelogShown()
 	m_impl->settings.setValue(LAST_SHOWN_CHANGELOG_VERSION_KEY, AppVersion());
 }
 
-bool GuiController::HasTipSupport() const
-{
-	return PlatformDependentLogic::SupportsNativeTipPurchases() && !NativeTipProductIds().isEmpty();
-}
-
-void GuiController::RequestTipFlow()
-{
-	if (!PlatformDependentLogic::SupportsNativeTipPurchases())
-		return;
-
-	if (NativeTipProductIds().isEmpty())
-		return;
-
-	m_impl->tipPromptTracker.DisableAutomaticPrompts();
-	emit tipJarRequested();
-}
-
-void GuiController::LoadTipProducts()
-{
-	if (false
-		|| !PlatformDependentLogic::SupportsNativeTipPurchases()
-		|| NativeTipProductIds().isEmpty()
-		|| m_impl->tipProductsLoading
-		|| !m_impl->tipProducts.isEmpty())
-		return;
-
-	m_impl->tipProductsLoading = true;
-	emit tipProductsLoadingChanged();
-
-	const QPointer<GuiController> guard(this);
-	PlatformDependentLogic::LoadTipProducts(
-		NativeTipProductIds(),
-		[guard](QVector<PlatformDependentLogic::TipProduct> products, const QString & error) {
-			if (!guard)
-				return;
-
-			guard->m_impl->tipProductsLoading = false;
-			emit guard->tipProductsLoadingChanged();
-
-			if (!error.isEmpty() || products.isEmpty())
-			{
-				LOG(ERROR) << "Failed to load native tip products: "
-						   << (error.isEmpty() ? "No configured products were returned" : error.toStdString());
-				emit guard->tipOperationFailed();
-				return;
-			}
-
-			QVariantList productValues;
-			productValues.reserve(products.size());
-			for (const auto & product : products)
-			{
-				QVariantMap productValue;
-				productValue.insert(QStringLiteral("id"), product.id);
-				productValue.insert(QStringLiteral("title"), product.title);
-				productValue.insert(QStringLiteral("displayPrice"), product.displayPrice);
-				productValues.push_back(productValue);
-			}
-
-			guard->m_impl->tipProducts = std::move(productValues);
-			emit guard->tipProductsChanged();
-		});
-}
-
-void GuiController::PurchaseTip(const QString & productId)
-{
-	if (false
-		|| !PlatformDependentLogic::SupportsNativeTipPurchases()
-		|| m_impl->tipPurchaseInProgress
-		|| !NativeTipProductIds().contains(productId))
-		return;
-
-	m_impl->tipPurchaseInProgress = true;
-	emit tipPurchaseInProgressChanged();
-
-	const QPointer<GuiController> guard(this);
-	PlatformDependentLogic::PurchaseTip(
-		productId,
-		[guard, productId](PlatformDependentLogic::TipPurchaseResult result, const QString & error) {
-			if (!guard)
-				return;
-
-			guard->m_impl->tipPurchaseInProgress = false;
-			emit guard->tipPurchaseInProgressChanged();
-
-			switch (result)
-			{
-				case PlatformDependentLogic::TipPurchaseResult::Succeeded:
-					LOG(INFO) << "Native tip purchase succeeded: " << productId.toStdString();
-					guard->m_impl->tipPromptTracker.DisableAutomaticPrompts();
-					emit guard->tipPurchaseSucceeded();
-					return;
-				case PlatformDependentLogic::TipPurchaseResult::Cancelled:
-					return;
-				case PlatformDependentLogic::TipPurchaseResult::Pending:
-					emit guard->tipPurchasePending();
-					return;
-				case PlatformDependentLogic::TipPurchaseResult::Failed:
-					LOG(ERROR) << "Native tip purchase failed: " << error.toStdString();
-					emit guard->tipOperationFailed();
-					return;
-			}
-		});
-}
-
-QVariantList GuiController::TipProducts() const
-{
-	return m_impl->tipProducts;
-}
-
-bool GuiController::TipProductsLoading() const
-{
-	return m_impl->tipProductsLoading;
-}
-
-bool GuiController::TipPurchaseInProgress() const
-{
-	return m_impl->tipPurchaseInProgress;
-}
-
 bool GuiController::ShouldShowTipsPrompt()
 {
-	return true
-		&& HasTipSupport()
-		&& IsOnboardingStepCompleted(MAP_ONBOARDING_KEY)
-		&& IsOnboardingStepCompleted(PHOTO_DETAILS_ONBOARDING_KEY)
-		&& m_impl->tipPromptTracker.ShouldShowPrompt(QDateTime::currentDateTimeUtc());
+    return true
+        && m_impl->purchaseController.HasTipSupport()
+        && IsOnboardingStepCompleted(MAP_ONBOARDING_KEY)
+        && IsOnboardingStepCompleted(PHOTO_DETAILS_ONBOARDING_KEY)
+        && m_impl->purchasePromptTracker.ShouldShowPrompt(QDateTime::currentDateTimeUtc());
 }
 
 void GuiController::NotifyCameraModeLeft()
@@ -439,12 +308,12 @@ void GuiController::NotifyCameraModeLeft()
 
 void GuiController::MarkTipsPromptShown()
 {
-	m_impl->tipPromptTracker.MarkPromptShown(QDateTime::currentDateTimeUtc());
+    m_impl->purchasePromptTracker.MarkPromptShown(QDateTime::currentDateTimeUtc());
 }
 
 void GuiController::DismissTipsPrompt()
 {
-	m_impl->tipPromptTracker.MarkPromptDismissed(QDateTime::currentDateTimeUtc());
+    m_impl->purchasePromptTracker.MarkPromptDismissed(QDateTime::currentDateTimeUtc());
 }
 
 bool GuiController::IsOnboardingStepCompleted(const QString & key)
@@ -510,13 +379,13 @@ QString GuiController::SaveImage(const QQuickItemGrabResult * grabResult)
 	}
 
 	m_impl->lastSavedImagePath = filePath;
-	m_impl->tipPromptTracker.RecordSuccessfulRecreation();
-	LOG(INFO) << "Screenshot saved to:" << filePath.toStdString();
+    m_impl->purchasePromptTracker.RecordSuccessfulRecreation();
+    LOG(INFO) << "Screenshot saved to:" << filePath.toStdString();
 
-	if (Utils::IsMobile() && !SaveScreenshotToGallery(filePath))
-		LOG(WARNING) << "Failed to save screenshot to gallery: " << filePath.toStdString();
+    if (Utils::IsMobile() && !SaveScreenshotToGallery(filePath))
+        LOG(WARNING) << "Failed to save screenshot to gallery: " << filePath.toStdString();
 
-	return QUrl::fromLocalFile(filePath).toString();
+    return QUrl::fromLocalFile(filePath).toString();
 }
 
 bool GuiController::ShareImage()
@@ -561,12 +430,12 @@ void GuiController::RequestPermission(const QPermission & permission)
 	}
 }
 
-void PastViewer::GuiController::ChangeMapMode(MapMode mode)
+void GuiController::ChangeMapMode(MapMode mode)
 {
 	emit mapModeChanged(mode);
 }
 
-bool PastViewer::GuiController::GetIsAdmin() const
+bool GuiController::GetIsAdmin() const
 {
     if constexpr (!Utils::IsMobile())
         return true;
@@ -574,7 +443,7 @@ bool PastViewer::GuiController::GetIsAdmin() const
         return m_impl->isAdmin;
 }
 
-void PastViewer::GuiController::SetIsAdmin(bool value)
+void GuiController::SetIsAdmin(bool value)
 {
     m_impl->isAdmin = value;
     emit isAdminChanged(m_impl->isAdmin);

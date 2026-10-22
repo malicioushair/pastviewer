@@ -94,7 +94,7 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
             };
         });
 
-        const auto purchaseInfoObj = itemObj.value("purchaseInfo").toObject();
+        const auto purchaseInfoObj = itemObj.value("purchase").toObject();
         beginResetModel();
         m_impl->tours.push_back({
             .id = itemObj.value("id").toString(),
@@ -107,8 +107,8 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
             .lang = itemObj.value("lang").toString(),
             .purchaseInfo = {
                              .paid = purchaseInfoObj.value("paid").toBool(),
-                             .appleId = purchaseInfoObj.value("appleId").toString(),
-                             .googleId = purchaseInfoObj.value("googleId").toString(),
+                             .appleId = purchaseInfoObj.value("appleProductId").toString(),
+                             .googleId = purchaseInfoObj.value("googleProductId").toString(),
                              },
             .tourPath = tourPath
         });

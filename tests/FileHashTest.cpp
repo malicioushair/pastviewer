@@ -242,9 +242,9 @@ TEST_F(FileHash, ChosenFilesIncludeContentHashesInDraftAndPublishJson)
 	}
 
 	ControllerSession session;
-	session.controller.CreateNewTour(QStringLiteral("DraftHashes"), QStringLiteral("walk"), coverUrl);
+	session.controller.CreateNewTour(QStringLiteral("DraftHashes"), QStringLiteral("walk"), coverUrl, {});
 	session.controller.CreateTourStop(QStringLiteral("Gate"), QStringLiteral("stop"), gateImageUrl, gateAudioUrl);
-	session.controller.CreateNewTour(QStringLiteral("SameBytesOtherName"), QStringLiteral("walk"), bridgeImageUrl);
+	session.controller.CreateNewTour(QStringLiteral("SameBytesOtherName"), QStringLiteral("walk"), bridgeImageUrl, {});
 
 	const auto draft = ReadDraftObject(QStringLiteral("DraftHashes"));
 	EXPECT_EQ(draft.value(QStringLiteral("localImagePath")).toString(), coverUrl.toString());
@@ -299,7 +299,7 @@ TEST_F(FileHash, OmittedFilesUseEmptyHashesAndAreKept)
 	ExpectEmptyHash(neither, QStringLiteral("audioFileHash"));
 
 	ControllerSession session;
-	session.controller.CreateNewTour(QStringLiteral("OmittedDraft"), QStringLiteral("walk"), QUrl());
+	session.controller.CreateNewTour(QStringLiteral("OmittedDraft"), QStringLiteral("walk"), QUrl(), {});
 	session.controller.CreateTourStop(QStringLiteral("ImageOnly"), QStringLiteral("stop"), imageUrl, QUrl());
 
 	const auto draft = ReadDraftObject(QStringLiteral("OmittedDraft"));
@@ -311,7 +311,7 @@ TEST_F(FileHash, OmittedFilesUseEmptyHashesAndAreKept)
 	ExpectContentHash(draftStop, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
 	ExpectEmptyHash(draftStop, QStringLiteral("audioFileHash"));
 
-	session.controller.CreateNewTour(QStringLiteral("AudioOnlyDraft"), QStringLiteral("walk"), imageUrl);
+	session.controller.CreateNewTour(QStringLiteral("AudioOnlyDraft"), QStringLiteral("walk"), imageUrl, {});
 	session.controller.CreateTourStop(QStringLiteral("AudioOnly"), QStringLiteral("stop"), QUrl(), audioUrl);
 	const auto audioDraft = ReadDraftObject(QStringLiteral("AudioOnlyDraft"));
 	ExpectContentHash(audioDraft, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
@@ -337,12 +337,12 @@ TEST_F(FileHash, UnsafeBasenameRejectsDraftAndPublishJson)
 		SCOPED_TRACE(name.toStdString());
 		const auto unsafeUrl = WriteMedia(name, kAbcBytes);
 		const auto title = QStringLiteral("Unsafe-%1").arg(name);
-		session.controller.CreateNewTour(title, QStringLiteral("walk"), unsafeUrl);
+		session.controller.CreateNewTour(title, QStringLiteral("walk"), unsafeUrl, {});
 		EXPECT_FALSE(QFileInfo::exists(DraftPath(title))) << DraftPath(title).toStdString();
 		ExpectPublishRejected(MakeTour(title, unsafeUrl));
 
 		const auto stopTitle = QStringLiteral("Stop-%1").arg(name);
-		session.controller.CreateNewTour(stopTitle, QStringLiteral("walk"), safeCover);
+		session.controller.CreateNewTour(stopTitle, QStringLiteral("walk"), safeCover, {});
 		const auto before = ReadDraftBytes(stopTitle);
 		ASSERT_FALSE(before.isEmpty());
 		session.controller.CreateTourStop(QStringLiteral("BadStop"), QStringLiteral("stop"), safeCover, unsafeUrl);
@@ -354,12 +354,12 @@ TEST_F(FileHash, UnsafeBasenameRejectsDraftAndPublishJson)
 	QUrl emptyBasename(QStringLiteral("file:///"));
 	ASSERT_FALSE(emptyBasename.isEmpty());
 	ASSERT_TRUE(emptyBasename.fileName().isEmpty());
-	session.controller.CreateNewTour(QStringLiteral("EmptyBasename"), QStringLiteral("walk"), emptyBasename);
+	session.controller.CreateNewTour(QStringLiteral("EmptyBasename"), QStringLiteral("walk"), emptyBasename, {});
 	EXPECT_FALSE(QFileInfo::exists(DraftPath(QStringLiteral("EmptyBasename"))));
 	ExpectPublishRejected(MakeTour(QStringLiteral("EmptyBasename"), emptyBasename));
 
 	const auto unsafeAudio = WriteMedia(QStringLiteral("bad audio.mp3"), kNarrationBytes);
-	session.controller.CreateNewTour(QStringLiteral("KeepGoodDraft"), QStringLiteral("walk"), safeCover);
+	session.controller.CreateNewTour(QStringLiteral("KeepGoodDraft"), QStringLiteral("walk"), safeCover, {});
 	const auto goodDraft = ReadDraftBytes(QStringLiteral("KeepGoodDraft"));
 	session.controller.CreateTourStop(QStringLiteral("BadAudio"), QStringLiteral("stop"), safeCover, unsafeAudio);
 	EXPECT_EQ(ReadDraftBytes(QStringLiteral("KeepGoodDraft")), goodDraft);
@@ -380,11 +380,11 @@ TEST_F(FileHash, UnreadableFileRejectsDraftAndPublishJson)
 	ASSERT_EQ(QFileInfo(missingAudio.toLocalFile()).fileName(), QStringLiteral("missing-audio.mp3"));
 
 	ControllerSession session;
-	session.controller.CreateNewTour(QStringLiteral("MissingCover"), QStringLiteral("walk"), missingCover);
+	session.controller.CreateNewTour(QStringLiteral("MissingCover"), QStringLiteral("walk"), missingCover, {});
 	EXPECT_FALSE(QFileInfo::exists(DraftPath(QStringLiteral("MissingCover"))));
 	ExpectPublishRejected(MakeTour(QStringLiteral("MissingCover"), missingCover));
 
-	session.controller.CreateNewTour(QStringLiteral("KeepReadableDraft"), QStringLiteral("walk"), safeCover);
+	session.controller.CreateNewTour(QStringLiteral("KeepReadableDraft"), QStringLiteral("walk"), safeCover, {});
 	const auto before = ReadDraftBytes(QStringLiteral("KeepReadableDraft"));
 	ASSERT_FALSE(before.isEmpty());
 	session.controller.CreateTourStop(QStringLiteral("MissingAudio"), QStringLiteral("stop"), safeCover, missingAudio);

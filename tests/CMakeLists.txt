@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 
 # Find required packages
 find_package(GTest REQUIRED)
-find_package(Qt6 COMPONENTS Core Location Network Positioning REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Location Network Positioning REQUIRED)
 
 # Enable testing
 enable_testing()
@@ -20,6 +20,10 @@ add_executable(PastViewerTests
     PlacedTourPathTest.cpp
     PlacedTourStopTest.cpp
     StopAudioTest.cpp
+    TourPurchaseOwnershipTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/GuiController/platform/mac/Logic.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/PurchaseController/platform/mac/Logic.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/PurchaseController/PurchaseController.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/TourController/TourController.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PositionSourceAdapter.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/AvailableToursModel/AvailableToursModel.cpp
@@ -49,6 +53,7 @@ target_link_libraries(PastViewerTests PRIVATE
     GTest::gtest
     GTest::gtest_main
     Qt6::Core
+    Qt6::Gui
     Qt6::Location
     Qt6::Network
     Qt6::Positioning

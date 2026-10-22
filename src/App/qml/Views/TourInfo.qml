@@ -7,12 +7,17 @@ import "../Helpers"
 import "Helpers"
 
 import PastViewer
+import PurchaseController
 import TourController
 
 BasePage {
     id: rootID
 
     required property var tour
+
+    property bool isOwned: tour.purchaseInfo.paid !== true
+    property bool purchasePending: PurchaseController.IsTourPurchasePending(tour.id)
+    property bool purchaseSucceeded: false
 
     title: qsTr("Tour Info")
 
@@ -44,7 +49,7 @@ BasePage {
 
         highlightSteps: [
             { target: tourInfoPanelID.controlsItem, stepIndex: 1 },
-            { target: startTourButtonID, stepIndex: 2 },
+            { target: unlockTourButtonID.visible ? unlockTourButtonID : startTourButtonID, stepIndex: 2 },
         ]
 
         steps: [
@@ -58,7 +63,9 @@ BasePage {
             },
             {
                 "title": qsTr("Start exploring"),
-                "body": qsTr("Tap Start tour to open the map with this tour's route and stops.")
+                "body": unlockTourButtonID.visible
+                    ? qsTr("Tap Unlock tour to purchase this tour.")
+                    : qsTr("Tap Start tour to open the map with this tour's route and stops.")
             }
         ]
     }
@@ -112,11 +119,80 @@ BasePage {
             Layout.preferredHeight: 50
 
             text: qsTr("Start tour")
+            visible: !unlockTourButtonID.visible
             onClicked: {
                 TourController.currentTour = rootID.tour
                 mainWindowID.toMainPage()
                 GuiController.ChangeMapMode(GuiController.MapMode.DisplayTour)
             }
         }
+
+        Connections {
+            target: PurchaseController
+
+            function onTourPurchaseSucceeded(tourId) {
+                if (rootID.tour.id !== tourId)
+                    return
+
+                rootID.purchasePending = false
+                rootID.purchaseSucceeded = true
+                rootID.isOwned = true
+            }
+
+            function onTourPurchasePending(tourId) {
+                if (rootID.tour.id !== tourId)
+                    return
+
+                rootID.purchasePending = true
+            }
+
+            function onTourPurchasePendingCleared(tourId) {
+                if (rootID.tour.id !== tourId)
+                    return
+
+                rootID.purchasePending = false
+            }
+
+            function onTourOwned(tourId, owned) {
+                if (rootID.tour.id !== tourId)
+                    return
+
+                if (!owned && rootID.purchaseSucceeded)
+                    return
+
+                rootID.isOwned = owned
+                if (owned)
+                    rootID.purchasePending = false
+            }
+        }
+
+        Label {
+            Layout.fillWidth: true
+
+            visible: rootID.purchasePending && !rootID.isOwned
+            text: qsTr("Purchase pending approval.")
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        StyledButton {
+            id: unlockTourButtonID
+
+            Layout.fillWidth: true
+            Layout.preferredHeight: 50
+
+            visible: !rootID.isOwned
+            enabled: !rootID.purchasePending
+            reversedColors: true
+            text: qsTr("Unlock tour")
+            onClicked: {
+                PurchaseController.RequestTourPurchaseFlow(rootID.tour)
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        rootID.purchasePending = PurchaseController.IsTourPurchasePending(rootID.tour.id)
+        PurchaseController.CheckTourOwned(rootID.tour)
     }
 }

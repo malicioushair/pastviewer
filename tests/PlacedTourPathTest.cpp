@@ -174,7 +174,7 @@ TEST_F(PlacedTourPath, NewTourRefreshesExistingObserversOfStopsPathAndDistance)
 		visibleDistance = Distance(*model);
 	});
 
-	model->CreateNewTour(QStringLiteral("New draft"), QStringLiteral("Description"), QUrl());
+	model->CreateNewTour(QStringLiteral("New draft"), QStringLiteral("Description"), QUrl(), {});
 
 	const auto drafts = model->GetTourDrafts();
 	ASSERT_EQ(drafts.size(), std::size_t { 2 });
@@ -313,8 +313,8 @@ TEST_F(PlacedTourPath, EditingAnOlderDraftPreservesOtherDraftsAndSurvivesReload)
 
 TEST_F(PlacedTourPath, FailedDetailEditsLeaveDraftAndOtherFilesUntouched)
 {
-    model->CreateNewTour(QStringLiteral("First"), QStringLiteral("Original"), {});
-    model->CreateNewTour(QStringLiteral("Second"), QStringLiteral("Other"), {});
+    model->CreateNewTour(QStringLiteral("First"), QStringLiteral("Original"), {}, {});
+    model->CreateNewTour(QStringLiteral("Second"), QStringLiteral("Other"), {}, {});
     const auto firstId = model->GetTourDrafts().front().id;
     EXPECT_FALSE(model->UpdateDraftDetails(firstId, QStringLiteral("Second"), QStringLiteral("Changed"), {}).isEmpty());
     EXPECT_FALSE(model->UpdateDraftDetails(firstId, QStringLiteral("../escape"), {}, {}).isEmpty());
@@ -330,7 +330,7 @@ TEST_F(PlacedTourPath, EmptyOrDeletedSelectionExposesNoStaleMapData)
 {
     EXPECT_TRUE(model->GetTourPath().isEmpty());
     EXPECT_TRUE(model->GetPlacedStopMarkers().isEmpty());
-    model->CreateNewTour(QStringLiteral("Disposable"), {}, {});
+    model->CreateNewTour(QStringLiteral("Disposable"), {}, {}, {});
     model->AddPoint(QGeoCoordinate(52.3676, 4.9041));
     ASSERT_TRUE(model->setData(model->index(0), true, TourDraftsModel::Delete));
     EXPECT_TRUE(model->GetTourPath().isEmpty());
