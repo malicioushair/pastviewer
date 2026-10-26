@@ -76,9 +76,10 @@ BasePage {
             FileDialog {
                 id: addImageDialogID
 
-                title: qsTr("Please add an image")
+                title: qsTr("Please add images")
+                fileMode: FileDialog.OpenFiles
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)
-                onAccepted: print("Added:", addImageDialogID.selectedFile) //TourController.UploadAsset(addImageDialogID.selectedFile)
+                onAccepted: print("Added:", addImageDialogID.selectedFiles)
                 onRejected: {
                     console.log("Canceled")
                 }
@@ -95,7 +96,7 @@ BasePage {
             StyledButton {
                 id: addImageButtonID
 
-                text: qsTr("Add image")
+                text: qsTr("Add images")
                 onClicked: addImageDialogID.open()
             }
 
@@ -103,8 +104,11 @@ BasePage {
                 StyledButton {
                     id: uploadImageButtonID
 
-                    text: qsTr("Upload Image")
-                    onClicked: TourController.UploadAsset(addImageDialogID.selectedFile)
+                    text: qsTr("Upload Images")
+                    onClicked: {
+                        for (let i = 0; i < addImageDialogID.selectedFiles.length; ++i)
+                            TourController.UploadAsset(addImageDialogID.selectedFiles[i])
+                    }
                 }
                 Rectangle {
                     id: uploadImageIndicatorID
@@ -167,10 +171,11 @@ BasePage {
                 StyledButton {
                     text: qsTr("Create")
                     onClicked: {
+                        const images = addImageDialogID.selectedFiles
                         if (rootID.placedStop)
-                            TourController.CreateTourStop(titleTextAreaID.text, descriptionTextAreaID.text, addImageDialogID.selectedFile, addAudioDialogID.selectedFile, rootID.stopCoordinate)
+                            TourController.CreateTourStop(titleTextAreaID.text, descriptionTextAreaID.text, images, addAudioDialogID.selectedFile, rootID.stopCoordinate)
                         else
-                            TourController.CreateTourStop(titleTextAreaID.text, descriptionTextAreaID.text, addImageDialogID.selectedFile, addAudioDialogID.selectedFile)
+                            TourController.CreateTourStop(titleTextAreaID.text, descriptionTextAreaID.text, images, addAudioDialogID.selectedFile)
                         rootID.StackView.view.pop()
                     }
                 }

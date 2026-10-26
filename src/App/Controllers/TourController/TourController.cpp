@@ -40,7 +40,7 @@ TourController::TourController(const PositionSourceAdapter & positionSource, QOb
 {
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::CurrentDistanceChanged, this, &TourController::DistanceChanged);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::CurrentTourPathChanged, this, &TourController::TourPathChanged);
-    connect(&m_impl->tourDraftsModel, &TourDraftsModel::AssetUploadFinished, this, &TourController::assetUploadFinished);
+    connect(&m_impl->tourDraftsModel, &TourDraftsModel::AssetsUploadFinished, this, &TourController::assetUploadFinished);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::ImageUploadFailed, this, &TourController::ImageUploadFailed);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::StopsUpdated, this, &TourController::CurrentStopsChanged);
     connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::SelectedStopTitleChanged, Qt::QueuedConnection);
@@ -74,9 +74,9 @@ void TourController::CreateNewTour(const QString & title, const QString & descri
     m_impl->tourDraftsModel.CreateNewTour(title, description, imageFile, tourLang);
 }
 
-void TourController::CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate)
+void TourController::CreateTourStop(const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile, const QGeoCoordinate & coordinate)
 {
-    m_impl->tourDraftsModel.CreateTourStop(title, description, imageFile, audioFile, coordinate);
+    m_impl->tourDraftsModel.CreateTourStop(title, description, imageFiles, audioFile, coordinate);
 }
 
 QVariantMap TourController::GetDraft(qlonglong id) const
@@ -99,9 +99,9 @@ QVariantMap TourController::GetDraftStop(qlonglong id) const
     return m_impl->tourDraftsModel.GetDraftStop(id);
 }
 
-QString TourController::UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile)
+QString TourController::UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile)
 {
-    return m_impl->tourDraftsModel.UpdateDraftStop(id, title, description, imageFile, audioFile);
+    return m_impl->tourDraftsModel.UpdateDraftStop(id, title, description, imageFiles, audioFile);
 }
 
 void TourController::AddPoint(const QGeoCoordinate & coordinate)
@@ -152,9 +152,9 @@ QAbstractListModel * TourController::GetTourStopsModel() const
     return &m_impl->tourStopsModel;
 }
 
-void TourController::UploadAsset(const QUrl & assetFile)
+void TourController::UploadAsset(const QList<QUrl> & assetFiles)
 {
-    m_impl->tourDraftsModel.UploadAsset(assetFile);
+    m_impl->tourDraftsModel.UploadAsset(assetFiles);
 }
 
 QString TourController::GetSelectedStopTitle() const

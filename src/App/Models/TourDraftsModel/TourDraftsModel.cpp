@@ -63,6 +63,7 @@ struct TourDraftsModel::Impl
     QTimer timer {};
     std::vector<Tours::Tour> tours {};
     int64_t editedTourId { -1 };
+    int uploadCounter { 0 };
 
     int CurrentRow() const
     {
@@ -156,11 +157,22 @@ bool TourDraftsModel::setData(const QModelIndex & index, const QVariant & value,
         }
         case Publish:
         {
+            if (!item.localImagePath.isEmpty())
+                UploadAsset({ item.localImagePath });
+            for (const auto & stop : item.stops)
+            {
+                for (const auto & imagePath : stop.localImagePaths)
+                    if (!imagePath.isEmpty())
+                        UploadAsset({ imagePath });
+                if (!stop.localAudioPath.isEmpty())
+                    UploadAsset({ stop.localAudioPath });
+            }
+
             QUrl url("https://www.pastviewer.com/api/v1/admin/tours");
             QNetworkRequest request(url);
             request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
             request.setRawHeader("X-Admin-Token", ADMIN_TOKEN);
-            const auto payload = QJsonDocument(Tours::TourToJson(item, /*forPublish=*/true))
+            const auto payload = QJsonDocument(Tours::TourToJson(item))
                                      .toJson(QJsonDocument::Compact);
 
             auto * reply = m_impl->networkManager.post(request, payload);
@@ -230,18 +242,26 @@ void TourDraftsModel::Update()
         const auto stops = json["stops"].toArray();
         std::ranges::transform(stops, std::back_inserter(tour.stops), [](decltype(stops)::const_reference value) {
 			const auto parts = value["coords"].toString().split(',');
-			return Tours::TourStop {
+            QList<QUrl> localImagePaths;
+            QStringList imageFileHashes;
+            for (const auto & pathValue : value["localImagePaths"].toArray())
+                localImagePaths.append(QUrl(pathValue.toString()));
+            for (const auto & hashValue : value["imageFileHashes"].toArray())
+                imageFileHashes.append(hashValue.toString());
+            return Tours::TourStop {
 #define PROPERTY(NAME) .NAME = value[#NAME]
-				PROPERTY(id).toInt(),
-				PROPERTY(title).toString(),
-				PROPERTY(description).toString(),
-				PROPERTY(localImagePath).toString(),
-				PROPERTY(imageFileHash).toString(),
-				PROPERTY(localAudioPath).toString(),
-				PROPERTY(audioFileHash).toString(),
+                PROPERTY(id).toInt(),
+                PROPERTY(title).toString(),
+                PROPERTY(description).toString(),
 #undef PROPERTY
-				.coords = QGeoCoordinate(parts.value(0).toDouble(), parts.value(1).toDouble()),
-			};
+                .localImagePaths = localImagePaths,
+                .imageFileHashes = imageFileHashes,
+#define PROPERTY(NAME) .NAME = value[#NAME]
+                PROPERTY(localAudioPath).toString(),
+                PROPERTY(audioFileHash).toString(),
+#undef PROPERTY
+                .coords = QGeoCoordinate(parts.value(0).toDouble(), parts.value(1).toDouble()),
+            };
 		});
 		if (std::ranges::none_of(m_impl->tours, [&](const Tours::Tour & item) { return item.id == tour.id; }))
 		{
@@ -350,16 +370,19 @@ QVariantMap TourDraftsModel::GetDraftStop(qlonglong id) const
     const auto it = std::ranges::find(tour->stops, id, &Tours::TourStop::id);
     if (it == tour->stops.end())
         return {};
+    QVariantList imageFiles;
+    for (const auto & path : it->localImagePaths)
+        imageFiles.append(path);
     return {
         { "id",          id                 },
         { "title",       it->title          },
         { "description", it->description    },
-        { "imageFile",   it->localImagePath },
+        { "imageFiles",  imageFiles         },
         { "audioFile",   it->localAudioPath }
     };
 }
 
-QString TourDraftsModel::UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile)
+QString TourDraftsModel::UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile)
 {
     auto * tour = m_impl->CurrentTour();
     if (!tour)
@@ -370,13 +393,19 @@ QString TourDraftsModel::UpdateDraftStop(qlonglong id, const QString & title, co
         return tr("This stop no longer exists.");
     if (title.trimmed().isEmpty())
         return tr("Enter a stop title.");
-    if (it->localImagePath != imageFile)
+    if (it->localImagePaths != imageFiles)
     {
-        const auto hash = Tours::ChosenFileContentHash(imageFile);
-        if (!hash)
-            return tr("Cannot read the selected image.");
-        it->localImagePath = imageFile;
-        it->imageFileHash = *hash;
+        QStringList hashes;
+        hashes.reserve(imageFiles.size());
+        for (const auto & imageFile : imageFiles)
+        {
+            const auto hash = Tours::ChosenFileContentHash(imageFile);
+            if (!hash)
+                return tr("Cannot read the selected image.");
+            hashes.append(*hash);
+        }
+        it->localImagePaths = imageFiles;
+        it->imageFileHashes = hashes;
     }
     if (it->localAudioPath != audioFile)
     {
@@ -510,51 +539,56 @@ void TourDraftsModel::CreateNewTour(const QString & title, const QString & descr
     emit CurrentDistanceChanged();
 }
 
-void TourDraftsModel::CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate)
+void TourDraftsModel::CreateTourStop(const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile, const QGeoCoordinate & coordinate)
 {
-    auto * tour = m_impl->CurrentTour();
-    if (!tour)
+    auto * currentTour = m_impl->CurrentTour();
+    if (!currentTour)
         return;
-    auto & currentTour = *tour;
-    const auto imageFileHash = Tours::ChosenFileContentHash(imageFile);
-    const auto audioFileHash = Tours::ChosenFileContentHash(audioFile);
-    if (!imageFileHash)
+    QStringList imageFileHashes;
+    imageFileHashes.reserve(imageFiles.size());
+    for (const auto & imageFile : imageFiles)
     {
-        LOG(ERROR) << std::format("Cannot read file: {}", imageFile.path().toStdString());
-        return;
+        const auto imageFileHash = Tours::ChosenFileContentHash(imageFile);
+        if (!imageFileHash)
+        {
+            LOG(ERROR) << std::format("Cannot read file: {}", imageFile.path().toStdString());
+            return;
+        }
+        imageFileHashes.append(imageFileHash.value());
     }
+    const auto audioFileHash = Tours::ChosenFileContentHash(audioFile);
     if (!audioFileHash)
     {
         LOG(ERROR) << std::format("Cannot read file: {}", audioFile.path().toStdString());
         return;
     }
 
-    const auto newStopId = currentTour.stops.isEmpty() ? 0 : currentTour.stops.last().id + 1;
+    const auto newStopId = currentTour->stops.isEmpty() ? 0 : currentTour->stops.last().id + 1;
     const Tours::TourStop tourStop {
         .id = newStopId,
         .title = title,
         .description = description,
-        .localImagePath = imageFile,
-        .imageFileHash = imageFileHash.value(),
+        .localImagePaths = imageFiles,
+        .imageFileHashes = imageFileHashes,
         .localAudioPath = audioFile,
         .audioFileHash = audioFileHash.value(),
         .coords = coordinate.isValid() ? coordinate : m_impl->positionSource.Coordinate()
     };
-    currentTour.stops.emplace_back(tourStop);
+    currentTour->stops.emplace_back(tourStop);
 
     auto appendedToPath { false };
     if (coordinate.isValid())
     {
-        const auto isSameAsLast = !currentTour.tourPath.isEmpty() && currentTour.tourPath.last() == coordinate;
+        const auto isSameAsLast = !currentTour->tourPath.isEmpty() && currentTour->tourPath.last() == coordinate;
         if (!isSameAsLast)
         {
-            currentTour.tourPath.emplace_back(coordinate);
-            currentTour.distance = StraightPathDistance(currentTour.tourPath);
+            currentTour->tourPath.emplace_back(coordinate);
+            currentTour->distance = StraightPathDistance(currentTour->tourPath);
             appendedToPath = true;
         }
     }
 
-    if (!SaveDraft(currentTour))
+    if (!SaveDraft(*currentTour))
         return;
 
     emit StopsUpdated();
@@ -625,68 +659,73 @@ void TourDraftsModel::DeleteTourItem(const QModelIndex & index)
     }
 }
 
-void TourDraftsModel::UploadAsset(const QUrl & assetFile)
+void TourDraftsModel::UploadAsset(const QList<QUrl> & assetFiles)
 {
-    auto multipart = std::make_unique<QHttpMultiPart>(QHttpMultiPart::FormDataType);
-    auto * file = new QFile(assetFile.toLocalFile(), multipart.get());
-    if (file->fileName().isEmpty())
-        return;
-
-    if (!file->open(QIODevice::ReadOnly))
+    m_impl->uploadCounter = 0;
+    for (const auto & assetFile : assetFiles)
     {
-        emit ImageUploadFailed(file->errorString());
-        return;
-    }
+        auto multipart = std::make_unique<QHttpMultiPart>(QHttpMultiPart::FormDataType);
+        auto * file = new QFile(assetFile.toLocalFile(), multipart.get());
+        if (file->fileName().isEmpty())
+            return;
 
-    const auto mimeType = QMimeDatabase().mimeTypeForFile(file->fileName(), QMimeDatabase::MatchContent).name();
-    if (!mimeType.startsWith("image/") && !mimeType.startsWith("audio/"))
-    {
-        emit ImageUploadFailed(tr("The selected file is not an image or audio."));
-        return;
-    }
-
-    const auto assetType = mimeType.startsWith("image/") ? "image"
-                         : mimeType.startsWith("audio/")
-                             ? "audio"
-                             : "";
-    QHttpPart part;
-    part.setHeader(QNetworkRequest::ContentDispositionHeader, QStringLiteral("form-data; name=\"file\"; filename=\"%1\"").arg(assetFile.fileName()));
-    part.setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
-    part.setBodyDevice(file);
-    multipart->append(part);
-
-    if (const auto imageFileHash = Tours::ChosenFileContentHash(assetFile))
-    {
-        QHttpPart hashPart;
-        hashPart.setHeader(QNetworkRequest::ContentDispositionHeader, QStringLiteral("form-data; name=\"%1FileHash\"").arg(assetType));
-        hashPart.setBody(imageFileHash->toUtf8());
-        multipart->append(hashPart);
-    }
-
-    QNetworkRequest request(QUrl("https://www.pastviewer.com/api/v1/admin/assets"));
-    request.setRawHeader("X-Admin-Token", ADMIN_TOKEN);
-    request.setRawHeader("X-Asset-Kind", assetType);
-    auto * reply = m_impl->networkManager.post(request, multipart.get());
-    multipart.release()->setParent(reply);
-    connect(reply, &QNetworkReply::finished, this, [&, reply] {
-        if (reply->error() != QNetworkReply::NoError)
+        if (!file->open(QIODevice::ReadOnly))
         {
-            LOG(ERROR) << reply->errorString().toStdString();
-            emit ImageUploadFailed(reply->errorString());
+            emit ImageUploadFailed(file->errorString());
             return;
         }
 
-        QJsonParseError parseError;
-        const auto document = QJsonDocument::fromJson(reply->readAll(), &parseError);
-        if (false
-            || reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 201
-            || parseError.error != QJsonParseError::NoError || !document.isObject())
+        const auto mimeType = QMimeDatabase().mimeTypeForFile(file->fileName(), QMimeDatabase::MatchContent).name();
+        if (!mimeType.startsWith("image/") && !mimeType.startsWith("audio/"))
         {
-            emit ImageUploadFailed(tr("The server returned an invalid image upload response."));
+            emit ImageUploadFailed(tr("The selected file is not an image or audio."));
             return;
         }
 
-        emit AssetUploadFinished();
-        reply->deleteLater();
-    });
+        const auto assetType = mimeType.startsWith("image/") ? "image"
+                             : mimeType.startsWith("audio/")
+                                 ? "audio"
+                                 : "";
+        QHttpPart part;
+        part.setHeader(QNetworkRequest::ContentDispositionHeader, QStringLiteral("form-data; name=\"file\"; filename=\"%1\"").arg(assetFile.fileName()));
+        part.setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
+        part.setBodyDevice(file);
+        multipart->append(part);
+
+        if (const auto imageFileHash = Tours::ChosenFileContentHash(assetFile))
+        {
+            QHttpPart hashPart;
+            hashPart.setHeader(QNetworkRequest::ContentDispositionHeader, QStringLiteral("form-data; name=\"%1FileHash\"").arg(assetType));
+            hashPart.setBody(imageFileHash->toUtf8());
+            multipart->append(hashPart);
+        }
+
+        QNetworkRequest request(QUrl("https://www.pastviewer.com/api/v1/admin/assets"));
+        request.setRawHeader("X-Admin-Token", ADMIN_TOKEN);
+        request.setRawHeader("X-Asset-Kind", assetType);
+        auto * reply = m_impl->networkManager.post(request, multipart.get());
+        multipart.release()->setParent(reply);
+        connect(reply, &QNetworkReply::finished, this, [&, reply] {
+            if (reply->error() != QNetworkReply::NoError)
+            {
+                LOG(ERROR) << reply->errorString().toStdString();
+                emit ImageUploadFailed(reply->errorString());
+                return;
+            }
+
+            QJsonParseError parseError;
+            const auto document = QJsonDocument::fromJson(reply->readAll(), &parseError);
+            if (false
+                || reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 201
+                || parseError.error != QJsonParseError::NoError || !document.isObject())
+            {
+                emit ImageUploadFailed(tr("The server returned an invalid image upload response."));
+                return;
+            }
+
+            if (++m_impl->uploadCounter == assetFiles.size())
+                emit AssetsUploadFinished();
+            reply->deleteLater();
+        });
+    }
 }

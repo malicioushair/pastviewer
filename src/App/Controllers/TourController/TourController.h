@@ -57,18 +57,18 @@ public:
     Q_INVOKABLE void ResumeRecording();
     Q_INVOKABLE void StopRecording();
     Q_INVOKABLE void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang);
-    Q_INVOKABLE void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
+    Q_INVOKABLE void CreateTourStop(const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
     Q_INVOKABLE QVariantMap GetDraft(qlonglong id) const;
     Q_INVOKABLE QString UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile);
     Q_INVOKABLE bool SelectDraft(qlonglong id);
     Q_INVOKABLE QVariantMap GetDraftStop(qlonglong id) const;
-    Q_INVOKABLE QString UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
+    Q_INVOKABLE QString UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile);
     Q_INVOKABLE void AddPoint(const QGeoCoordinate & coordinate);
     Q_INVOKABLE void RemoveLastPoint();
     Q_INVOKABLE QAbstractListModel * GetDraftsModel() const;
     Q_INVOKABLE QAbstractListModel * GetAvailableToursModel() const;
     Q_INVOKABLE QAbstractListModel * GetTourStopsModel() const;
-    Q_INVOKABLE void UploadAsset(const QUrl & assetFile);
+    Q_INVOKABLE void UploadAsset(const QList<QUrl> & assetFile);
     Q_INVOKABLE void HighlightNextStop();
     Q_INVOKABLE void HighlightPrevStop();
 

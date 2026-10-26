@@ -11,6 +11,7 @@ enable_testing()
 add_executable(PastViewerTests
     DirectionUtilsTest.cpp
     FileHashTest.cpp
+    MultiImageTourStopTest.cpp
     PhotoNotificationCoordinatorTest.cpp
     PhotoNotificationPresenterTest.cpp
     PhotoNotificationSettingsTest.cpp

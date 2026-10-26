@@ -1,16 +1,23 @@
 #pragma once
 
+#include <iterator>
 #include <optional>
+#include <ranges>
 
 #include <QCryptographicHash>
 #include <QFile>
 #include <QFileInfo>
 #include <QGeoCoordinate>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
+#include <QList>
+#include <QRegularExpression>
 #include <QSaveFile>
 #include <QStandardPaths>
 #include <QString>
+#include <QStringList>
 #include <QUrl>
 
 #include "App/Utils/JsonHelpers.h"
@@ -32,11 +39,11 @@ struct TourStop
 	int64_t id {};
 	QString title {};
 	QString description {};
-	QUrl localImagePath {};
-	QString imageFileHash {};
-	QUrl localAudioPath {};
-	QString audioFileHash {};
-	QGeoCoordinate coords {};
+    QList<QUrl> localImagePaths {};
+    QStringList imageFileHashes {};
+    QUrl localAudioPath {};
+    QString audioFileHash {};
+    QGeoCoordinate coords {};
 };
 
 struct Tour
@@ -71,28 +78,33 @@ inline std::optional<QString> ChosenFileContentHash(const QUrl & fileUrl)
 
 inline std::optional<QJsonObject> StopToJson(const TourStop & stop)
 {
-	const auto imageFileHash = ChosenFileContentHash(stop.localImagePath);
-	const auto audioFileHash = ChosenFileContentHash(stop.localAudioPath);
-	if (!imageFileHash || !audioFileHash)
-		return std::nullopt;
+    QJsonArray imageFileHashes;
+    for (const auto & imagePath : stop.localImagePaths)
+    {
+        const auto imageFileHash = ChosenFileContentHash(imagePath);
+        if (!imageFileHash)
+            return std::nullopt;
+        imageFileHashes.append(*imageFileHash);
+    }
 
-	const auto coords = QJsonObject {
-		{ "latitude",  stop.coords.latitude()  },
-		{ "longitude", stop.coords.longitude() },
-	};
-	return QJsonObject {
-		{ "id",            static_cast<qint64>(stop.id)   },
-		{ "title",         stop.title                     },
-		{ "description",   stop.description               },
-		{ "imageFile",     stop.localImagePath.toString() },
-		{ "imageFileHash", *imageFileHash                 },
-		{ "audioFile",     stop.localAudioPath.toString() },
-		{ "audioFileHash", *audioFileHash                 },
-		{ "coords",        coords                         },
-	};
+    const auto audioFileHash = ChosenFileContentHash(stop.localAudioPath);
+    if (!audioFileHash)
+        return std::nullopt;
+
+    const auto coords = QJsonObject {
+        { "latitude",  stop.coords.latitude()  },
+        { "longitude", stop.coords.longitude() },
+    };
+    return QJsonObject {
+        { "title",           stop.title            },
+        { "description",     stop.description      },
+        { "imageFileHashes", imageFileHashes       },
+        { "audioFileHash",   audioFileHash.value() },
+        { "coords",          coords                },
+    };
 }
 
-inline QJsonObject TourToJson(const Tour & tour, bool forPublish = false)
+inline QJsonObject TourToJson(const Tour & tour)
 {
 	const auto imageFileHash = ChosenFileContentHash(tour.localImagePath);
 	if (!imageFileHash)
@@ -106,36 +118,45 @@ inline QJsonObject TourToJson(const Tour & tour, bool forPublish = false)
 			return {};
 		stops.append(*stopJson);
 	}
-    QJsonArray tourPath;
-    for (const auto & item : tourPath)
-        tourPath.append(item);
+
+    QJsonArray pathCoords;
+    for (const auto & point : tour.tourPath)
+        pathCoords.append(QJsonObject {
+            { "latitude",  point.latitude()  },
+            { "longitude", point.longitude() },
+        });
 
     return {
-        { "schemaVersion", 1                              },
-        { "id",            static_cast<qint64>(tour.id)   },
-        { "title",         tour.title                     },
-        { "description",   tour.description               },
-        { "distance",      tour.distance                  },
-        { "imageFile",     tour.localImagePath.toString() },
-        { "imageFileHash", *imageFileHash                 },
-        { "isDraft",       !forPublish                    },
-        { "path",          tourPath                       },
-        { "stops",         stops                          },
-        { "lang",          tour.lang                      },
+        { "schemaVersion", 1                                        },
+        { "title",         tour.title                               },
+        { "description",   tour.description                         },
+        { "lang",          tour.lang                                },
+        { "imageFileHash", *imageFileHash                           },
+        { "distance",      tour.distance                            },
+        { "stops",         stops                                    },
+        { "path",          QJsonObject { { "coords", pathCoords } } },
+        { "isDraft",       true                                     }, //@todo: needed on the server?
     };
 }
 
 inline bool SaveDraft(const Tours::Tour & tour)
 {
     QJsonArray stops;
-    for (auto & stop : tour.stops)
+    for (const auto & stop : tour.stops)
     {
+        QJsonArray localImagePaths;
+        for (const auto & path : stop.localImagePaths)
+            localImagePaths.append(path.toString());
+        QJsonArray imageFileHashes;
+        for (const auto & hash : stop.imageFileHashes)
+            imageFileHashes.append(hash);
+
         QJsonObject stopObj;
         stopObj["id"] = static_cast<qint64>(stop.id);
         stopObj["title"] = stop.title;
         stopObj["description"] = stop.description;
-        stopObj["localImagePath"] = stop.localImagePath.toString();
-        stopObj["imageFileHash"] = stop.imageFileHash;
+        stopObj["localImagePaths"] = localImagePaths;
+        stopObj["imageFileHashes"] = imageFileHashes;
         stopObj["localAudioPath"] = stop.localAudioPath.toString();
         stopObj["audioFileHash"] = stop.audioFileHash;
         stopObj["coords"] = QString("%1, %2").arg(stop.coords.latitude()).arg(stop.coords.longitude());

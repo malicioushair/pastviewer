@@ -14,7 +14,15 @@ BasePage {
 
     required property var record
     property bool editingStop: false
-    property url coverFile: record.imageFile
+    property var imageFiles: {
+        if (editingStop) {
+            if (record.imageFiles !== undefined)
+                return record.imageFiles
+            return record.imageFile ? [record.imageFile] : []
+        }
+        return record.imageFile ? [record.imageFile] : []
+    }
+    property url coverFile: !editingStop && record.imageFile ? record.imageFile : ""
     property url audioFile: editingStop ? record.audioFile : ""
     property string errorMessage: ""
 
@@ -22,7 +30,7 @@ BasePage {
 
     function save() {
         errorMessage = editingStop
-            ? TourController.UpdateDraftStop(record.id, titleFieldID.text, descriptionFieldID.text, coverFile, audioFile)
+            ? TourController.UpdateDraftStop(record.id, titleFieldID.text, descriptionFieldID.text, imageFiles, audioFile)
             : TourController.UpdateDraftDetails(record.id, titleFieldID.text, descriptionFieldID.text, coverFile)
         return errorMessage.length === 0
     }
@@ -66,19 +74,36 @@ BasePage {
             Image {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 180
-                visible: rootID.coverFile.toString().length > 0
+                visible: !rootID.editingStop && rootID.coverFile.toString().length > 0
                 source: rootID.coverFile
                 fillMode: Image.PreserveAspectFit
             }
+            Repeater {
+                model: rootID.editingStop ? rootID.imageFiles : []
+                Image {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 180
+                    source: modelData
+                    fillMode: Image.PreserveAspectFit
+                }
+            }
             RowLayout {
                 StyledButton {
-                    text: rootID.editingStop ? qsTr("Choose image") : qsTr("Choose cover")
+                    text: rootID.editingStop ? qsTr("Choose images") : qsTr("Choose cover")
                     onClicked: coverDialogID.open()
                 }
                 StyledButton {
-                    text: qsTr("Remove image")
-                    visible: rootID.coverFile.toString().length > 0
-                    onClicked: rootID.coverFile = ""
+                    text: qsTr("Remove images")
+                    visible: rootID.editingStop
+                             ? rootID.imageFiles.length > 0
+                             : rootID.coverFile.toString().length > 0
+                    onClicked: {
+                        if (rootID.editingStop)
+                            rootID.imageFiles = []
+                        else
+                            rootID.coverFile = ""
+                    }
                 }
             }
 
@@ -136,9 +161,15 @@ BasePage {
 
     FileDialog {
         id: coverDialogID
-        title: qsTr("Choose image")
+        title: rootID.editingStop ? qsTr("Choose images") : qsTr("Choose image")
+        fileMode: rootID.editingStop ? FileDialog.OpenFiles : FileDialog.OpenFile
         nameFilters: [qsTr("Images (*.png *.jpg *.jpeg *.webp *.heic)")]
-        onAccepted: rootID.coverFile = selectedFile
+        onAccepted: {
+            if (rootID.editingStop)
+                rootID.imageFiles = selectedFiles
+            else
+                rootID.coverFile = selectedFile
+        }
     }
     FileDialog {
         id: audioDialogID

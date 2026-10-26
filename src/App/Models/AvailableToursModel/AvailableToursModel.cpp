@@ -84,11 +84,25 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
             const auto coordsObj = itemObj.value("coords").toObject();
             const auto lat = coordsObj.value("latitude").toDouble();
             const auto lon = coordsObj.value("longitude").toDouble();
+
+            QStringList imageUrls;
+            if (itemObj.value("imageUrls").isArray())
+            {
+                for (const auto & urlValue : itemObj.value("imageUrls").toArray())
+                    imageUrls.append(urlValue.toString());
+            }
+            else
+            {
+                const auto singular = itemObj.value("imageUrl").toString();
+                if (!singular.isEmpty())
+                    imageUrls.append(singular);
+            }
+
             return {
                 .sequenceNumber = ++sequenceNumber,
                 .title = itemObj.value("title").toString(),
                 .description = itemObj.value("description").toString(),
-                .imageUrl = itemObj.value("imageUrl").toString(),
+                .imageUrls = imageUrls,
                 .audioUrl = itemObj.value("audioUrl").toString(),
                 .coords = { lat, lon },
             };

@@ -38,7 +38,7 @@ public:
 signals:
     void CurrentDistanceChanged();
     void CurrentTourPathChanged();
-    void AssetUploadFinished();
+    void AssetsUploadFinished();
     void ImageUploadFailed(const QString & errorMessage);
     void StopsUpdated();
 
@@ -57,16 +57,16 @@ public:
     QString UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile);
     bool SelectDraft(qlonglong id);
     QVariantMap GetDraftStop(qlonglong id) const;
-    QString UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile);
+    QString UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile);
     void UpdateTourPath(const QGeoCoordinate & coords);
     void AddPoint(const QGeoCoordinate & coordinate);
     void RemoveLastPoint();
     QList<QGeoCoordinate> GetTourPath() const;
     QList<QGeoCoordinate> GetCurrentStopCoordinates() const;
     void CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang);
-    void CreateTourStop(const QString & title, const QString & description, const QUrl & imageFile, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
+    void CreateTourStop(const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
     QString GetCurrentStops() const;
-    void UploadAsset(const QUrl & assetFile);
+    void UploadAsset(const QList<QUrl> & assetFile);
 
     void StartRecording();
     void PauseRecording();

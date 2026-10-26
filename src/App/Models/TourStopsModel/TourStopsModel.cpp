@@ -32,7 +32,7 @@ QVariant TourStopsModel::data(const QModelIndex & index, int role) const
         case Description:
             return stop.description;
         case ImageUrl:
-            return stop.imageUrl;
+            return stop.imageUrls.front();
         case Coords:
             return QVariant::fromValue(stop.coords);
         case SequenceNumber:

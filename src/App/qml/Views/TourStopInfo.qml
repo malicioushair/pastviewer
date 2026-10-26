@@ -85,7 +85,9 @@ BasePage {
             const tutorialSteps = [
                 {
                     "title": qsTr("Explore this stop"),
-                    "body": qsTr("Read the description to learn about this place. Double-tap the photo to open it for a closer look.")
+                    "body": rootID.tourStop.imageUrls.length > 1
+                        ? qsTr("Swipe through the photos and read the description to learn about this place. Double-tap a photo to open it for a closer look.")
+                        : qsTr("Read the description to learn about this place. Double-tap the photo to open it for a closer look.")
                 }
             ]
             if (rootID.hasNarration) {
@@ -108,18 +110,76 @@ BasePage {
             margins: 10
         }
 
-        Image {
+        Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            ListView {
+                id: stopImagesViewID
+
+                anchors.fill: parent
+                model: rootID.tourStop.imageUrls
+                orientation: ListView.Horizontal
+                spacing: 8
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                snapMode: ListView.SnapOneItem
+                highlightRangeMode: ListView.StrictlyEnforceRange
+                preferredHighlightBegin: 0
+                preferredHighlightEnd: 0
+                highlightMoveDuration: 0
+
+
+                delegate: Image {
+                    required property var modelData
+
+                    width: stopImagesViewID.width
+                    height: stopImagesViewID.height
+                    source: modelData
+                    fillMode: Image.PreserveAspectFit
+
+                    TapHandler {
+                        onDoubleTapped: mainWindowID.openInspectPhotos(parent.source)
+                    }
+                }
+            }
+
+            Label {
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    margins: 10
+                }
+
+                visible: stopImagesViewID.count > 1
+                text: qsTr("%1 / %2").arg(stopImagesViewID.currentIndex + 1).arg(stopImagesViewID.count)
+                color: "white"
+                font.bold: true
+                padding: 8
+
+                background: Rectangle {
+                    radius: 8
+                    color: Colors.palette.seeThroughBlack
+                }
+            }
+        }
+
+        PageIndicator {
             Layout.alignment: Qt.AlignHCenter
 
-            source: rootID.tourStop.imageUrl
-            fillMode: Image.PreserveAspectFit
+            // Keep long galleries compact; the counter remains visible.
+            visible: count > 1 && count <= 7
+            count: stopImagesViewID.count
+            currentIndex: stopImagesViewID.currentIndex
 
-            TapHandler {
-                onDoubleTapped: {
-                    mainWindowID.openInspectPhotos(parent.source)
-                }
+            delegate: Rectangle {
+                required property int index
+
+                implicitWidth: 8
+                implicitHeight: 8
+                radius: 4
+                color: index === stopImagesViewID.currentIndex
+                    ? Colors.palette.accent : Colors.palette.toolbar
             }
         }
 

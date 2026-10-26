@@ -7,10 +7,13 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QGeoCoordinate>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError>
+#include <QJsonValue>
+#include <QList>
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTemporaryDir>
@@ -155,7 +158,80 @@ void ExpectEmptyHash(const QJsonObject & object, const QString & key)
 
 void ExpectPublishRejected(const Tours::Tour & tour)
 {
-	EXPECT_TRUE(Tours::TourToJson(tour, true).isEmpty());
+	EXPECT_TRUE(Tours::TourToJson(tour).isEmpty());
+}
+
+void ExpectNoForbiddenPublishKeys(const QJsonObject & object)
+{
+	EXPECT_FALSE(object.contains(QStringLiteral("imageFile")));
+	EXPECT_FALSE(object.contains(QStringLiteral("imageFiles")));
+	EXPECT_FALSE(object.contains(QStringLiteral("audioFile")));
+	EXPECT_FALSE(object.contains(QStringLiteral("id")));
+	EXPECT_FALSE(object.contains(QStringLiteral("localImagePath")));
+	EXPECT_FALSE(object.contains(QStringLiteral("localImagePaths")));
+	EXPECT_FALSE(object.contains(QStringLiteral("localAudioPath")));
+}
+
+void ExpectCoords(const QJsonObject & object, double latitude, double longitude)
+{
+	ASSERT_TRUE(object.contains(QStringLiteral("coords")));
+	ASSERT_TRUE(object.value(QStringLiteral("coords")).isObject());
+	const auto coords = object.value(QStringLiteral("coords")).toObject();
+	EXPECT_DOUBLE_EQ(coords.value(QStringLiteral("latitude")).toDouble(), latitude);
+	EXPECT_DOUBLE_EQ(coords.value(QStringLiteral("longitude")).toDouble(), longitude);
+}
+
+void ExpectImageFileHashes(const QJsonObject & stop, const QStringList & expected)
+{
+	ASSERT_TRUE(stop.contains(QStringLiteral("imageFileHashes")));
+	ASSERT_TRUE(stop.value(QStringLiteral("imageFileHashes")).isArray());
+	const auto hashes = stop.value(QStringLiteral("imageFileHashes")).toArray();
+	ASSERT_EQ(hashes.size(), expected.size());
+	for (qsizetype i = 0; i < expected.size(); ++i)
+	{
+		EXPECT_TRUE(hashes.at(i).isString()) << i;
+		EXPECT_EQ(hashes.at(i).toString(), expected.at(i)) << i;
+		if (!expected.at(i).isEmpty())
+		{
+			EXPECT_TRUE(QRegularExpression(QStringLiteral("^[0-9a-f]{64}$")).match(expected.at(i)).hasMatch())
+				<< expected.at(i).toStdString();
+		}
+	}
+	EXPECT_FALSE(stop.contains(QStringLiteral("imageFileHash")));
+}
+
+void ExpectNullAudioFileHash(const QJsonObject & stop)
+{
+	ASSERT_TRUE(stop.contains(QStringLiteral("audioFileHash")));
+	EXPECT_TRUE(stop.value(QStringLiteral("audioFileHash")).isNull());
+}
+
+void ExpectDefaultUnpaidPurchase(const QJsonObject & tour)
+{
+	ASSERT_TRUE(tour.contains(QStringLiteral("purchase")));
+	ASSERT_TRUE(tour.value(QStringLiteral("purchase")).isObject());
+	const auto purchase = tour.value(QStringLiteral("purchase")).toObject();
+	EXPECT_EQ(purchase.value(QStringLiteral("appleProductId")).toString(), QString());
+	EXPECT_EQ(purchase.value(QStringLiteral("googleProductId")).toString(), QString());
+	EXPECT_FALSE(purchase.value(QStringLiteral("paid")).toBool());
+}
+
+void ExpectPathCoords(const QJsonObject & tour, const QList<QGeoCoordinate> & expected)
+{
+	ASSERT_TRUE(tour.contains(QStringLiteral("path")));
+	ASSERT_TRUE(tour.value(QStringLiteral("path")).isObject());
+	const auto path = tour.value(QStringLiteral("path")).toObject();
+	ASSERT_TRUE(path.contains(QStringLiteral("coords")));
+	ASSERT_TRUE(path.value(QStringLiteral("coords")).isArray());
+	const auto coords = path.value(QStringLiteral("coords")).toArray();
+	ASSERT_EQ(coords.size(), expected.size());
+	for (qsizetype i = 0; i < expected.size(); ++i)
+	{
+		ASSERT_TRUE(coords.at(i).isObject()) << i;
+		const auto point = coords.at(i).toObject();
+		EXPECT_DOUBLE_EQ(point.value(QStringLiteral("latitude")).toDouble(), expected.at(i).latitude()) << i;
+		EXPECT_DOUBLE_EQ(point.value(QStringLiteral("longitude")).toDouble(), expected.at(i).longitude()) << i;
+	}
 }
 
 QJsonObject FindStop(const QJsonObject & tour, const QString & title)
@@ -170,16 +246,77 @@ QJsonObject FindStop(const QJsonObject & tour, const QString & title)
 	return {};
 }
 
-Tours::TourStop MakeStop(const QString & title, const QUrl & image, const QUrl & audio)
+template <typename Stop>
+void AssignStopImages(Stop & stop, const QList<QUrl> & images)
+{
+	if constexpr (requires { stop.localImagePaths = images; })
+	{
+		stop.localImagePaths = images;
+	}
+	else
+	{
+		ADD_FAILURE() << "TourStop must store localImagePaths (list of QUrl)";
+		if constexpr (requires { stop.localImagePath = QUrl(); })
+		{
+			stop.localImagePath = images.isEmpty() ? QUrl() : images.front();
+		}
+	}
+}
+
+template <typename Stop>
+void AssignStopImageHashes(Stop & stop, const QStringList & hashes)
+{
+	if constexpr (requires { stop.imageFileHashes = hashes; })
+	{
+		stop.imageFileHashes = hashes;
+	}
+	else
+	{
+		ADD_FAILURE() << "TourStop must store imageFileHashes (list of hashes)";
+		if constexpr (requires { stop.imageFileHash = QString(); })
+		{
+			stop.imageFileHash = hashes.isEmpty() ? QString() : hashes.front();
+		}
+	}
+}
+
+template <typename Stop>
+QList<QUrl> StopLocalImagePaths(const Stop & stop)
+{
+	if constexpr (requires { stop.localImagePaths; })
+		return stop.localImagePaths;
+	else if constexpr (requires { stop.localImagePath; })
+		return stop.localImagePath.isEmpty() ? QList<QUrl> {} : QList<QUrl> { stop.localImagePath };
+	else
+		return {};
+}
+
+template <typename Stop>
+QStringList StopImageFileHashes(const Stop & stop)
+{
+	if constexpr (requires { stop.imageFileHashes; })
+		return stop.imageFileHashes;
+	else if constexpr (requires { stop.imageFileHash; })
+		return stop.imageFileHash.isEmpty() ? QStringList {} : QStringList { stop.imageFileHash };
+	else
+		return {};
+}
+
+Tours::TourStop MakeStop(const QString & title, const QList<QUrl> & images, const QUrl & audio)
 {
 	Tours::TourStop stop;
 	stop.id = 1;
 	stop.title = title;
 	stop.description = QStringLiteral("stop");
-	stop.localImagePath = image;
+	AssignStopImages(stop, images);
 	stop.localAudioPath = audio;
 	stop.coords = QGeoCoordinate(12.25, 48.5);
 	return stop;
+}
+
+Tours::TourStop MakeStop(const QString & title, const QUrl & image, const QUrl & audio)
+{
+	return MakeStop(title, image.isEmpty() ? QList<QUrl> {} : QList<QUrl> { image }, audio);
 }
 
 Tours::Tour MakeTour(const QString & title, const QUrl & cover, QList<Tours::TourStop> stops = {})
@@ -193,6 +330,47 @@ Tours::Tour MakeTour(const QString & title, const QUrl & cover, QList<Tours::Tou
 	return tour;
 }
 
+template <typename Controller>
+void CreateTourStopWithImages(
+	Controller & controller,
+	const QString & title,
+	const QString & description,
+	const QList<QUrl> & images,
+	const QUrl & audioFile,
+	const QGeoCoordinate & coordinate = QGeoCoordinate())
+{
+	if constexpr (requires { controller.CreateTourStop(title, description, images, audioFile, coordinate); })
+	{
+		controller.CreateTourStop(title, description, images, audioFile, coordinate);
+	}
+	else
+	{
+		static_cast<void>(controller);
+		static_cast<void>(title);
+		static_cast<void>(description);
+		static_cast<void>(images);
+		static_cast<void>(audioFile);
+		static_cast<void>(coordinate);
+		ADD_FAILURE() << "CreateTourStop must accept a list of image files";
+	}
+}
+
+QJsonArray UrlsToJson(const QList<QUrl> & urls)
+{
+	QJsonArray array;
+	for (const auto & url : urls)
+		array.append(url.toString());
+	return array;
+}
+
+QJsonArray StringsToJson(const QStringList & values)
+{
+	QJsonArray array;
+	for (const auto & value : values)
+		array.append(value);
+	return array;
+}
+
 }
 
 TEST_F(FileHash, ChosenFilesIncludeContentHashesInDraftAndPublishJson)
@@ -204,46 +382,64 @@ TEST_F(FileHash, ChosenFilesIncludeContentHashesInDraftAndPublishJson)
 	const auto bridgeImageUrl = WriteMedia(QStringLiteral("beta.png"), kAbcBytes);
 	const auto bridgeAudioUrl = WriteMedia(QStringLiteral("take-2.MP3"), kNarrationBytes);
 
-	const auto publish = MakeTour(
+	auto publish = MakeTour(
 		QStringLiteral("PublishHashes"),
 		coverUrl,
 		{
 			MakeStop(QStringLiteral("Gate"), gateImageUrl, gateAudioUrl),
 			MakeStop(QStringLiteral("Bridge"), bridgeImageUrl, bridgeAudioUrl),
 		});
+	publish.lang = QStringLiteral("en");
+	publish.distance = 1250;
+	publish.tourPath = {
+		QGeoCoordinate(55.76, 37.62),
+		QGeoCoordinate(55.75, 37.61),
+	};
 
-	for (const auto forPublish : { false, true })
-	{
-		SCOPED_TRACE(forPublish);
-		const auto json = Tours::TourToJson(publish, forPublish);
-		EXPECT_FALSE(json.isEmpty());
-		EXPECT_EQ(json.value(QStringLiteral("isDraft")).toBool(), !forPublish);
-		EXPECT_EQ(json.value(QStringLiteral("imageFile")).toString(), coverUrl.toString());
-		EXPECT_FALSE(json.contains(QStringLiteral("localImagePath")));
-		ExpectContentHash(json, QStringLiteral("imageFileHash"), ContentHash(coverBytes));
-		EXPECT_NE(json.value(QStringLiteral("imageFileHash")).toString(), ContentHash(QFileInfo(coverUrl.toLocalFile()).fileName().toUtf8()));
+	const auto json = Tours::TourToJson(publish);
+	EXPECT_FALSE(json.isEmpty());
+	ExpectNoForbiddenPublishKeys(json);
+	EXPECT_TRUE(json.value(QStringLiteral("isDraft")).toBool());
+	EXPECT_EQ(json.value(QStringLiteral("schemaVersion")).toInt(), 1);
+	EXPECT_EQ(json.value(QStringLiteral("title")).toString(), QStringLiteral("PublishHashes"));
+	EXPECT_EQ(json.value(QStringLiteral("description")).toString(), QStringLiteral("walk"));
+	EXPECT_EQ(json.value(QStringLiteral("lang")).toString(), QStringLiteral("en"));
+	EXPECT_DOUBLE_EQ(json.value(QStringLiteral("distance")).toDouble(), 1250);
+	ExpectContentHash(json, QStringLiteral("imageFileHash"), ContentHash(coverBytes));
+	EXPECT_NE(
+		json.value(QStringLiteral("imageFileHash")).toString(),
+		ContentHash(QFileInfo(coverUrl.toLocalFile()).fileName().toUtf8()));
+	ExpectDefaultUnpaidPurchase(json);
+	ExpectPathCoords(json, publish.tourPath);
 
-		EXPECT_EQ(json.value(QStringLiteral("stops")).toArray().size(), 2);
-		const auto gate = FindStop(json, QStringLiteral("Gate"));
-		const auto bridge = FindStop(json, QStringLiteral("Bridge"));
-		EXPECT_EQ(gate.value(QStringLiteral("imageFile")).toString(), gateImageUrl.toString());
-		EXPECT_EQ(gate.value(QStringLiteral("audioFile")).toString(), gateAudioUrl.toString());
-		EXPECT_FALSE(gate.contains(QStringLiteral("localImagePath")));
-		EXPECT_FALSE(gate.contains(QStringLiteral("localAudioPath")));
-		ExpectContentHash(gate, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
-		ExpectContentHash(gate, QStringLiteral("audioFileHash"), QString::fromLatin1(kEmptySha256));
-		EXPECT_EQ(bridge.value(QStringLiteral("imageFile")).toString(), bridgeImageUrl.toString());
-		EXPECT_EQ(bridge.value(QStringLiteral("audioFile")).toString(), bridgeAudioUrl.toString());
-		ExpectContentHash(bridge, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
-		ExpectContentHash(bridge, QStringLiteral("audioFileHash"), ContentHash(kNarrationBytes));
-		EXPECT_EQ(gate.value(QStringLiteral("imageFileHash")).toString(), bridge.value(QStringLiteral("imageFileHash")).toString());
-		EXPECT_NE(gate.value(QStringLiteral("imageFileHash")).toString(), ContentHash(QFileInfo(gateImageUrl.toLocalFile()).fileName().toUtf8()));
-		EXPECT_NE(bridge.value(QStringLiteral("imageFileHash")).toString(), ContentHash(QFileInfo(bridgeImageUrl.toLocalFile()).fileName().toUtf8()));
-	}
+	EXPECT_EQ(json.value(QStringLiteral("stops")).toArray().size(), 2);
+	const auto gate = FindStop(json, QStringLiteral("Gate"));
+	const auto bridge = FindStop(json, QStringLiteral("Bridge"));
+	ExpectNoForbiddenPublishKeys(gate);
+	ExpectNoForbiddenPublishKeys(bridge);
+	ExpectImageFileHashes(gate, { QString::fromLatin1(kAbcSha256) });
+	ExpectContentHash(gate, QStringLiteral("audioFileHash"), QString::fromLatin1(kEmptySha256));
+	ExpectCoords(gate, 12.25, 48.5);
+	ExpectImageFileHashes(bridge, { QString::fromLatin1(kAbcSha256) });
+	ExpectContentHash(bridge, QStringLiteral("audioFileHash"), ContentHash(kNarrationBytes));
+	EXPECT_EQ(
+		gate.value(QStringLiteral("imageFileHashes")).toArray().at(0).toString(),
+		bridge.value(QStringLiteral("imageFileHashes")).toArray().at(0).toString());
+	EXPECT_NE(
+		gate.value(QStringLiteral("imageFileHashes")).toArray().at(0).toString(),
+		ContentHash(QFileInfo(gateImageUrl.toLocalFile()).fileName().toUtf8()));
+	EXPECT_NE(
+		bridge.value(QStringLiteral("imageFileHashes")).toArray().at(0).toString(),
+		ContentHash(QFileInfo(bridgeImageUrl.toLocalFile()).fileName().toUtf8()));
 
 	ControllerSession session;
 	session.controller.CreateNewTour(QStringLiteral("DraftHashes"), QStringLiteral("walk"), coverUrl, {});
-	session.controller.CreateTourStop(QStringLiteral("Gate"), QStringLiteral("stop"), gateImageUrl, gateAudioUrl);
+	CreateTourStopWithImages(
+		session.controller,
+		QStringLiteral("Gate"),
+		QStringLiteral("stop"),
+		{ gateImageUrl },
+		gateAudioUrl);
 	session.controller.CreateNewTour(QStringLiteral("SameBytesOtherName"), QStringLiteral("walk"), bridgeImageUrl, {});
 
 	const auto draft = ReadDraftObject(QStringLiteral("DraftHashes"));
@@ -252,18 +448,24 @@ TEST_F(FileHash, ChosenFilesIncludeContentHashesInDraftAndPublishJson)
 	ExpectContentHash(draft, QStringLiteral("imageFileHash"), ContentHash(coverBytes));
 	EXPECT_NE(draft.value(QStringLiteral("imageFileHash")).toString(), ContentHash(QFileInfo(coverUrl.toLocalFile()).fileName().toUtf8()));
 
-	const auto gate = FindStop(draft, QStringLiteral("Gate"));
-	EXPECT_EQ(gate.value(QStringLiteral("localImagePath")).toString(), gateImageUrl.toString());
-	EXPECT_EQ(gate.value(QStringLiteral("localAudioPath")).toString(), gateAudioUrl.toString());
-	EXPECT_FALSE(gate.contains(QStringLiteral("imageFile")));
-	EXPECT_FALSE(gate.contains(QStringLiteral("audioFile")));
-	ExpectContentHash(gate, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
-	ExpectContentHash(gate, QStringLiteral("audioFileHash"), QString::fromLatin1(kEmptySha256));
-	EXPECT_NE(gate.value(QStringLiteral("imageFileHash")).toString(), ContentHash(QFileInfo(gateImageUrl.toLocalFile()).fileName().toUtf8()));
+	const auto draftGate = FindStop(draft, QStringLiteral("Gate"));
+	ASSERT_TRUE(draftGate.contains(QStringLiteral("localImagePaths")));
+	ASSERT_TRUE(draftGate.value(QStringLiteral("localImagePaths")).isArray());
+	EXPECT_EQ(draftGate.value(QStringLiteral("localImagePaths")).toArray().size(), 1);
+	EXPECT_EQ(draftGate.value(QStringLiteral("localImagePaths")).toArray().at(0).toString(), gateImageUrl.toString());
+	EXPECT_EQ(draftGate.value(QStringLiteral("localAudioPath")).toString(), gateAudioUrl.toString());
+	EXPECT_FALSE(draftGate.contains(QStringLiteral("imageFile")));
+	EXPECT_FALSE(draftGate.contains(QStringLiteral("audioFile")));
+	ASSERT_TRUE(draftGate.contains(QStringLiteral("imageFileHashes")));
+	ASSERT_TRUE(draftGate.value(QStringLiteral("imageFileHashes")).isArray());
+	EXPECT_EQ(draftGate.value(QStringLiteral("imageFileHashes")).toArray().at(0).toString(), QString::fromLatin1(kAbcSha256));
+	ExpectContentHash(draftGate, QStringLiteral("audioFileHash"), QString::fromLatin1(kEmptySha256));
 
 	const auto sameBytes = ReadDraftObject(QStringLiteral("SameBytesOtherName"));
 	ExpectContentHash(sameBytes, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
-	EXPECT_EQ(sameBytes.value(QStringLiteral("imageFileHash")).toString(), gate.value(QStringLiteral("imageFileHash")).toString());
+	EXPECT_EQ(
+		sameBytes.value(QStringLiteral("imageFileHash")).toString(),
+		draftGate.value(QStringLiteral("imageFileHashes")).toArray().at(0).toString());
 	EXPECT_NE(sameBytes.value(QStringLiteral("imageFileHash")).toString(), ContentHash(QFileInfo(bridgeImageUrl.toLocalFile()).fileName().toUtf8()));
 }
 
@@ -280,43 +482,63 @@ TEST_F(FileHash, OmittedFilesUseEmptyHashesAndAreKept)
 			MakeStop(QStringLiteral("Neither"), QUrl(), QUrl()),
 		});
 
-	const auto json = Tours::TourToJson(publish, true);
+	const auto json = Tours::TourToJson(publish);
 	EXPECT_FALSE(json.isEmpty());
-	EXPECT_EQ(json.value(QStringLiteral("imageFile")).toString(), QString());
+	ExpectNoForbiddenPublishKeys(json);
+	EXPECT_TRUE(json.value(QStringLiteral("isDraft")).toBool());
 	ExpectEmptyHash(json, QStringLiteral("imageFileHash"));
+	ExpectDefaultUnpaidPurchase(json);
 	EXPECT_EQ(json.value(QStringLiteral("stops")).toArray().size(), 3);
 
 	const auto imageOnly = FindStop(json, QStringLiteral("ImageOnly"));
-	ExpectContentHash(imageOnly, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
-	ExpectEmptyHash(imageOnly, QStringLiteral("audioFileHash"));
+	ExpectNoForbiddenPublishKeys(imageOnly);
+	ExpectImageFileHashes(imageOnly, { QString::fromLatin1(kAbcSha256) });
+	ExpectNullAudioFileHash(imageOnly);
 
 	const auto audioOnly = FindStop(json, QStringLiteral("AudioOnly"));
-	ExpectEmptyHash(audioOnly, QStringLiteral("imageFileHash"));
+	ExpectNoForbiddenPublishKeys(audioOnly);
+	ExpectImageFileHashes(audioOnly, {});
 	ExpectContentHash(audioOnly, QStringLiteral("audioFileHash"), ContentHash(kNarrationBytes));
 
 	const auto neither = FindStop(json, QStringLiteral("Neither"));
-	ExpectEmptyHash(neither, QStringLiteral("imageFileHash"));
-	ExpectEmptyHash(neither, QStringLiteral("audioFileHash"));
+	ExpectNoForbiddenPublishKeys(neither);
+	ExpectImageFileHashes(neither, {});
+	ExpectNullAudioFileHash(neither);
 
 	ControllerSession session;
 	session.controller.CreateNewTour(QStringLiteral("OmittedDraft"), QStringLiteral("walk"), QUrl(), {});
-	session.controller.CreateTourStop(QStringLiteral("ImageOnly"), QStringLiteral("stop"), imageUrl, QUrl());
+	CreateTourStopWithImages(
+		session.controller,
+		QStringLiteral("ImageOnly"),
+		QStringLiteral("stop"),
+		{ imageUrl },
+		QUrl());
 
 	const auto draft = ReadDraftObject(QStringLiteral("OmittedDraft"));
 	EXPECT_EQ(draft.value(QStringLiteral("localImagePath")).toString(), QString());
 	ExpectEmptyHash(draft, QStringLiteral("imageFileHash"));
 	const auto draftStop = FindStop(draft, QStringLiteral("ImageOnly"));
-	EXPECT_EQ(draftStop.value(QStringLiteral("localImagePath")).toString(), imageUrl.toString());
+	ASSERT_TRUE(draftStop.value(QStringLiteral("localImagePaths")).isArray());
+	EXPECT_EQ(draftStop.value(QStringLiteral("localImagePaths")).toArray().at(0).toString(), imageUrl.toString());
 	EXPECT_EQ(draftStop.value(QStringLiteral("localAudioPath")).toString(), QString());
-	ExpectContentHash(draftStop, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
+	ASSERT_TRUE(draftStop.value(QStringLiteral("imageFileHashes")).isArray());
+	EXPECT_EQ(draftStop.value(QStringLiteral("imageFileHashes")).toArray().at(0).toString(), QString::fromLatin1(kAbcSha256));
 	ExpectEmptyHash(draftStop, QStringLiteral("audioFileHash"));
 
 	session.controller.CreateNewTour(QStringLiteral("AudioOnlyDraft"), QStringLiteral("walk"), imageUrl, {});
-	session.controller.CreateTourStop(QStringLiteral("AudioOnly"), QStringLiteral("stop"), QUrl(), audioUrl);
+	CreateTourStopWithImages(
+		session.controller,
+		QStringLiteral("AudioOnly"),
+		QStringLiteral("stop"),
+		{},
+		audioUrl);
 	const auto audioDraft = ReadDraftObject(QStringLiteral("AudioOnlyDraft"));
 	ExpectContentHash(audioDraft, QStringLiteral("imageFileHash"), QString::fromLatin1(kAbcSha256));
 	const auto audioStop = FindStop(audioDraft, QStringLiteral("AudioOnly"));
-	ExpectEmptyHash(audioStop, QStringLiteral("imageFileHash"));
+	ASSERT_TRUE(audioStop.value(QStringLiteral("localImagePaths")).isArray());
+	EXPECT_TRUE(audioStop.value(QStringLiteral("localImagePaths")).toArray().isEmpty());
+	ASSERT_TRUE(audioStop.value(QStringLiteral("imageFileHashes")).isArray());
+	EXPECT_TRUE(audioStop.value(QStringLiteral("imageFileHashes")).toArray().isEmpty());
 	ExpectContentHash(audioStop, QStringLiteral("audioFileHash"), ContentHash(kNarrationBytes));
 }
 
@@ -345,7 +567,12 @@ TEST_F(FileHash, UnsafeBasenameRejectsDraftAndPublishJson)
 		session.controller.CreateNewTour(stopTitle, QStringLiteral("walk"), safeCover, {});
 		const auto before = ReadDraftBytes(stopTitle);
 		ASSERT_FALSE(before.isEmpty());
-		session.controller.CreateTourStop(QStringLiteral("BadStop"), QStringLiteral("stop"), safeCover, unsafeUrl);
+		CreateTourStopWithImages(
+			session.controller,
+			QStringLiteral("BadStop"),
+			QStringLiteral("stop"),
+			{ safeCover },
+			unsafeUrl);
 		EXPECT_EQ(ReadDraftBytes(stopTitle), before);
 		auto rejectedStop = MakeTour(stopTitle, safeCover, { MakeStop(QStringLiteral("BadStop"), safeCover, unsafeUrl) });
 		ExpectPublishRejected(rejectedStop);
@@ -361,7 +588,12 @@ TEST_F(FileHash, UnsafeBasenameRejectsDraftAndPublishJson)
 	const auto unsafeAudio = WriteMedia(QStringLiteral("bad audio.mp3"), kNarrationBytes);
 	session.controller.CreateNewTour(QStringLiteral("KeepGoodDraft"), QStringLiteral("walk"), safeCover, {});
 	const auto goodDraft = ReadDraftBytes(QStringLiteral("KeepGoodDraft"));
-	session.controller.CreateTourStop(QStringLiteral("BadAudio"), QStringLiteral("stop"), safeCover, unsafeAudio);
+	CreateTourStopWithImages(
+		session.controller,
+		QStringLiteral("BadAudio"),
+		QStringLiteral("stop"),
+		{ safeCover },
+		unsafeAudio);
 	EXPECT_EQ(ReadDraftBytes(QStringLiteral("KeepGoodDraft")), goodDraft);
 	ExpectPublishRejected(MakeTour(QStringLiteral("KeepGoodDraft"), safeCover, { MakeStop(QStringLiteral("BadAudio"), safeCover, unsafeAudio) }));
 
@@ -387,7 +619,12 @@ TEST_F(FileHash, UnreadableFileRejectsDraftAndPublishJson)
 	session.controller.CreateNewTour(QStringLiteral("KeepReadableDraft"), QStringLiteral("walk"), safeCover, {});
 	const auto before = ReadDraftBytes(QStringLiteral("KeepReadableDraft"));
 	ASSERT_FALSE(before.isEmpty());
-	session.controller.CreateTourStop(QStringLiteral("MissingAudio"), QStringLiteral("stop"), safeCover, missingAudio);
+	CreateTourStopWithImages(
+		session.controller,
+		QStringLiteral("MissingAudio"),
+		QStringLiteral("stop"),
+		{ safeCover },
+		missingAudio);
 	EXPECT_EQ(ReadDraftBytes(QStringLiteral("KeepReadableDraft")), before);
 	ExpectPublishRejected(MakeTour(
 		QStringLiteral("KeepReadableDraft"),
@@ -406,9 +643,11 @@ TEST_F(FileHash, LoadDraftReadsFileHashesBack)
 	const auto coverBytes = CoverBytes();
 	const auto coverUrl = WriteMedia(QStringLiteral("loaded-cover.png"), coverBytes);
 	const auto imageUrl = WriteMedia(QStringLiteral("loaded-stop.jpg"), kAbcBytes);
+	const auto secondImageUrl = WriteMedia(QStringLiteral("loaded-stop-2.png"), CoverBytes());
 	const auto audioUrl = WriteMedia(QStringLiteral("loaded-stop.mp3"), kNarrationBytes);
 	const auto coverHash = ContentHash(coverBytes);
 	const auto imageHash = QString::fromLatin1(kAbcSha256);
+	const auto secondImageHash = ContentHash(CoverBytes());
 	const auto audioHash = ContentHash(kNarrationBytes);
 
 	const QString title = QStringLiteral("LoadedHashes");
@@ -424,8 +663,8 @@ TEST_F(FileHash, LoadDraftReadsFileHashesBack)
 				{ QStringLiteral("id"), 4 },
 				{ QStringLiteral("title"), QStringLiteral("LoadedStop") },
 				{ QStringLiteral("description"), QStringLiteral("stop") },
-				{ QStringLiteral("localImagePath"), imageUrl.toString() },
-				{ QStringLiteral("imageFileHash"), imageHash },
+				{ QStringLiteral("localImagePaths"), UrlsToJson({ imageUrl, secondImageUrl }) },
+				{ QStringLiteral("imageFileHashes"), StringsToJson({ imageHash, secondImageHash }) },
 				{ QStringLiteral("localAudioPath"), audioUrl.toString() },
 				{ QStringLiteral("audioFileHash"), audioHash },
 				{ QStringLiteral("coords"), QStringLiteral("12.25, 48.5") },
@@ -443,24 +682,104 @@ TEST_F(FileHash, LoadDraftReadsFileHashesBack)
 	ASSERT_EQ(loaded.stops.size(), 1);
 	EXPECT_EQ(loaded.stops.at(0).id, 4);
 	EXPECT_EQ(loaded.stops.at(0).title, QStringLiteral("LoadedStop"));
-	EXPECT_EQ(loaded.stops.at(0).localImagePath.toString(), imageUrl.toString());
+	EXPECT_EQ(StopLocalImagePaths(loaded.stops.at(0)), (QList<QUrl> { imageUrl, secondImageUrl }));
+	EXPECT_EQ(StopImageFileHashes(loaded.stops.at(0)), (QStringList { imageHash, secondImageHash }));
 	EXPECT_EQ(loaded.stops.at(0).localAudioPath.toString(), audioUrl.toString());
 	EXPECT_DOUBLE_EQ(loaded.stops.at(0).coords.latitude(), 12.25);
 	EXPECT_DOUBLE_EQ(loaded.stops.at(0).coords.longitude(), 48.5);
 
-	for (const auto forPublish : { false, true })
-	{
-		SCOPED_TRACE(forPublish);
-		const auto json = Tours::TourToJson(loaded, forPublish);
-		EXPECT_FALSE(json.isEmpty());
-		EXPECT_EQ(json.value(QStringLiteral("imageFile")).toString(), coverUrl.toString());
-		ExpectContentHash(json, QStringLiteral("imageFileHash"), coverHash);
-		EXPECT_NE(json.value(QStringLiteral("imageAssetId")).toString(), coverHash);
-		EXPECT_EQ(json.value(QStringLiteral("stops")).toArray().size(), 1);
-		const auto stop = FindStop(json, QStringLiteral("LoadedStop"));
-		EXPECT_EQ(stop.value(QStringLiteral("imageFile")).toString(), imageUrl.toString());
-		EXPECT_EQ(stop.value(QStringLiteral("audioFile")).toString(), audioUrl.toString());
-		ExpectContentHash(stop, QStringLiteral("imageFileHash"), imageHash);
-		ExpectContentHash(stop, QStringLiteral("audioFileHash"), audioHash);
-	}
+	const auto json = Tours::TourToJson(loaded);
+	EXPECT_FALSE(json.isEmpty());
+	ExpectNoForbiddenPublishKeys(json);
+	EXPECT_TRUE(json.value(QStringLiteral("isDraft")).toBool());
+	ExpectContentHash(json, QStringLiteral("imageFileHash"), coverHash);
+	EXPECT_NE(json.value(QStringLiteral("imageAssetId")).toString(), coverHash);
+	ExpectDefaultUnpaidPurchase(json);
+	EXPECT_EQ(json.value(QStringLiteral("stops")).toArray().size(), 1);
+	const auto stop = FindStop(json, QStringLiteral("LoadedStop"));
+	ExpectNoForbiddenPublishKeys(stop);
+	ExpectImageFileHashes(stop, { imageHash, secondImageHash });
+	ExpectContentHash(stop, QStringLiteral("audioFileHash"), audioHash);
+	ExpectCoords(stop, 12.25, 48.5);
+}
+
+TEST_F(FileHash, TourToJsonMatchesServerDocumentShape)
+{
+	const auto coverBytes = CoverBytes();
+	const auto coverUrl = WriteMedia(QStringLiteral("server-cover.png"), coverBytes);
+	const auto gateImageUrl = WriteMedia(QStringLiteral("gate.png"), kAbcBytes);
+	const auto gateSecondImageUrl = WriteMedia(QStringLiteral("gate-2.png"), CoverBytes());
+	const auto gateAudioUrl = WriteMedia(QStringLiteral("gate.mp3"), kNarrationBytes);
+
+	auto gate = MakeStop(
+		QStringLiteral("Gate"),
+		QList<QUrl> { gateImageUrl, gateSecondImageUrl },
+		gateAudioUrl);
+	gate.description = QStringLiteral("Start here");
+	gate.coords = QGeoCoordinate(55.75, 37.61);
+
+	Tours::TourStop pier;
+	pier.id = 2;
+	pier.title = QStringLiteral("Pier");
+	pier.description = QStringLiteral("No media");
+	AssignStopImages(pier, {});
+	// Optional coords omitted; empty images; absent audio -> null hash.
+
+	auto tour = MakeTour(QStringLiteral("Belgrade walk"), coverUrl, { gate, pier });
+	tour.description = QStringLiteral("A short walking tour.");
+	tour.lang = QStringLiteral("en");
+	tour.distance = 1250;
+	tour.tourPath = {
+		QGeoCoordinate(55.76, 37.62),
+		QGeoCoordinate(55.75, 37.61),
+	};
+
+	const auto json = Tours::TourToJson(tour);
+	ASSERT_FALSE(json.isEmpty());
+
+	const QStringList topKeys = {
+		QStringLiteral("schemaVersion"),
+		QStringLiteral("title"),
+		QStringLiteral("description"),
+		QStringLiteral("lang"),
+		QStringLiteral("imageFileHash"),
+		QStringLiteral("distance"),
+		QStringLiteral("purchase"),
+		QStringLiteral("stops"),
+		QStringLiteral("path"),
+		QStringLiteral("isDraft"),
+	};
+	for (const auto & key : topKeys)
+		EXPECT_TRUE(json.contains(key)) << key.toStdString();
+	ExpectNoForbiddenPublishKeys(json);
+	EXPECT_TRUE(json.value(QStringLiteral("isDraft")).toBool());
+
+	EXPECT_EQ(json.value(QStringLiteral("schemaVersion")).toInt(), 1);
+	EXPECT_EQ(json.value(QStringLiteral("title")).toString(), QStringLiteral("Belgrade walk"));
+	EXPECT_EQ(json.value(QStringLiteral("description")).toString(), QStringLiteral("A short walking tour."));
+	EXPECT_EQ(json.value(QStringLiteral("lang")).toString(), QStringLiteral("en"));
+	EXPECT_DOUBLE_EQ(json.value(QStringLiteral("distance")).toDouble(), 1250);
+	ExpectContentHash(json, QStringLiteral("imageFileHash"), ContentHash(coverBytes));
+	ExpectDefaultUnpaidPurchase(json);
+	ExpectPathCoords(json, tour.tourPath);
+
+	ASSERT_EQ(json.value(QStringLiteral("stops")).toArray().size(), 2);
+
+	const auto gateJson = FindStop(json, QStringLiteral("Gate"));
+	ExpectNoForbiddenPublishKeys(gateJson);
+	EXPECT_EQ(gateJson.value(QStringLiteral("title")).toString(), QStringLiteral("Gate"));
+	EXPECT_EQ(gateJson.value(QStringLiteral("description")).toString(), QStringLiteral("Start here"));
+	ExpectImageFileHashes(
+		gateJson,
+		{ QString::fromLatin1(kAbcSha256), ContentHash(CoverBytes()) });
+	ExpectContentHash(gateJson, QStringLiteral("audioFileHash"), ContentHash(kNarrationBytes));
+	ExpectCoords(gateJson, 55.75, 37.61);
+
+	const auto pierJson = FindStop(json, QStringLiteral("Pier"));
+	ExpectNoForbiddenPublishKeys(pierJson);
+	EXPECT_EQ(pierJson.value(QStringLiteral("title")).toString(), QStringLiteral("Pier"));
+	EXPECT_EQ(pierJson.value(QStringLiteral("description")).toString(), QStringLiteral("No media"));
+	ExpectImageFileHashes(pierJson, {});
+	ExpectNullAudioFileHash(pierJson);
+	EXPECT_FALSE(pierJson.contains(QStringLiteral("coords")));
 }
