@@ -182,9 +182,37 @@ BasePage {
             Layout.preferredHeight: 50
 
             visible: !rootID.isOwned
-            enabled: !rootID.purchasePending
+            enabled: !rootID.purchasePending && !PurchaseController.purchaseInProgress
             reversedColors: true
             text: qsTr("Unlock tour")
+            contentItem: Item {
+                implicitWidth: unlockTourLabelID.implicitWidth
+                implicitHeight: Math.max(unlockTourLabelID.implicitHeight, unlockTourBusyID.implicitHeight)
+
+                Text {
+                    id: unlockTourLabelID
+
+                    anchors.centerIn: parent
+                    text: unlockTourButtonID.text
+                    font {
+                        pixelSize: 16
+                        bold: true
+                    }
+                    color: "white"
+                    visible: !PurchaseController.purchaseInProgress
+                }
+
+                StyledBusyIndicator {
+                    id: unlockTourBusyID
+
+                    anchors.centerIn: parent
+                    implicitHeight: 28
+                    width: 28
+                    height: 28
+                    visible: PurchaseController.purchaseInProgress
+                    running: visible
+                }
+            }
             onClicked: {
                 PurchaseController.RequestTourPurchaseFlow(rootID.tour)
             }

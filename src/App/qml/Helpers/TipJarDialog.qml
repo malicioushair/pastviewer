@@ -11,7 +11,7 @@ import PurchaseController
 PromptDialog {
     id: rootID
 
-    closePolicy: PurchaseController.tipPurchaseInProgress
+    closePolicy: PurchaseController.purchaseInProgress
                  ? Popup.NoAutoClose
                  : Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
@@ -55,7 +55,7 @@ PromptDialog {
             font.pixelSize: 14
         }
 
-        BusyIndicator {
+        StyledBusyIndicator {
             Layout.alignment: Qt.AlignHCenter
 
             visible: PurchaseController.tipProductsLoading
@@ -79,7 +79,7 @@ PromptDialog {
 
                     text: (modelData.title ? modelData.title + " · " : "")
                           + modelData.displayPrice
-                    enabled: !PurchaseController.tipPurchaseInProgress
+                    enabled: !PurchaseController.purchaseInProgress
                     opacity: enabled ? 1 : 0.6
                     onClicked: PurchaseController.PurchaseTip(modelData.id)
                 }
@@ -90,7 +90,7 @@ PromptDialog {
             Layout.alignment: Qt.AlignRight
 
             text: qsTranslate("TipsPromptDialog", "Not now")
-            enabled: !PurchaseController.tipPurchaseInProgress
+            enabled: !PurchaseController.purchaseInProgress
             opacity: enabled ? 1 : 0.6
             onClicked: rootID.close()
         }

@@ -46,7 +46,7 @@ BasePage {
                         anchors.fill: parent
                         source: model.ImageUrl
                     }
-                    BusyIndicator {
+                    StyledBusyIndicator {
                         anchors.fill: parent
                         running: imageID.status === Image.Loading
                     }

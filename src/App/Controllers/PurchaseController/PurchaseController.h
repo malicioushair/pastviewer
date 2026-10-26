@@ -18,7 +18,7 @@ class PurchaseController
 
 	Q_PROPERTY(QVariantList tipProducts READ TipProducts NOTIFY tipProductsChanged)
 	Q_PROPERTY(bool tipProductsLoading READ TipProductsLoading NOTIFY tipProductsLoadingChanged)
-	Q_PROPERTY(bool tipPurchaseInProgress READ TipPurchaseInProgress NOTIFY tipPurchaseInProgressChanged)
+	Q_PROPERTY(bool purchaseInProgress READ PurchaseInProgress NOTIFY purchaseInProgressChanged)
 
 public:
 	explicit PurchaseController(QObject * parent = nullptr);
@@ -31,7 +31,7 @@ signals:
 	void tipJarRequested();
 	void tipProductsChanged();
 	void tipProductsLoadingChanged();
-	void tipPurchaseInProgressChanged();
+	void purchaseInProgressChanged();
 	void tipPurchaseSucceeded();
 	void tipPurchasePending();
 	void tipOperationFailed();
@@ -51,7 +51,7 @@ public:
 
 	QVariantList TipProducts() const;
 	bool TipProductsLoading() const;
-	bool TipPurchaseInProgress() const;
+	bool PurchaseInProgress() const;
 
 private:
 	void NotePendingTourPurchase(const QString & productId, const QString & tourId);

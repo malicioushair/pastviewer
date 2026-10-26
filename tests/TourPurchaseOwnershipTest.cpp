@@ -62,6 +62,12 @@ concept HasTourOwnershipApi = requires(Controller & controller, const DisplayTou
 };
 
 template <typename Controller>
+concept HasPurchaseInProgressApi = requires(Controller & controller) {
+    { controller.PurchaseInProgress() } -> std::same_as<bool>;
+    &Controller::purchaseInProgressChanged;
+};
+
+template <typename Controller>
 std::optional<OwnershipEmission> WaitForTourOwned(Controller & controller, const DisplayTour & tour)
 {
     if constexpr (!HasTourOwnershipApi<Controller>)
@@ -97,6 +103,65 @@ std::optional<OwnershipEmission> WaitForTourOwned(Controller & controller, const
     }
 }
 
+// Observes purchaseInProgress across a CheckTourOwned call. Desktop ownership
+// does not use StoreKit; the flag must still go true for the in-flight query
+// and be false again by the time tourOwned is delivered.
+struct PurchaseInProgressDuringOwnership
+{
+    std::optional<OwnershipEmission> emission;
+    bool sawPurchaseInProgress = false;
+    bool purchaseInProgressWhenOwned = true;
+};
+
+template <typename Controller>
+std::optional<PurchaseInProgressDuringOwnership>
+WaitForTourOwnedObservingPurchaseInProgress(Controller & controller, const DisplayTour & tour)
+{
+    if constexpr (!HasTourOwnershipApi<Controller> || !HasPurchaseInProgressApi<Controller>)
+    {
+        ADD_FAILURE()
+            << "PurchaseController must expose CheckTourOwned, tourOwned, "
+               "PurchaseInProgress(), and purchaseInProgressChanged";
+        return std::nullopt;
+    }
+    else
+    {
+        PurchaseInProgressDuringOwnership observed;
+        QEventLoop loop;
+        const auto progressConnection = QObject::connect(
+            &controller,
+            &Controller::purchaseInProgressChanged,
+            &loop,
+            [&]() {
+                if (controller.PurchaseInProgress())
+                    observed.sawPurchaseInProgress = true;
+            });
+        const auto ownedConnection = QObject::connect(
+            &controller,
+            &Controller::tourOwned,
+            &loop,
+            [&](const QString & tourId, bool owned) {
+                observed.emission = OwnershipEmission { tourId, owned };
+                observed.purchaseInProgressWhenOwned = controller.PurchaseInProgress();
+                loop.quit();
+            });
+
+        controller.CheckTourOwned(tour);
+        if (!observed.emission)
+        {
+            QTimer timeout;
+            timeout.setSingleShot(true);
+            QObject::connect(&timeout, &QTimer::timeout, &loop, &QEventLoop::quit);
+            timeout.start(kOwnershipSignalTimeoutMs);
+            loop.exec();
+        }
+
+        QObject::disconnect(progressConnection);
+        QObject::disconnect(ownedConnection);
+        return observed;
+    }
+}
+
 template <typename Controller>
 std::unique_ptr<Controller> MakePurchaseController()
 {
@@ -108,6 +173,40 @@ std::unique_ptr<Controller> MakePurchaseController()
     {
         ADD_FAILURE() << "PurchaseController must be constructible for unit tests";
         return nullptr;
+    }
+}
+
+// Template so discarded if-constexpr branches stay dependent on Controller and
+// compile before purchaseInProgress replaces tipPurchaseInProgress.
+template <typename Controller>
+void ExpectPurchaseInProgressTracksCheckTourOwned(Controller & controller)
+{
+    if constexpr (!HasPurchaseInProgressApi<Controller>)
+    {
+        GTEST_FAIL()
+            << "PurchaseController must expose purchaseInProgress "
+               "(PurchaseInProgress / purchaseInProgressChanged), not tipPurchaseInProgress";
+    }
+    else
+    {
+        EXPECT_FALSE(controller.PurchaseInProgress())
+            << "purchaseInProgress must be false at rest";
+
+        const auto tour = MakeTour(QStringLiteral("paid-progress"), true);
+        const auto observed = WaitForTourOwnedObservingPurchaseInProgress(controller, tour);
+
+        ASSERT_TRUE(observed.has_value());
+        ASSERT_TRUE(observed->emission.has_value())
+            << "CheckTourOwned did not emit tourOwned within " << kOwnershipSignalTimeoutMs << "ms";
+        EXPECT_EQ(observed->emission->tourId, tour.id);
+        EXPECT_FALSE(observed->emission->owned)
+            << "a paid tour on desktop must emit tourOwned with owned false";
+        EXPECT_TRUE(observed->sawPurchaseInProgress)
+            << "purchaseInProgress must become true while CheckTourOwned is in flight";
+        EXPECT_FALSE(observed->purchaseInProgressWhenOwned)
+            << "purchaseInProgress must be false by the time tourOwned is observed";
+        EXPECT_FALSE(controller.PurchaseInProgress())
+            << "purchaseInProgress must remain false after ownership settles";
     }
 }
 
@@ -170,5 +269,15 @@ TEST_F(TourPurchaseOwnership, PaidTourOnDesktopEmitsNotOwned)
         << "CheckTourOwned did not emit tourOwned within " << kOwnershipSignalTimeoutMs << "ms";
     EXPECT_EQ(emission->tourId, tour.id);
     EXPECT_FALSE(emission->owned) << "a paid tour on desktop must emit tourOwned with owned false";
+#endif
+}
+
+TEST_F(TourPurchaseOwnership, PurchaseInProgressTracksCheckTourOwnedOnDesktop)
+{
+#if !PASTVIEWER_HAS_PURCHASE_CONTROLLER
+    GTEST_FAIL() << "PurchaseController is not implemented; ownership must move off TourController";
+#else
+    ASSERT_NE(controller, nullptr);
+    ExpectPurchaseInProgressTracksCheckTourOwned(*controller);
 #endif
 }

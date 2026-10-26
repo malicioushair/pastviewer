@@ -61,8 +61,9 @@ struct PurchaseController::Impl
 	bool tipProductsLoading { false };
 	bool tipPurchaseInProgress { false };
 	bool tourPurchaseInProgress { false };
-	QString purchasingTourId {};
-	QString purchasingTourProductId {};
+    int ownershipChecksInFlight { 0 };
+    QString purchasingTourId {};
+    QString purchasingTourProductId {};
 	// Product id -> tour id. Survives a later purchase attempt so Ask to Buy can still unlock the tour.
 	QHash<QString, QString> pendingTourByProductId {};
 	QSet<QString> pendingMessageProductIds {};
@@ -227,20 +228,20 @@ void PurchaseController::PurchaseTip(const QString & productId)
 		return;
 
 	m_impl->tipPurchaseInProgress = true;
-	emit tipPurchaseInProgressChanged();
+    emit purchaseInProgressChanged();
 
-	const QPointer<PurchaseController> guard(this);
-	PlatformDependentLogic::Purchase(
+    const QPointer<PurchaseController> guard(this);
+    PlatformDependentLogic::Purchase(
 		productId,
 		[guard, productId](PlatformDependentLogic::PurchaseResult result, const QString & error) {
 			if (!guard)
 				return;
 
 			guard->m_impl->tipPurchaseInProgress = false;
-			emit guard->tipPurchaseInProgressChanged();
+            emit guard->purchaseInProgressChanged();
 
-			switch (result)
-			{
+            switch (result)
+            {
 				case PlatformDependentLogic::PurchaseResult::Succeeded:
 					LOG(INFO) << "Native tip purchase succeeded: " << productId.toStdString();
 					if (guard->m_impl->tipPromptTracker)
@@ -270,9 +271,12 @@ bool PurchaseController::TipProductsLoading() const
 	return m_impl->tipProductsLoading;
 }
 
-bool PurchaseController::TipPurchaseInProgress() const
+bool PurchaseController::PurchaseInProgress() const
 {
-	return m_impl->tipPurchaseInProgress || m_impl->tourPurchaseInProgress;
+    return false
+        || m_impl->tipPurchaseInProgress
+        || m_impl->tourPurchaseInProgress
+        || m_impl->ownershipChecksInFlight > 0;
 }
 
 bool PurchaseController::IsTourPurchasePending(const QString & tourId) const
@@ -445,10 +449,10 @@ void PurchaseController::StartTourPurchase(const QString & tourId, const QString
 	m_impl->purchasingTourId = tourId;
 	m_impl->purchasingTourProductId = productId;
 	m_impl->tourPurchaseInProgress = true;
-	emit tipPurchaseInProgressChanged();
+    emit purchaseInProgressChanged();
 
-	const QPointer<PurchaseController> guard(this);
-	PlatformDependentLogic::Purchase(
+    const QPointer<PurchaseController> guard(this);
+    PlatformDependentLogic::Purchase(
 		productId,
 		[guard, productId, tourId](PlatformDependentLogic::PurchaseResult result, const QString & error) {
 			if (!guard)
@@ -458,18 +462,18 @@ void PurchaseController::StartTourPurchase(const QString & tourId, const QString
 				guard->NotePendingTourPurchase(productId, tourId);
 
 			guard->m_impl->tourPurchaseInProgress = false;
-			emit guard->tipPurchaseInProgressChanged();
+            emit guard->purchaseInProgressChanged();
 
-			const auto clearPurchase = [guard, productId] {
-				if (guard->m_impl->purchasingTourProductId != productId)
+            const auto clearPurchase = [guard, productId] {
+                if (guard->m_impl->purchasingTourProductId != productId)
 					return;
 				if (guard->m_impl->pendingMessageProductIds.contains(productId))
 					return;
 
 				guard->m_impl->purchasingTourId.clear();
 				guard->m_impl->purchasingTourProductId.clear();
-			};
-			switch (result)
+            };
+            switch (result)
 			{
 				case PlatformDependentLogic::PurchaseResult::Succeeded:
 					LOG(INFO) << "Tour purchase succeeded: " << productId.toStdString();
@@ -495,12 +499,20 @@ void PurchaseController::CheckTourOwned(const DisplayTour & tour)
 {
 	// A later check for the same tour supersedes a slower in-flight result.
 	const auto requestGeneration = ++m_impl->tourOwnedRequestGeneration[tour.id];
-	const QPointer<PurchaseController> guard(this);
-	const auto publish = [guard, tourId = tour.id, requestGeneration](bool owned) {
+    ++m_impl->ownershipChecksInFlight;
+    emit purchaseInProgressChanged();
+
+    const QPointer<PurchaseController> guard(this);
+    const auto publish = [guard, tourId = tour.id, requestGeneration](bool owned) {
 		if (!guard)
 			return;
-		if (guard->m_impl->tourOwnedRequestGeneration.value(tourId) != requestGeneration)
-			return;
+
+        if (guard->m_impl->ownershipChecksInFlight > 0)
+            --guard->m_impl->ownershipChecksInFlight;
+        emit guard->purchaseInProgressChanged();
+
+        if (guard->m_impl->tourOwnedRequestGeneration.value(tourId) != requestGeneration)
+            return;
 		emit guard->tourOwned(tourId, owned);
 	};
 
