@@ -60,7 +60,7 @@ void EnsureCoreApplication()
 	static int argc = 1;
 	static char executableName[] = "PastViewerTests";
 	static char * argv[] = { executableName, nullptr };
-	new QCoreApplication(argc, argv);
+	static auto * const application = new QCoreApplication(argc, argv);
 }
 
 QString ContentHash(const QByteArray & bytes)

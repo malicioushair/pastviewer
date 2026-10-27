@@ -265,8 +265,9 @@ void TourDraftsModel::Update()
 		});
 		if (std::ranges::none_of(m_impl->tours, [&](const Tours::Tour & item) { return item.id == tour.id; }))
 		{
-			beginInsertRows({}, rowCount(), rowCount());
-			m_impl->tours.push_back(tour);
+            const auto row = static_cast<int>(m_impl->tours.size());
+            beginInsertRows({}, row, row);
+            m_impl->tours.push_back(tour);
             endInsertRows();
         }
     }

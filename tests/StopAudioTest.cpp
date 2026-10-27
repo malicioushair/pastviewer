@@ -47,12 +47,12 @@ void EnsureCoreApplication()
 	if (QCoreApplication::instance())
 		return;
 
-	// Leak the application. QNetworkAccessManager leaves process-lifetime
+	// Leak the application for process lifetime. QNetworkAccessManager leaves
 	// objects that crash if the application is destroyed first.
 	static int argc = 1;
 	static char executableName[] = "PastViewerTests";
 	static char * argv[] = { executableName, nullptr };
-	new QCoreApplication(argc, argv);
+	static auto * const application = new QCoreApplication(argc, argv);
 }
 
 class JsonBodyReply : public QNetworkReply

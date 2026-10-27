@@ -20,12 +20,12 @@ void EnsureCoreApplication()
 	if (QCoreApplication::instance())
 		return;
 
-	// Leak the application. TourDraftsModel's QNetworkAccessManager leaves
-	// process-lifetime QObjects that crash if it is destroyed first.
+	// Leak the application for process lifetime. TourDraftsModel's
+	// QNetworkAccessManager leaves QObjects that crash if it is destroyed first.
 	static int argc = 1;
 	static char executableName[] = "PastViewerTests";
 	static char * argv[] = { executableName, nullptr };
-	new QCoreApplication(argc, argv);
+	static auto * const application = new QCoreApplication(argc, argv);
 }
 
 template <typename Model>
