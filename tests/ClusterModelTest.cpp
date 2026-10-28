@@ -17,6 +17,10 @@
 #include <QMetaType>
 
 // Mock source model for testing ClusterModel
+namespace {
+constexpr auto MAX_VISIBLE_CLUSTERS = 60;
+};
+
 class MockSourceModel : public QAbstractListModel
 {
 	Q_OBJECT
@@ -98,6 +102,26 @@ public:
 		endResetModel();
 	}
 
+	void removeItem(int row)
+	{
+		beginRemoveRows({}, row, row);
+		m_items.erase(m_items.begin() + row);
+		endRemoveRows();
+	}
+
+	void changeCoordinate(int row, const QGeoCoordinate & coordinate)
+	{
+		m_items.at(row).coord = coordinate;
+		emit dataChanged(index(row), index(row), { BaseModel::Coordinate });
+	}
+
+	void replaceItems(std::vector<MockItem> items)
+	{
+		beginResetModel();
+		m_items = std::move(items);
+		endResetModel();
+	}
+
 private:
 	std::vector<MockItem> m_items;
 	int m_zoomLevel;
@@ -136,7 +160,7 @@ protected:
 // Test ClusterModel with empty source model
 TEST_F(ClusterModelTest, EmptySourceModel)
 {
-	EXPECT_EQ(clusterModel->rowCount(), 0);
+    EXPECT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
 }
 
 // Test ClusterModel with single item
@@ -146,11 +170,11 @@ TEST_F(ClusterModelTest, SingleItem)
 	const QGeoRectangle viewport(QGeoCoordinate(55.0, 37.0), QGeoCoordinate(56.0, 38.0));
 	clusterModel->OnViewportChanged(viewport);
 
-	EXPECT_EQ(clusterModel->rowCount(), 1);
+    EXPECT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
 
-	const auto index = clusterModel->index(0, 0);
-	EXPECT_FALSE(clusterModel->data(index, ClusterModel::IsCluster).toBool());
-	EXPECT_EQ(clusterModel->data(index, ClusterModel::ClusterCount).toInt(), 1);
+    const auto index = clusterModel->index(0, 0);
+    EXPECT_FALSE(clusterModel->data(index, ClusterModel::IsCluster).toBool());
+    EXPECT_EQ(clusterModel->data(index, ClusterModel::ClusterCount).toInt(), 1);
 }
 
 // Test ClusterModel with two items far apart (should not cluster)
@@ -162,10 +186,10 @@ TEST_F(ClusterModelTest, TwoItemsFarApart)
 
 	clusterModel->OnViewportChanged(viewport);
 
-	// Should have 2 individual nodes
-	EXPECT_EQ(clusterModel->rowCount(), 2);
-	EXPECT_FALSE(clusterModel->data(clusterModel->index(0, 0), ClusterModel::IsCluster).toBool());
-	EXPECT_FALSE(clusterModel->data(clusterModel->index(1, 0), ClusterModel::IsCluster).toBool());
+    // Should have MAX_VISIBLE_CLUSTERS individual nodes
+    EXPECT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
+    EXPECT_FALSE(clusterModel->data(clusterModel->index(0, 0), ClusterModel::IsCluster).toBool());
+    EXPECT_FALSE(clusterModel->data(clusterModel->index(1, 0), ClusterModel::IsCluster).toBool());
 }
 
 // Test ClusterModel with duplicate CIDs (should deduplicate)
@@ -177,8 +201,8 @@ TEST_F(ClusterModelTest, DuplicateCids)
 
 	clusterModel->OnViewportChanged(viewport);
 
-	// Should have only 1 node (duplicate removed)
-	EXPECT_EQ(clusterModel->rowCount(), 1);
+    // Should have only MAX_VISIBLE_CLUSTERS node (duplicate removed)
+    EXPECT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
 }
 
 // Test ClusterModel role names
@@ -249,3 +273,70 @@ TEST_F(ClusterModelTest, InvalidIndex)
 }
 
 #include "ClusterModelTest.moc"
+
+TEST_F(ClusterModelTest, SourceInsertAndRemoveRebuildClusterRowsWithPairedResets)
+{
+    QObject observer;
+    int forwardedRowSignals = 0;
+
+    QObject::connect(clusterModel, &QAbstractItemModel::rowsInserted, &observer, [&] { ++forwardedRowSignals; });
+    QObject::connect(clusterModel, &QAbstractItemModel::rowsRemoved, &observer, [&] { ++forwardedRowSignals; });
+
+    mockModel->addItem(1, QGeoCoordinate(55.7558, 37.6173));
+    mockModel->addItem(2, QGeoCoordinate(55.7558, 37.6173));
+    ASSERT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
+    EXPECT_EQ(clusterModel->data(clusterModel->index(0), ClusterModel::ClusterCount).toInt(), 2);
+    mockModel->removeItem(1);
+    ASSERT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
+    EXPECT_FALSE(clusterModel->data(clusterModel->index(0), ClusterModel::IsCluster).toBool());
+    EXPECT_EQ(clusterModel->data(clusterModel->index(0), BaseModel::Cid).toInt(), 1);
+    mockModel->removeItem(0);
+    EXPECT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
+    EXPECT_EQ(forwardedRowSignals, 0);
+}
+
+TEST_F(ClusterModelTest, SourceCoordinateChangeReclustersWithoutForwardingSourceIndexes)
+{
+    mockModel->addItem(1, QGeoCoordinate(55.7558, 37.6173));
+    mockModel->addItem(2, QGeoCoordinate(55.7558, 37.6173));
+    ASSERT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
+    QObject observer;
+    ASSERT_TRUE(clusterModel->data(clusterModel->index(0), ClusterModel::IsCluster).toBool());
+    ASSERT_EQ(clusterModel->data(clusterModel->index(0), ClusterModel::ClusterCount).toInt(), 2);
+    int dataChanges = 0;
+    int resets = 0;
+    QObject::connect(clusterModel, &QAbstractItemModel::dataChanged, &observer,
+        [&](const QModelIndex & topLeft, const QModelIndex & bottomRight) {
+            ++dataChanges;
+            EXPECT_EQ(topLeft.model(), clusterModel);
+            EXPECT_EQ(bottomRight.model(), clusterModel);
+            EXPECT_TRUE(topLeft.isValid());
+            EXPECT_TRUE(bottomRight.isValid());
+            EXPECT_EQ(topLeft.column(), 0);
+            EXPECT_EQ(bottomRight.column(), 0);
+            EXPECT_GE(topLeft.row(), 0);
+            EXPECT_LE(topLeft.row(), bottomRight.row());
+            EXPECT_LT(bottomRight.row(), clusterModel->rowCount());
+        });
+    QObject::connect(clusterModel, &QAbstractItemModel::modelReset, &observer, [&] { ++resets; });
+    mockModel->changeCoordinate(1, QGeoCoordinate(48.8566, 2.3522));
+    EXPECT_EQ(clusterModel->rowCount(), MAX_VISIBLE_CLUSTERS);
+    EXPECT_EQ(clusterModel->rowCount(clusterModel->index(0)), 0);
+    EXPECT_GT(dataChanges, 0);
+    EXPECT_EQ(resets, 0);
+    QHash<int, QGeoCoordinate> coordinatesByCid;
+    for (int row = 0; row < clusterModel->rowCount(); ++row)
+    {
+        const auto index = clusterModel->index(row);
+        const auto coordinate = clusterModel->data(index, BaseModel::Coordinate).value<QGeoCoordinate>();
+        if (!coordinate.isValid())
+            continue;
+        EXPECT_FALSE(clusterModel->data(index, ClusterModel::IsCluster).toBool());
+        const auto cid = clusterModel->data(index, BaseModel::Cid).toInt();
+        EXPECT_FALSE(coordinatesByCid.contains(cid));
+        coordinatesByCid.insert(cid, coordinate);
+    }
+    ASSERT_EQ(coordinatesByCid.size(), 2);
+    EXPECT_EQ(coordinatesByCid.value(1), QGeoCoordinate(55.7558, 37.6173));
+    EXPECT_EQ(coordinatesByCid.value(2), QGeoCoordinate(48.8566, 2.3522));
+}

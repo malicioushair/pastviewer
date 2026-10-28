@@ -1,0 +1,194 @@
+#include "TourController.h"
+
+#include <memory>
+
+#include <QCryptographicHash>
+#include <QDir>
+#include <QFile>
+#include <QGeoCoordinate>
+#include <QHttpMultiPart>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QMimeDatabase>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QQmlEngine>
+#include <QRegularExpression>
+#include <QStandardPaths>
+#include <QVariant>
+#include "App/Controllers/ModelController/PositionSourceAdapter.h"
+#include "App/Models/AvailableToursModel/AvailableToursModel.h"
+#include "App/Models/TourDraftsModel/TourDraftsModel.h"
+#include "App/Models/TourStopsModel/TourStopsModel.h"
+#include "App/Tours/Tours.h"
+
+struct TourController::Impl
+{
+    const PositionSourceAdapter & positionSource;
+    QList<Tours::Tour> availableTours {};
+    TourDraftsModel tourDraftsModel { positionSource };
+    AvailableToursModel availableToursModel {};
+    TourStopsModel tourStopsModel {};
+    QVariant currentTour {};
+};
+
+TourController::TourController(const PositionSourceAdapter & positionSource, QObject * parent)
+	: QObject(parent)
+	, m_impl(std::make_unique<Impl>(positionSource))
+{
+    connect(&m_impl->tourDraftsModel, &TourDraftsModel::CurrentDistanceChanged, this, &TourController::DistanceChanged);
+    connect(&m_impl->tourDraftsModel, &TourDraftsModel::CurrentTourPathChanged, this, &TourController::TourPathChanged);
+    connect(&m_impl->tourDraftsModel, &TourDraftsModel::AssetsUploadFinished, this, &TourController::assetUploadFinished);
+    connect(&m_impl->tourDraftsModel, &TourDraftsModel::ImageUploadFailed, this, &TourController::ImageUploadFailed);
+    connect(&m_impl->tourDraftsModel, &TourDraftsModel::StopsUpdated, this, &TourController::CurrentStopsChanged);
+    connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::SelectedStopTitleChanged, Qt::QueuedConnection);
+    connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::selectedStopChanged, Qt::QueuedConnection);
+}
+
+TourController::~TourController() = default;
+
+void TourController::StartRecording()
+{
+    m_impl->tourDraftsModel.StartRecording();
+}
+
+void TourController::PauseRecording()
+{
+    m_impl->tourDraftsModel.PauseRecording();
+}
+
+void TourController::ResumeRecording()
+{
+    m_impl->tourDraftsModel.ResumeRecording();
+}
+
+void TourController::StopRecording()
+{
+    m_impl->tourDraftsModel.StopRecording();
+}
+
+QString TourController::CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang)
+{
+    return m_impl->tourDraftsModel.CreateNewTour(title, description, imageFile, tourLang);
+}
+
+void TourController::CreateTourStop(const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile, const QGeoCoordinate & coordinate)
+{
+    m_impl->tourDraftsModel.CreateTourStop(title, description, imageFiles, audioFile, coordinate);
+}
+
+QVariantMap TourController::GetDraft(qlonglong id) const
+{
+    return m_impl->tourDraftsModel.GetDraft(id);
+}
+
+QString TourController::UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile)
+{
+    return m_impl->tourDraftsModel.UpdateDraftDetails(id, title, description, imageFile);
+}
+
+bool TourController::SelectDraft(qlonglong id)
+{
+    return m_impl->tourDraftsModel.SelectDraft(id);
+}
+
+QVariantMap TourController::GetDraftStop(qlonglong id) const
+{
+    return m_impl->tourDraftsModel.GetDraftStop(id);
+}
+
+QString TourController::UpdateDraftStop(qlonglong id, const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile)
+{
+    return m_impl->tourDraftsModel.UpdateDraftStop(id, title, description, imageFiles, audioFile);
+}
+
+void TourController::AddPoint(const QGeoCoordinate & coordinate)
+{
+    m_impl->tourDraftsModel.AddPoint(coordinate);
+}
+
+void TourController::RemoveLastPoint()
+{
+    m_impl->tourDraftsModel.RemoveLastPoint();
+}
+
+QAbstractListModel * TourController::GetDraftsModel() const
+{
+	return &m_impl->tourDraftsModel;
+}
+
+QString TourController::GetDistance() const
+{
+    return m_impl->tourDraftsModel.GetDistance();
+}
+
+QString TourController::GetCurrentStops() const
+{
+    return m_impl->tourDraftsModel.GetCurrentStops();
+}
+
+QVariantList TourController::GetPlacedStopMarkers() const
+{
+    return m_impl->tourDraftsModel.GetPlacedStopMarkers();
+}
+
+QList<QGeoCoordinate> TourController::GetTourPath() const
+{
+    return m_impl->tourDraftsModel.GetTourPath();
+}
+
+QAbstractListModel * TourController::GetAvailableToursModel() const
+{
+	m_impl->availableToursModel.Update();
+	QQmlEngine::setObjectOwnership(&m_impl->availableToursModel, QJSEngine::CppOwnership);
+	return &m_impl->availableToursModel;
+}
+
+QAbstractListModel * TourController::GetTourStopsModel() const
+{
+    QQmlEngine::setObjectOwnership(&m_impl->tourStopsModel, QJSEngine::CppOwnership);
+    return &m_impl->tourStopsModel;
+}
+
+void TourController::UploadAsset(const QList<QUrl> & assetFiles)
+{
+    m_impl->tourDraftsModel.UploadAsset(assetFiles);
+}
+
+QString TourController::GetSelectedStopTitle() const
+{
+    return m_impl->tourStopsModel.GetSelectedStopTitle();
+}
+
+void TourController::HighlightNextStop()
+{
+    m_impl->tourStopsModel.SelectNextStop();
+}
+
+void TourController::HighlightPrevStop()
+{
+    m_impl->tourStopsModel.SelectPrevStop();
+}
+
+QVariant TourController::GetCurrentTour() const
+{
+    return m_impl->currentTour;
+}
+
+void TourController::SetCurrentTour(const QVariant & tour)
+{
+    m_impl->currentTour = tour;
+
+    if (!tour.canConvert<DisplayTour>())
+    {
+        LOG(ERROR) << "Invalid tour";
+        return assert(false && "Invalid tour");
+    }
+
+    const auto selectedTour = tour.value<DisplayTour>();
+    m_impl->tourStopsModel.SetStops(selectedTour.stops);
+
+    emit CurrentTourChanged();
+}

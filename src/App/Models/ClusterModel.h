@@ -42,6 +42,8 @@ public:
 signals:
 	void CountChanged();
 	void ZoomsToDecluster(const QHash<int, int> & cidToZoom);
+	void MarkersResetStarted();
+	void MarkersResetFinished();
 
 public:
 	int rowCount(const QModelIndex & parent = QModelIndex()) const override;
@@ -54,6 +56,10 @@ public slots:
 	void OnViewportChanged(const QGeoRectangle & viewport);
 
 private:
+	void BeginSourceChange();
+	void EndSourceChange();
+	void PublishNodes(std::vector<Node> nodes);
+
 	struct Impl;
 	std::unique_ptr<Impl> m_impl;
 };

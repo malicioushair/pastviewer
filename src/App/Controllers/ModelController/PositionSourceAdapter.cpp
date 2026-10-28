@@ -17,11 +17,11 @@ enum class BearingSource
 
 struct PositionSourceAdapter::Impl
 {
-	Impl(const QGeoPositionInfoSource & source)
+	Impl(const QGeoPositionInfoSource * const source)
 		: source(source)
 	{}
 
-	const QGeoPositionInfoSource & source;
+	const QGeoPositionInfoSource * const source;
 	QGeoPositionInfo position;
 	QGeoCoordinate lastValidCoordinate;
 	QGeoCoordinate previousCoordinate;
@@ -30,11 +30,12 @@ struct PositionSourceAdapter::Impl
 	bool positionAvailable { true };
 };
 
-PositionSourceAdapter::PositionSourceAdapter(const QGeoPositionInfoSource & source, QObject * parent)
+PositionSourceAdapter::PositionSourceAdapter(const QGeoPositionInfoSource * const source, QObject * parent)
 	: QObject(parent)
 	, m_impl(std::make_unique<Impl>(source))
 {
-	connect(&m_impl->source, &QGeoPositionInfoSource::positionUpdated, this, &PositionSourceAdapter::OnPositionUpdated);
+	if (source)
+		connect(m_impl->source, &QGeoPositionInfoSource::positionUpdated, this, &PositionSourceAdapter::OnPositionUpdated);
 }
 
 PositionSourceAdapter::~PositionSourceAdapter() = default;
@@ -58,6 +59,11 @@ double PositionSourceAdapter::Bearing() const
 bool PositionSourceAdapter::IsPositionAvailable() const
 {
 	return m_impl->positionAvailable;
+}
+
+bool PositionSourceAdapter::IsSourceAvailable() const
+{
+	return !!m_impl->source;
 }
 
 void PositionSourceAdapter::OnPositionUpdated(const QGeoPositionInfo & info)

@@ -6,18 +6,19 @@ import "../GuiItems"
 import "colors.js" as Colors
 
 import PastViewer
+import PurchaseController
 
 PromptDialog {
     id: rootID
 
-    closePolicy: GuiController.tipPurchaseInProgress
+    closePolicy: PurchaseController.purchaseInProgress
                  ? Popup.NoAutoClose
                  : Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
-    onOpened: GuiController.LoadTipProducts()
+    onOpened: PurchaseController.LoadTipProducts()
 
     Connections {
-        target: GuiController
+        target: PurchaseController
 
         function onTipPurchaseSucceeded() {
             rootID.close()
@@ -54,22 +55,22 @@ PromptDialog {
             font.pixelSize: 14
         }
 
-        BusyIndicator {
+        StyledBusyIndicator {
             Layout.alignment: Qt.AlignHCenter
 
-            visible: GuiController.tipProductsLoading
+            visible: PurchaseController.tipProductsLoading
             running: visible
         }
 
         ColumnLayout {
             Layout.fillWidth: true
 
-            visible: !GuiController.tipProductsLoading
-                     && GuiController.tipProducts.length > 0
+            visible: !PurchaseController.tipProductsLoading
+                     && PurchaseController.tipProducts.length > 0
             spacing: 8
 
             Repeater {
-                model: GuiController.tipProducts
+                model: PurchaseController.tipProducts
 
                 StyledButton {
                     required property var modelData
@@ -78,9 +79,9 @@ PromptDialog {
 
                     text: (modelData.title ? modelData.title + " · " : "")
                           + modelData.displayPrice
-                    enabled: !GuiController.tipPurchaseInProgress
+                    enabled: !PurchaseController.purchaseInProgress
                     opacity: enabled ? 1 : 0.6
-                    onClicked: GuiController.PurchaseTip(modelData.id)
+                    onClicked: PurchaseController.PurchaseTip(modelData.id)
                 }
             }
         }
@@ -89,7 +90,7 @@ PromptDialog {
             Layout.alignment: Qt.AlignRight
 
             text: qsTranslate("TipsPromptDialog", "Not now")
-            enabled: !GuiController.tipPurchaseInProgress
+            enabled: !PurchaseController.purchaseInProgress
             opacity: enabled ? 1 : 0.6
             onClicked: rootID.close()
         }

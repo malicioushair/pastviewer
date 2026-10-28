@@ -8,13 +8,15 @@ Page {
 
     property bool blocksTipsPrompt: false
 
-    background: Rectangle {
-        color: Colors.palette.bg
-    }
-
-    Keys.onBackPressed: (event) => {
+    function goBack() {
         if (rootID.StackView.view.depth > 1) {
             rootID.StackView.view.pop()
         }
     }
+
+    background: Rectangle {
+        color: Colors.palette.bg
+    }
+
+    Keys.onBackPressed: goBack()
 }

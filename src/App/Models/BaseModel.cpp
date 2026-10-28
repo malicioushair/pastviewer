@@ -8,6 +8,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QPointer>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QVariant>
@@ -50,6 +51,7 @@ struct BaseModel::Impl
 	NON_COPY_MOVABLE(Impl);
 
 	std::unique_ptr<QNetworkAccessManager> networkManager;
+	QPointer<QNetworkReply> activeReply;
 	Items items { &Item::cid };
 	QGeoPositionInfoSource * positionSource;
 	QUrl url { "https://pastvu.com/api2" };
@@ -92,6 +94,7 @@ BaseModel::BaseModel(QGeoPositionInfoSource * positionSource, QObject * parent)
 		QNetworkRequest request(m_impl->url);
 		auto * reply = m_impl->networkManager->get(request);
 		reply->setProperty("requestNumber", ++m_impl->requestNumber);
+		m_impl->activeReply = reply;
 	});
 
 	connect(m_impl->networkManager.get(), &QNetworkAccessManager::finished, this, &BaseModel::OnNetworkReplyFinished);
@@ -231,21 +234,23 @@ QGeoRectangle BaseModel::GetLastKnownViewport() const
 
 void BaseModel::OnNetworkReplyFinished(QNetworkReply * reply)
 {
+	if (m_impl->activeReply == reply)
+		m_impl->activeReply = nullptr;
+
 	const auto requestNumber = reply->property("requestNumber").toInt();
-	if (const auto skipNonLastReply = requestNumber != m_impl->requestNumber)
+	reply->deleteLater();
+	if (requestNumber != m_impl->requestNumber)
 		return;
 
 	LOG(INFO) << "Reply received";
 	if (reply->error())
 	{
 		LOG(INFO) << "Reply error:" << reply->errorString().toStdString();
-		reply->deleteLater();
 		return;
 	}
 
 	LOG(INFO) << "Reply success";
 	const auto response = reply->readAll();
-	reply->deleteLater();
 
 	QJsonParseError parserError;
 	const auto jsonDoc = QJsonDocument::fromJson(response, &parserError);

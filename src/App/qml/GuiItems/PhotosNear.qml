@@ -15,9 +15,6 @@ Rectangle {
 
     property Map map: null
 
-    Layout.fillWidth: true
-    Layout.preferredHeight: 210
-
     radius: 16
     color: Colors.palette.bg
 

@@ -22,8 +22,11 @@ Item {
     property real animatedLon: 0
     property real animatedZoom: 0
 
+    property int duration: 500
     property var pendingClusterCheck: null
     readonly property bool running: animationGroup.running
+
+    signal animationFinished()
 
     ParallelAnimation {
         id: animationGroup
@@ -32,7 +35,7 @@ Item {
             id: latAnimation
             target: rootID
             property: "animatedLat"
-            duration: 500
+            duration: rootID.duration
             easing.type: Easing.InOutCubic
         }
 
@@ -40,7 +43,7 @@ Item {
             id: lonAnimation
             target: rootID
             property: "animatedLon"
-            duration: 500
+            duration: rootID.duration
             easing.type: Easing.InOutCubic
         }
 
@@ -48,13 +51,14 @@ Item {
             id: zoomAnimation
             target: rootID
             property: "animatedZoom"
-            duration: 500
+            duration: rootID.duration
             easing.type: Easing.InOutCubic
         }
 
         onFinished: {
             if (rootID.pendingClusterCheck)
                 rootID._handleAnimationFinished()
+            rootID.animationFinished()
         }
     }
 
@@ -143,11 +147,12 @@ Item {
      * @param {number} targetZoom - Target zoom level (0 to skip zoom animation)
      * @param {Object} clusterCoordinate - Original cluster coordinate (for split checking)
      */
-    function animateMapCenterAndZoom(targetCoordinate, targetZoom, clusterCoordinate) {
+    function animateMapCenterAndZoom(targetCoordinate, targetZoom, clusterCoordinate, duration = 500) {
         if (!map || !targetCoordinate || !targetCoordinate.isValid)
             return
 
         map.follow = false
+        rootID.duration = duration
 
         _setupCenterAnimation(targetCoordinate)
         _setupZoomAnimation(targetZoom)

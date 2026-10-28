@@ -3,6 +3,7 @@ package org.qtproject.PastViewer;
 import android.app.Activity;
 import android.util.Log;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
@@ -58,20 +59,46 @@ public final class GooglePlayBillingHelper {
         }
     }
 
+    private static final class OwnershipCheck {
+        final String productId;
+        final long requestId;
+
+        OwnershipCheck(String productId, long requestId) {
+            this.productId = productId;
+            this.requestId = requestId;
+        }
+    }
+
+    private static final class AcknowledgementWaiter {
+        final Runnable onSuccess;
+        final FailureHandler onFailure;
+
+        AcknowledgementWaiter(Runnable onSuccess, FailureHandler onFailure) {
+            this.onSuccess = onSuccess;
+            this.onFailure = onFailure;
+        }
+    }
+
     private static BillingClient billingClient;
     private static boolean connecting;
+    private static boolean billingConnectionStarting;
     private static Runnable pendingReadyAction;
     private static FailureHandler pendingFailureHandler;
+    private static final List<OwnershipCheck> ownershipChecksWaitingForConnection = new ArrayList<>();
+    private static final Map<String, List<AcknowledgementWaiter>> acknowledgementWaiters = new HashMap<>();
     private static final List<String> configuredProductIds = new ArrayList<>();
     private static final Map<String, ProductOffer> products = new HashMap<>();
     private static final Set<String> consumptionsInProgress = new HashSet<>();
     private static String activeProductId;
+    private static boolean activePurchaseIsNonConsumable;
+    private static boolean nonConsumableFlowLaunched;
     private static boolean purchaseCallbackPending;
 
     private GooglePlayBillingHelper() {}
 
     private static native void productsLoaded(String productsJson, String errorMessage);
     private static native void purchaseFinished(int result, String errorMessage);
+    private static native void ownershipChecked(long requestId, boolean owned);
 
     public static void initialize(Activity activity, String productIdsCsv) {
         if (activity == null) {
@@ -127,6 +154,7 @@ public final class GooglePlayBillingHelper {
             }
 
             activeProductId = productId;
+            activePurchaseIsNonConsumable = false;
             purchaseCallbackPending = true;
             runWhenReady(
                     activity,
@@ -174,34 +202,50 @@ public final class GooglePlayBillingHelper {
             pendingFailureHandler = failureHandler;
         }
 
-        if (connecting) {
+        startBillingConnection();
+    }
+
+    private static void startBillingConnection() {
+        if (billingClient == null || billingClient.isReady() || connecting || billingConnectionStarting) {
             return;
         }
 
+        billingConnectionStarting = true;
         connecting = true;
-        billingClient.startConnection(new BillingClientStateListener() {
-            @Override
-            public void onBillingSetupFinished(BillingResult billingResult) {
-                connecting = false;
-                if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-                    failPendingRequest(billingMessage("Could not connect to Google Play Billing", billingResult));
-                    return;
+        try {
+            billingClient.startConnection(new BillingClientStateListener() {
+                @Override
+                public void onBillingSetupFinished(BillingResult billingResult) {
+                    connecting = false;
+                    if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                        failPendingRequest(billingMessage("Could not connect to Google Play Billing", billingResult));
+                        failQueuedOwnershipChecks();
+                        return;
+                    }
+
+                    Runnable action = pendingReadyAction;
+                    pendingReadyAction = null;
+                    pendingFailureHandler = null;
+                    try {
+                        if (action != null) {
+                            action.run();
+                        }
+                        queryOutstandingPurchases();
+                    } finally {
+                        flushQueuedOwnershipChecks();
+                    }
                 }
 
-                Runnable action = pendingReadyAction;
-                pendingReadyAction = null;
-                pendingFailureHandler = null;
-                if (action != null) {
-                    action.run();
+                @Override
+                public void onBillingServiceDisconnected() {
+                    // Play may drop the connection while startConnection is still in
+                    // progress, then reconnect. That is not an ownership result.
+                    connecting = false;
                 }
-                queryOutstandingPurchases();
-            }
-
-            @Override
-            public void onBillingServiceDisconnected() {
-                connecting = false;
-            }
-        });
+            });
+        } finally {
+            billingConnectionStarting = false;
+        }
     }
 
     private static void ensureBillingClient(Activity activity) {
@@ -329,7 +373,57 @@ public final class GooglePlayBillingHelper {
     private static void onPurchasesUpdated(
             BillingResult billingResult,
             List<Purchase> purchases) {
-        boolean reportActivePurchase = purchaseCallbackPending;
+        int responseCode = billingResult.getResponseCode();
+        if (responseCode == BillingClient.BillingResponseCode.OK
+                || responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            acknowledgePurchasedTours(purchases);
+        }
+        if (purchaseCallbackPending && activePurchaseIsNonConsumable) {
+            if (!nonConsumableFlowLaunched) {
+                // The Play sheet is not up yet. This update belongs to an older purchase.
+                if (responseCode == BillingClient.BillingResponseCode.OK
+                        || responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+                    handlePurchases(purchases, false);
+                }
+                return;
+            }
+            if (!isActiveTourPurchaseUpdate(responseCode, purchases)) {
+                // This update is another purchase, often a tip. Do not fail the tour
+                // that is still in progress, and do consume that tip.
+                deliverExistingPurchaseUpdate(billingResult, purchases, false);
+                return;
+            }
+            if (responseCode == BillingClient.BillingResponseCode.OK
+                    || responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+                handlePurchases(purchases, false);
+            }
+            handleActiveNonConsumablePurchase(billingResult, purchases);
+            return;
+        }
+
+        deliverExistingPurchaseUpdate(billingResult, purchases, purchaseCallbackPending);
+    }
+
+    private static boolean isActiveTourPurchaseUpdate(int responseCode, List<Purchase> purchases) {
+        if (responseCode == BillingClient.BillingResponseCode.OK) {
+            return purchasesContainActiveProduct(purchases);
+        }
+        if (responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            // An empty list is Play's signal to query the launched purchase.
+            // A list of other products is not this tour.
+            return purchases == null || purchases.isEmpty() || purchasesContainActiveProduct(purchases);
+        }
+        return true;
+    }
+
+    private static boolean purchasesContainActiveProduct(List<Purchase> purchases) {
+        return activeProductId != null && findPurchaseForProduct(purchases, activeProductId) != null;
+    }
+
+    private static void deliverExistingPurchaseUpdate(
+            BillingResult billingResult,
+            List<Purchase> purchases,
+            boolean reportActivePurchase) {
         int responseCode = billingResult.getResponseCode();
         if (responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
             finishPurchase(PurchaseResult.Canceled.toInt(), null);
@@ -450,6 +544,8 @@ public final class GooglePlayBillingHelper {
 
         purchaseCallbackPending = false;
         activeProductId = null;
+        activePurchaseIsNonConsumable = false;
+        nonConsumableFlowLaunched = false;
         purchaseFinished(result, errorMessage);
     }
 
@@ -459,5 +555,378 @@ public final class GooglePlayBillingHelper {
             return prefix + " (response " + billingResult.getResponseCode() + ").";
         }
         return prefix + " (response " + billingResult.getResponseCode() + "): " + debugMessage;
+    }
+
+    public static void purchaseNonConsumable(Activity activity, String productId) {
+        if (activity == null || productId == null || productId.isEmpty()) {
+            purchaseFinished(PurchaseResult.Failed.toInt(), "No Google Play product was selected.");
+            return;
+        }
+
+        activity.runOnUiThread(() -> {
+            if (purchaseCallbackPending) {
+                purchaseFinished(PurchaseResult.Failed.toInt(), "Another Google Play purchase is already in progress.");
+                return;
+            }
+
+            activeProductId = productId;
+            activePurchaseIsNonConsumable = true;
+            purchaseCallbackPending = true;
+            runWhenReady(
+                    activity,
+                    () -> queryAndLaunchNonConsumable(activity, productId),
+                    message -> finishPurchase(PurchaseResult.Failed.toInt(), message));
+        });
+    }
+
+    public static void queryOwned(Activity activity, String productId, long requestId) {
+        if (activity == null || productId == null || productId.isEmpty()) {
+            ownershipChecked(requestId, false);
+            return;
+        }
+
+        activity.runOnUiThread(() -> {
+            try {
+                ensureBillingClient(activity);
+                queueOwnershipCheck(productId, requestId);
+                if (billingClient != null && billingClient.isReady()) {
+                    flushQueuedOwnershipChecks();
+                    return;
+                }
+
+                // Do not take the single tip-connection waiter. A tour check and a
+                // tip load can both wait, and a disconnect is not an ownership result.
+                runWhenReady(activity, null, message -> Log.e(TAG, message));
+                if (billingClient != null && billingClient.isReady()) {
+                    flushQueuedOwnershipChecks();
+                }
+            } catch (RuntimeException exception) {
+                removeOwnershipCheck(requestId);
+                Log.e(TAG, "Could not query Google Play purchases", exception);
+                ownershipChecked(requestId, false);
+            }
+        });
+    }
+
+    private static void queryAndLaunchNonConsumable(Activity activity, String productId) {
+        if (billingClient == null || !billingClient.isReady()) {
+            finishPurchase(PurchaseResult.Failed.toInt(), "Google Play Billing is not connected.");
+            return;
+        }
+        if (configuredProductIds.contains(productId)) {
+            finishPurchase(PurchaseResult.Failed.toInt(), "This tour is unavailable in Google Play.");
+            return;
+        }
+
+        List<QueryProductDetailsParams.Product> productsToQuery = new ArrayList<>();
+        productsToQuery.add(QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(productId)
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build());
+        QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                .setProductList(productsToQuery)
+                .build();
+        billingClient.queryProductDetailsAsync(params, (billingResult, queryResult) ->
+                onNonConsumableProductDetails(activity, productId, billingResult, queryResult));
+    }
+
+    private static void onNonConsumableProductDetails(
+            Activity activity,
+            String productId,
+            BillingResult billingResult,
+            QueryProductDetailsResult queryResult) {
+        if (!purchaseCallbackPending || !activePurchaseIsNonConsumable || !productId.equals(activeProductId)) {
+            return;
+        }
+        if (billingResult == null
+                || billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK
+                || queryResult == null) {
+            finishPurchase(
+                    PurchaseResult.Failed.toInt(),
+                    billingResult == null
+                            ? "Could not load the Google Play product."
+                            : billingMessage("Could not load the Google Play product", billingResult));
+            return;
+        }
+
+        List<ProductDetails> productDetailsList = queryResult.getProductDetailsList();
+        if (productDetailsList == null) {
+            finishPurchase(PurchaseResult.Failed.toInt(), "This tour is unavailable in Google Play.");
+            return;
+        }
+
+        ProductDetails selected = null;
+        for (ProductDetails productDetails : productDetailsList) {
+            if (productDetails != null && productId.equals(productDetails.getProductId())) {
+                selected = productDetails;
+                break;
+            }
+        }
+        ProductDetails.OneTimePurchaseOfferDetails offer = selected == null ? null : selectOffer(selected);
+        if (selected == null || offer == null) {
+            finishPurchase(PurchaseResult.Failed.toInt(), "This tour is unavailable in Google Play.");
+            return;
+        }
+        nonConsumableFlowLaunched = true;
+        launchBillingFlow(activity, new ProductOffer(selected, offer));
+    }
+
+    private static void handleActiveNonConsumablePurchase(BillingResult billingResult, List<Purchase> purchases) {
+        int responseCode = billingResult.getResponseCode();
+        if (responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
+            finishPurchase(PurchaseResult.Canceled.toInt(), null);
+            return;
+        }
+        if (responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            queryActiveNonConsumableOwnership();
+            return;
+        }
+        if (responseCode != BillingClient.BillingResponseCode.OK) {
+            finishPurchase(
+                    PurchaseResult.Failed.toInt(),
+                    billingMessage("Google Play did not complete the purchase", billingResult));
+            return;
+        }
+        settleActiveNonConsumablePurchase(purchases);
+    }
+
+    private static void queryActiveNonConsumableOwnership() {
+        if (billingClient == null || !billingClient.isReady()) {
+            finishPurchase(PurchaseResult.Failed.toInt(), "Google Play Billing is not connected.");
+            return;
+        }
+
+        QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build();
+        billingClient.queryPurchasesAsync(params, (billingResult, purchases) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                handlePurchases(purchases, false);
+            }
+            if (!purchaseCallbackPending || !activePurchaseIsNonConsumable) {
+                return;
+            }
+            if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                finishPurchase(
+                        PurchaseResult.Failed.toInt(),
+                        billingMessage("Could not query Google Play purchases", billingResult));
+                return;
+            }
+            settleActiveNonConsumablePurchase(purchases);
+        });
+    }
+
+    private static void settleActiveNonConsumablePurchase(List<Purchase> purchases) {
+        Purchase purchase = findPurchaseForProduct(purchases, activeProductId);
+        if (purchase == null) {
+            finishPurchase(PurchaseResult.Failed.toInt(), "Google Play returned no matching purchase.");
+            return;
+        }
+        if (isConfiguredTipPurchase(purchase)) {
+            finishPurchase(PurchaseResult.Failed.toInt(), "This tour is unavailable in Google Play.");
+            return;
+        }
+        if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
+            finishPurchase(PurchaseResult.Pending.toInt(), null);
+            return;
+        }
+        if (purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED) {
+            finishPurchase(PurchaseResult.Failed.toInt(), "Google Play returned no matching purchase.");
+            return;
+        }
+        acknowledgePurchase(
+                purchase,
+                () -> finishPurchase(PurchaseResult.Succeeded.toInt(), null),
+                message -> finishPurchase(PurchaseResult.Failed.toInt(), message));
+    }
+
+    private static void acknowledgePurchasedTours(List<Purchase> purchases) {
+        if (purchases == null) {
+            return;
+        }
+        for (Purchase purchase : purchases) {
+            if (purchase == null
+                    || purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED
+                    || purchase.isAcknowledged()
+                    || isConfiguredTipPurchase(purchase)) {
+                continue;
+            }
+            acknowledgePurchase(purchase, null, message -> Log.e(TAG, message));
+        }
+    }
+
+    private static void queryOwnedProduct(String productId, long requestId) {
+        try {
+            if (billingClient == null || !billingClient.isReady()) {
+                // Not ready is not an ownership result. The Play purchase query runs
+                // when the connection callback flushes this check.
+                queueOwnershipCheck(productId, requestId);
+                startBillingConnection();
+                return;
+            }
+
+            QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
+                    .setProductType(BillingClient.ProductType.INAPP)
+                    .build();
+            billingClient.queryPurchasesAsync(params, (billingResult, purchases) ->
+                    reportOwnedProduct(requestId, productId, billingResult, purchases));
+        } catch (RuntimeException exception) {
+            Log.e(TAG, "Could not query Google Play purchases", exception);
+            ownershipChecked(requestId, false);
+        }
+    }
+
+    private static void reportOwnedProduct(
+            long requestId,
+            String productId,
+            BillingResult billingResult,
+            List<Purchase> purchases) {
+        try {
+            if (billingResult == null || billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                ownershipChecked(requestId, false);
+                return;
+            }
+
+            Purchase ownedPurchase = null;
+            if (purchases != null) {
+                for (Purchase purchase : purchases) {
+                    if (purchase == null
+                            || purchase.getProducts() == null
+                            || purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED
+                            || !purchase.getProducts().contains(productId)
+                            || isConfiguredTipPurchase(purchase)) {
+                        continue;
+                    }
+                    ownedPurchase = purchase;
+                    break;
+                }
+            }
+            if (ownedPurchase == null) {
+                ownershipChecked(requestId, false);
+                return;
+            }
+
+            // PURCHASED is the Play query result. Acknowledgement can fail without
+            // taking the entitlement away.
+            if (!ownedPurchase.isAcknowledged()) {
+                acknowledgePurchase(ownedPurchase, null, message -> Log.e(TAG, message));
+            }
+            ownershipChecked(requestId, true);
+        } catch (RuntimeException exception) {
+            Log.e(TAG, "Could not read Google Play purchases", exception);
+            ownershipChecked(requestId, false);
+        }
+    }
+
+    private static void queueOwnershipCheck(String productId, long requestId) {
+        for (OwnershipCheck check : ownershipChecksWaitingForConnection) {
+            if (check.requestId == requestId) {
+                return;
+            }
+        }
+        ownershipChecksWaitingForConnection.add(new OwnershipCheck(productId, requestId));
+    }
+
+    private static void flushQueuedOwnershipChecks() {
+        if (ownershipChecksWaitingForConnection.isEmpty()) {
+            return;
+        }
+        List<OwnershipCheck> checks = new ArrayList<>(ownershipChecksWaitingForConnection);
+        ownershipChecksWaitingForConnection.clear();
+        for (OwnershipCheck check : checks) {
+            queryOwnedProduct(check.productId, check.requestId);
+        }
+    }
+
+    private static void failQueuedOwnershipChecks() {
+        if (ownershipChecksWaitingForConnection.isEmpty()) {
+            return;
+        }
+        List<OwnershipCheck> checks = new ArrayList<>(ownershipChecksWaitingForConnection);
+        ownershipChecksWaitingForConnection.clear();
+        for (OwnershipCheck check : checks) {
+            ownershipChecked(check.requestId, false);
+        }
+    }
+
+    private static void removeOwnershipCheck(long requestId) {
+        ownershipChecksWaitingForConnection.removeIf(check -> check.requestId == requestId);
+    }
+
+    private static Purchase findPurchaseForProduct(List<Purchase> purchases, String productId) {
+        if (purchases == null || productId == null) {
+            return null;
+        }
+        for (Purchase purchase : purchases) {
+            if (purchase != null
+                    && purchase.getProducts() != null
+                    && purchase.getProducts().contains(productId)) {
+                return purchase;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isConfiguredTipPurchase(Purchase purchase) {
+        if (purchase.getProducts() == null) {
+            return false;
+        }
+        for (String productId : purchase.getProducts()) {
+            if (configuredProductIds.contains(productId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void acknowledgePurchase(Purchase purchase, Runnable onSuccess, FailureHandler onFailure) {
+        if (purchase.isAcknowledged()) {
+            if (onSuccess != null) {
+                onSuccess.run();
+            }
+            return;
+        }
+
+        String token = purchase.getPurchaseToken();
+        if (token == null || token.isEmpty() || billingClient == null) {
+            if (onFailure != null) {
+                onFailure.failed("Google Play returned a purchase without a token.");
+            }
+            return;
+        }
+
+        AcknowledgementWaiter waiter = new AcknowledgementWaiter(onSuccess, onFailure);
+        List<AcknowledgementWaiter> waiters = acknowledgementWaiters.get(token);
+        if (waiters != null) {
+            waiters.add(waiter);
+            return;
+        }
+
+        waiters = new ArrayList<>();
+        waiters.add(waiter);
+        acknowledgementWaiters.put(token, waiters);
+
+        AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(token)
+                .build();
+        billingClient.acknowledgePurchase(params, billingResult -> {
+            List<AcknowledgementWaiter> pendingWaiters = acknowledgementWaiters.remove(token);
+            boolean acknowledged = billingResult != null
+                    && billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK;
+            if (pendingWaiters == null) {
+                return;
+            }
+            for (AcknowledgementWaiter pendingWaiter : pendingWaiters) {
+                if (acknowledged) {
+                    if (pendingWaiter.onSuccess != null) {
+                        pendingWaiter.onSuccess.run();
+                    }
+                } else if (pendingWaiter.onFailure != null) {
+                    pendingWaiter.onFailure.failed(billingResult == null
+                            ? "Could not acknowledge the Google Play purchase."
+                            : billingMessage("Could not acknowledge the Google Play purchase", billingResult));
+                }
+            }
+        });
     }
 }

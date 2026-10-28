@@ -1,3 +1,5 @@
+include("${CMAKE_CURRENT_LIST_DIR}/QmlSingletonTooling.cmake")
+
 function(AbsToRelPath OUT_VAR BASE_DIR)
     set(result)
     foreach(file IN LISTS ARGN)

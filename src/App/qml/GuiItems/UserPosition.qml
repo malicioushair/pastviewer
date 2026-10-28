@@ -12,59 +12,43 @@ Item {
     width: 14
     height: width
 
-    Loader {
-        anchors.fill: parent
-        sourceComponent: isNaN(bearing) ? noDirectionMarkerID : directionMarkerID
+    Rectangle {
+        visible: isNaN(rootID.bearing)
+        width: parent.width
+        height: parent.height
+        radius: width
+        color: Colors.palette.userPosition
     }
 
-    Component {
-        id: noDirectionMarkerID
+    Item {
+        id: arrowContainerID
 
-        Rectangle {
-            anchors.fill: parent
+        visible: !isNaN(rootID.bearing)
+        width: parent.width
+        height: parent.height
 
-            radius: width
-            color: Colors.palette.userPosition
+        transform: Rotation {
+            origin.x: arrowContainerID.width / 2
+            origin.y: arrowContainerID.height / 2
+            angle: isNaN(rootID.bearing) ? 0 : ((rootID.bearing - rootID.mapBearing) % 360 + 360) % 360
         }
-    }
 
-    Component {
-        id: directionMarkerID
+        Shape {
+            id: arrowHeadID
 
-        Item {
-            id: arrowContainerID
+            width: parent.width
+            height: parent.height
 
-            property real bearing: rootID.bearing
-            property real mapBearing: rootID.mapBearing
-
-            anchors.fill: parent
-
-            transform: Rotation {
-                origin.x: arrowContainerID.width / 2
-                origin.y: arrowContainerID.height / 2
-                angle: isNaN(arrowContainerID.bearing) ? 0 : ((arrowContainerID.bearing - arrowContainerID.mapBearing) % 360 + 360) % 360
-            }
-
-            Shape {
-                id: arrowHeadID
-
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: parent.top
-
-                width: rootID.width
-                height: width
-
-                ShapePath {
-                    fillColor: Colors.palette.userPosition
-                    PathPolyline {
-                        path: [
-                            Qt.point(arrowHeadID.width / 2, 0),
-                            Qt.point(0, arrowHeadID.height),
-                            Qt.point(arrowHeadID.width / 2, arrowHeadID.height / 1.5),
-                            Qt.point(arrowHeadID.width, arrowHeadID.height),
-                            Qt.point(arrowHeadID.width / 2, 0)
-                        ]
-                    }
+            ShapePath {
+                fillColor: Colors.palette.userPosition
+                PathPolyline {
+                    path: [
+                        Qt.point(arrowHeadID.width / 2, 0),
+                        Qt.point(0, arrowHeadID.height),
+                        Qt.point(arrowHeadID.width / 2, arrowHeadID.height / 1.5),
+                        Qt.point(arrowHeadID.width, arrowHeadID.height),
+                        Qt.point(arrowHeadID.width / 2, 0)
+                    ]
                 }
             }
         }

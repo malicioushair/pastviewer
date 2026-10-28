@@ -1,8 +1,5 @@
 #include "App/Controllers/GuiController/platform/Logic.h"
 
-#include <QFileInfo>
-#include <QStandardPaths>
-
 namespace PlatformDependentLogic {
 
 void InitializeNotifications(NotificationTappedHandler)
@@ -25,25 +22,6 @@ bool SaveScreenshotToGallery(const QString)
 bool ShareImage(const QString)
 {
 	return true;
-}
-
-bool SupportsNativeTipPurchases()
-{
-	return false;
-}
-
-void InitializeTipPurchases(QStringList)
-{
-}
-
-void LoadTipProducts(QStringList, TipProductsHandler handler)
-{
-	handler({}, QStringLiteral("Native tip purchases are unavailable on this platform."));
-}
-
-void PurchaseTip(QString, TipPurchaseHandler handler)
-{
-	handler(TipPurchaseResult::Failed, QStringLiteral("Native tip purchases are unavailable on this platform."));
 }
 
 } // namespace PlatformDependentLogic

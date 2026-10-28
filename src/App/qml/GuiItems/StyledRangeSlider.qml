@@ -2,8 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "../Helpers/colors.js" as Colors
-
 ColumnLayout {
     id: timelineSettingID
 
@@ -32,32 +30,23 @@ ColumnLayout {
         first.onMoved: selectedMin = Math.round(first.value)
         second.onMoved: selectedMax = Math.round(second.value)
 
-        background: Rectangle {
-            height: 8
-            radius: 4
-            color: Colors.palette.sliderAlt
-            Rectangle {
-                x: timelineSliderID.first.visualPosition * parent.width
-                width: (timelineSliderID.second.visualPosition - timelineSliderID.first.visualPosition) * parent.width
-                height: 8
-
-                color: Colors.palette.slider
-                radius: 4
-            }
+        background: StyledSliderTrack {
+            control: timelineSliderID
+            fillFrom: timelineSliderID.first.visualPosition
+            fillTo: timelineSliderID.second.visualPosition
         }
 
         first.handle: StyledSliderHandle {
+            xOffset: -5
+            control: timelineSliderID
             pressed: timelineSliderID.first.pressed
             visualPosition: timelineSliderID.first.visualPosition
-            availableWidth: timelineSliderID.availableWidth
-            xOffset: -2
         }
 
         second.handle: StyledSliderHandle {
+            control: timelineSliderID
             pressed: timelineSliderID.second.pressed
             visualPosition: timelineSliderID.second.visualPosition
-            availableWidth: timelineSliderID.availableWidth
         }
     }
 }
-
