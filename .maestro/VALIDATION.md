@@ -1,5 +1,26 @@
 # Validation record
 
+2026-10-28, Android Pixel_6_Pro emulator:
+
+- `regression_android_system_back.yaml` was accepted by Maestro's syntax check.
+- The initial window-shortcut implementation failed on the installed release
+  build: system Back left the app instead of returning to the map. The installed
+  native library matched the local release build, ruling out a stale APK.
+- Replaced that implementation with `ApplicationWindow.onClosing`, which is
+  compatible with this app's Qt 6.10 Android close-request behavior. A focused
+  offscreen test passed child-control-focus navigation and root close handling.
+- The close handler alone also failed on Android 16 with target SDK 36 because
+  Android no longer dispatched legacy Back events. Added the documented
+  `android:enableOnBackInvokedCallback="false"` compatibility setting for Qt 6.10.
+  This disables predictive system previews while retaining system Back gestures.
+- Rebuilt the release APK successfully, then the user signed and installed it.
+  The full `regression_android_system_back.yaml` passed through Maestro MCP on
+  `emulator-5554` with `APP_ID=org.qtproject.PastViewer`. Verified system Back and
+  an actual left-edge system gesture returning from Settings to the map, Home
+  preserving Settings across resume, and system Back leaving the app at the
+  root followed by successful relaunch. No app data was cleared. Physical-device
+  behavior and predictive preview animations are not covered.
+
 2026-10-28, iPhone 17 Pro simulator, iOS 26.3:
 
 - Built the current source with `cmake --build build-ios-release -j 4` and

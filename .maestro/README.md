@@ -44,10 +44,15 @@ it clears app state. Normal flows use warm launches and preserve existing drafts
 | regression_language | English → French, restart persistence, return to English |
 | regression_settings_persistence | Three checkbox settings persist across restart; restore original values; reload action |
 | regression_ios_back_gesture | iOS short-swipe cancellation, non-edge drag, completed edge swipe, Settings re-entry and root-page guard |
+| regression_android_system_back | Android system Back and edge gesture return from Settings; Home preserves the open page; Back backgrounds the app at the root |
 | regression_onboarding | Reset, all map steps, complete, restart, skip and restart |
 | regression_tour_gallery | Start tour, stop details, no-audio state, two-image swipe both ways, inspect/back, next/return, exit |
 | regression_creation_cancel | Admin menu, browse, both creation choices and cancellation, drafts navigation |
 | regression_draft_lifecycle | Local creation, point removal cancel/confirm, stop-form cancel, rename/save, restart persistence, route reopening |
+
+The Android system Back flow requires gesture navigation enabled on the device.
+It exercises both a system Back command and a physical edge-swipe path; it does
+not change the device's navigation settings.
 
 On Android, the draft lifecycle flow adds the saved screenshot in
 `fixtures/pastviewer-maestro-cover.png` to the emulator and selects it in the

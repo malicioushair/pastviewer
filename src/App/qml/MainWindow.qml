@@ -203,6 +203,15 @@ Rectangle {
         }
     }
 
+    // Qt 6.10 delivers Android system Back as a window close request.
+    function handleSystemBack() {
+        if (stackViewID.depth <= 1)
+            return false
+        if (!stackViewID.busy)
+            stackViewID.pop()
+        return true
+    }
+
     // Keep the stack unchanged until the interactive back transition completes.
     Item {
         id: backGestureAreaID

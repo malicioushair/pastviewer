@@ -25,6 +25,12 @@ ApplicationWindow {
     color: Colors.palette.bg
     title: "Past Viewer"
 
+    onClosing: (close) => {
+        if (Qt.platform.os === "android" && mainWindowLoaderID.item
+                && mainWindowLoaderID.item.handleSystemBack())
+            close.accepted = false
+    }
+
     Component.onCompleted: {
         Qt.styleHints.colorScheme = Qt.ColorScheme.Light
     }
