@@ -1,5 +1,21 @@
 # Validation record
 
+2026-10-28, iPhone 17 Pro simulator, iOS 26.3:
+
+- Built the current source with `cmake --build build-ios-release -j 4` and
+  installed `build-ios-release/bin/PastViewer.app` on the simulator.
+- `regression_ios_back_gesture.yaml` passed through Maestro MCP with
+  `APP_ID=com.dv.pastviewer`. It verified short-swipe cancellation, a non-edge
+  swipe staying on Settings, a completed edge swipe returning to the map,
+  Settings re-entry and button-back, and the root-page guard.
+- Inspected the cancellation and completion screenshots: Settings was restored
+  at its normal position after cancellation; the map filled the page after
+  completion. These screenshots show settled states, not intermediate animation
+  frames. This flow does not prove reversal during a continuous touch or flick
+  velocity thresholds, and has not been run on physical hardware.
+- The same flow failed its completed-swipe assertion against the previously
+  installed app before the refreshed build was installed.
+
 2026-10-27, iPhone 17 Pro simulator, iOS 26.3. The installed PastViewer executable
 was x86-64 running under translation. This is a record of the installed build,
 not a claim about an ARM build or the current source.

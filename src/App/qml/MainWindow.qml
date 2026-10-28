@@ -203,6 +203,135 @@ Rectangle {
         }
     }
 
+    // Keep the stack unchanged until the interactive back transition completes.
+    Item {
+        id: backGestureAreaID
+
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 24
+        z: 2
+        enabled: Qt.platform.os === "ios" && stackViewID.depth > 1 && !stackViewID.busy
+
+        property var outgoing: null
+        property var incoming: null
+        property var savedIncoming: null
+        property real outgoingX: 0
+        property real progress: 0
+        property bool completing: false
+        readonly property bool tracking: outgoing !== null
+
+        function begin() {
+            outgoing = stackViewID.currentItem
+            incoming = stackViewID.get(stackViewID.depth - 2)
+            outgoingX = outgoing.x
+            savedIncoming = { x: incoming.x, opacity: incoming.opacity, visible: incoming.visible }
+            incoming.visible = true
+            incoming.opacity = 1
+            updatePages()
+        }
+
+        function updatePages() {
+            if (!tracking)
+                return
+            outgoing.x = outgoingX + progress * stackViewID.width
+            incoming.x = -stackViewID.width * 0.25 * (1 - progress)
+        }
+
+        function restore() {
+            settleID.stop()
+            if (!tracking)
+                return
+            outgoing.x = outgoingX
+            incoming.x = savedIncoming.x
+            incoming.opacity = savedIncoming.opacity
+            incoming.visible = savedIncoming.visible
+            outgoing = null
+            incoming = null
+            savedIncoming = null
+            progress = 0
+        }
+
+        function finish(commit) {
+            if (!tracking || settleID.running)
+                return
+            completing = commit
+            settleID.to = commit ? 1 : 0
+            settleID.start()
+        }
+
+        onProgressChanged: updatePages()
+        onEnabledChanged: { if (!enabled) restore() }
+        onWidthChanged: restore()
+
+        NumberAnimation {
+            id: settleID
+            target: backGestureAreaID
+            property: "progress"
+            duration: 220
+            easing.type: Easing.OutCubic
+            onFinished: {
+                const commit = backGestureAreaID.completing
+                        && stackViewID.currentItem === backGestureAreaID.outgoing
+                backGestureAreaID.restore()
+                if (commit)
+                    stackViewID.pop(StackView.Immediate)
+            }
+        }
+
+        Connections {
+            target: stackViewID
+            function onCurrentItemChanged() { backGestureAreaID.restore() }
+            function onWidthChanged() { backGestureAreaID.restore() }
+        }
+
+        Connections {
+            target: Qt.application
+            function onStateChanged() {
+                if (Qt.application.state !== Qt.ApplicationActive)
+                    backGestureAreaID.restore()
+            }
+        }
+
+        DragHandler {
+            id: backDragID
+            target: null
+            enabled: !settleID.running
+            maximumPointCount: 1
+            yAxis.enabled: false
+
+            onActiveChanged: {
+                if (active)
+                    backGestureAreaID.begin()
+            }
+            onTranslationChanged: {
+                if (active && backGestureAreaID.tracking) {
+                    const dx = centroid.position.x - centroid.pressPosition.x
+                    backGestureAreaID.progress = Math.max(0, Math.min(1, dx / stackViewID.width))
+                }
+            }
+            onGrabChanged: (transition, point) => {
+                if (transition === PointerDevice.CancelGrabExclusive) {
+                    backGestureAreaID.finish(false)
+                } else if (transition === PointerDevice.UngrabExclusive && backGestureAreaID.tracking) {
+                    const dx = point.position.x - point.pressPosition.x
+                    const dy = point.position.y - point.pressPosition.y
+                    const forwardFlick = point.velocity.x > 700 && dx > 30
+                    backGestureAreaID.finish(dx > Math.abs(dy) * 1.5
+                                            && (backGestureAreaID.progress > 0.4 || forwardFlick))
+                }
+            }
+        }
+    }
+
+    // Prevent page controls from activating while a swipe is settling.
+    MouseArea {
+        anchors.fill: parent
+        z: 1
+        enabled: backGestureAreaID.tracking
+    }
+
     Timer {
         id: promptDelayID
 

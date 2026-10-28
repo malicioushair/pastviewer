@@ -1,0 +1,55 @@
+appId: ${APP_ID}
+name: Regression — iOS interactive back gesture
+tags: [regression, ios, navigation]
+---
+- launchApp:
+    clearState: false
+    stopApp: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible: Compass
+          timeout: 20000
+      - runFlow:
+          file: helpers/open_settings.yaml
+      # Slow, short edge drag must settle back without popping Settings.
+      - swipe:
+          start: "2%, 46%"
+          end: "25%, 46%"
+          duration: 1500
+      - waitForAnimationToEnd
+      - assertVisible: Language
+      - assertVisible: Back
+      - takeScreenshot: ios_back_cancelled
+      # Horizontal gestures away from the edge must not navigate.
+      - swipe:
+          start: "30%, 46%"
+          end: "85%, 46%"
+          duration: 800
+      - assertVisible: Language
+      # A completed edge swipe must reveal the map and remove Settings.
+      - swipe:
+          start: "2%, 46%"
+          end: "85%, 46%"
+          duration: 1000
+      - waitForAnimationToEnd
+      - assertNotVisible: Language
+      - assertNotVisible: Back
+      - assertVisible: Compass
+      - assertVisible: History near you
+      - takeScreenshot: ios_back_completed
+      # Re-entry catches stale positions/visibility after either transition.
+      - runFlow:
+          file: helpers/open_settings.yaml
+      - assertVisible: Proximity notifications
+      - tapOn: Back
+      - assertVisible: Compass
+      # There is no previous page at the root.
+      - swipe:
+          start: "2%, 46%"
+          end: "85%, 46%"
+          duration: 1000
+      - assertVisible: Compass
+      - assertVisible: History near you

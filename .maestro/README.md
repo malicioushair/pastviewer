@@ -43,6 +43,7 @@ it clears app state. Normal flows use warm launches and preserve existing drafts
 | smoke_tour_info | Details and start/unlock action visibility |
 | regression_language | English → French, restart persistence, return to English |
 | regression_settings_persistence | Three checkbox settings persist across restart; restore original values; reload action |
+| regression_ios_back_gesture | iOS short-swipe cancellation, non-edge drag, completed edge swipe, Settings re-entry and root-page guard |
 | regression_onboarding | Reset, all map steps, complete, restart, skip and restart |
 | regression_tour_gallery | Start tour, stop details, no-audio state, two-image swipe both ways, inspect/back, next/return, exit |
 | regression_creation_cancel | Admin menu, browse, both creation choices and cancellation, drafts navigation |
