@@ -509,13 +509,13 @@ QList<QGeoCoordinate> TourDraftsModel::GetCurrentStopCoordinates() const
     return coordinates;
 }
 
-void TourDraftsModel::CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang)
+QString TourDraftsModel::CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang)
 {
     const auto imageFileHash = Tours::ChosenFileContentHash(imageFile);
     if (!imageFileHash)
     {
         LOG(ERROR) << std::format("Cannot read file: {}", imageFile.path().toStdString());
-        return;
+        return tr("Cannot read the selected cover image.");
     }
 
     Tours::Tour newTour = {
@@ -531,13 +531,14 @@ void TourDraftsModel::CreateNewTour(const QString & title, const QString & descr
     };
 
     if (!Tours::SaveDraft(newTour))
-        return;
+        return tr("Could not save the draft tour.");
 
     StopRecording();
     AddTour(newTour);
     emit StopsUpdated();
     emit CurrentTourPathChanged();
     emit CurrentDistanceChanged();
+    return {};
 }
 
 void TourDraftsModel::CreateTourStop(const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile, const QGeoCoordinate & coordinate)

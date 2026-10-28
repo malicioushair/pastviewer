@@ -69,9 +69,9 @@ void TourController::StopRecording()
     m_impl->tourDraftsModel.StopRecording();
 }
 
-void TourController::CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang)
+QString TourController::CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang)
 {
-    m_impl->tourDraftsModel.CreateNewTour(title, description, imageFile, tourLang);
+    return m_impl->tourDraftsModel.CreateNewTour(title, description, imageFile, tourLang);
 }
 
 void TourController::CreateTourStop(const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile, const QGeoCoordinate & coordinate)
