@@ -1,0 +1,29 @@
+appId: ${APP_ID}
+name: Smoke — settings
+tags:
+  - smoke
+  - settings
+---
+- runFlow:
+    file: helpers/launch_clean.yaml
+- runFlow:
+    file: helpers/open_settings.yaml
+- assertVisible: "Proximity notifications"
+- scrollUntilVisible:
+    element: "Reset onboarding"
+    direction: DOWN
+    timeout: 10000
+- assertVisible: "Reset onboarding"
+- scrollUntilVisible:
+    element: "Reload map items"
+    direction: DOWN
+    timeout: 10000
+- assertVisible: "Reload map items"
+- assertVisible: "Version:.*"
+- takeScreenshot: smoke_settings
+- runFlow:
+    file: helpers/go_back.yaml
+- extendedWaitUntil:
+    notVisible: "Language"
+    timeout: 5000
+- assertVisible: "History near you"

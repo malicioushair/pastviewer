@@ -1,0 +1,15 @@
+appId: ${APP_ID}
+name: Dismiss fresh overlays
+tags:
+  - helper
+---
+# After clearState, changelog + onboarding stack. "Got it" text matching is
+# flaky under that stack on Qt/iOS, so use a calibrated point first.
+# Point: iPhone 17 Pro (402x874) center of Got it ≈ 81%,67%.
+- tapOn:
+    point: "81%,67%"
+    label: "Dismiss changelog (Got it)"
+- tapOn:
+    text: "Skip"
+    optional: true
+    label: "Skip onboarding"

@@ -1,0 +1,6 @@
+appId: ${APP_ID}
+name: Go back
+tags:
+  - helper
+---
+- tapOn: "Back"

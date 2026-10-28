@@ -1,0 +1,112 @@
+appId: ${APP_ID}
+name: Local draft route, stop, edit and persistence
+tags: [regression, drafts, ios]
+---
+- runFlow: helpers/launch_clean.yaml
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - addMedia:
+          - fixtures/pastviewer-maestro-cover.png
+- evalScript: ${output.draftTitle = 'Maestro-' + Date.now()}
+- evalScript: ${output.editedTitle = 'Edit-' + Date.now().toString(36)}
+- runFlow: helpers/open_admin_tours.yaml
+- tapOn: Create tour
+- tapOn: Place the path on the map
+- assertVisible: Tour Description
+- tapOn: Tour title input
+- inputText: ${output.draftTitle}
+# This screenshot is a run artifact; Android selects the saved fixture below.
+- takeScreenshot: draft_before_image_picker
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: Add title image
+      - extendedWaitUntil:
+          visible:
+            id: 'android:id/title'
+            text: 'pastviewer-maestro-cover( \([0-9]+\))?\.png'
+          timeout: 10000
+      - tapOn:
+          id: 'android:id/title'
+          text: 'pastviewer-maestro-cover( \([0-9]+\))?\.png'
+          index: 0
+      - extendedWaitUntil:
+          visible: Tour Description
+          timeout: 10000
+# Opening the language list moves focus away from the title on iOS.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: English
+      - tapOn: English
+- tapOn: Next
+- assertVisible:
+    text: Remove last point
+    enabled: false
+- tapOn: Add point
+- assertVisible:
+    text: Remove last point
+    enabled: true
+- tapOn: Remove last point
+- assertVisible: Delete
+- tapOn: Cancel
+- assertVisible:
+    text: Remove last point
+    enabled: true
+- tapOn: Remove last point
+- tapOn: Delete
+- assertVisible:
+    text: Remove last point
+    enabled: false
+- tapOn: Add point
+- tapOn: Add stop
+- assertVisible: Add tour stop
+- tapOn: Cancel
+- assertVisible: Add point
+- tapOn: Finish
+- assertVisible: Drafts
+- assertVisible: ${output.draftTitle}
+- tapOn: ${output.draftTitle}
+- assertVisible: Edit draft
+# Tap the right edge of the title field so eraseText removes the whole value.
+- tapOn:
+    point: 90%,19%
+- eraseText
+- inputText: ${output.editedTitle}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - scrollUntilVisible:
+          element: Save
+          direction: DOWN
+- tapOn: Save
+- assertVisible: Drafts
+- assertVisible: ${output.editedTitle}
+- assertNotVisible: ${output.draftTitle}
+- runFlow: helpers/launch_clean.yaml
+- runFlow: helpers/open_admin_tours.yaml
+- tapOn: My draft tours
+- assertVisible: ${output.editedTitle}
+- tapOn: ${output.editedTitle}
+- tapOn: Save and edit route / stops
+- assertVisible: Add point
+- assertVisible:
+    text: Remove last point
+    enabled: true
+- tapOn: Finish
+- assertVisible: Edit draft
+- tapOn: Cancel
+- assertVisible: Drafts
+# Leave this test draft in place: the list does not expose a unique selector
+# linking a specific Delete button to its draft row.
+- runFlow: helpers/restore_admin.yaml

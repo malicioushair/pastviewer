@@ -7,6 +7,10 @@ import "../Helpers/colors.js" as Colors
 Rectangle {
     id: rootID
 
+    Accessible.role: Accessible.Button
+    Accessible.name: "Settings"
+    Accessible.onPressAction: clicked()
+
     signal clicked()
 
     width: 40

@@ -1,0 +1,9 @@
+appId: ${APP_ID}
+name: Open available tours
+tags:
+  - helper
+---
+- tapOn: "Tours"
+- extendedWaitUntil:
+    visible: "Available tours"
+    timeout: 5000

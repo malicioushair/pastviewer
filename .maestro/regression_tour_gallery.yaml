@@ -1,0 +1,39 @@
+appId: ${APP_ID}
+name: regression tour gallery
+tags: [regression, tours, fixture]
+env:
+  GALLERY_TOUR: multi-img
+---
+- runFlow: helpers/open_gallery_tour.yaml
+- assertVisible: 1 / 2
+- assertVisible: st1
+- assertNotVisible: Listen
+# The gallery image has no accessibility node. Coordinates are inside the
+# observed image area on the portrait iPhone 17 Pro (402 x 874).
+- swipe:
+    start: 85%,45%
+    end: 15%,45%
+    duration: 500
+- assertVisible: 2 / 2
+- doubleTapOn:
+    point: 50%,45%
+- assertNotVisible: 2 / 2
+- assertNotVisible: st1
+- runFlow: helpers/go_back.yaml
+- assertVisible: 2 / 2
+- swipe:
+    start: 15%,45%
+    end: 85%,45%
+    duration: 500
+- assertVisible: 1 / 2
+- tapOn: ">"
+- assertVisible: Exit Tour
+- assertNotVisible: Stop Details
+- tapOn: "I'm here"
+- assertVisible: Stop Details
+- assertVisible: 1 / 2
+- runFlow: helpers/go_back.yaml
+- tapOn: Exit Tour
+- assertVisible: History near you
+- assertNotVisible: "I'm here"
+- assertNotVisible: Exit Tour

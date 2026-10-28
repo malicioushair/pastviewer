@@ -44,11 +44,11 @@ struct PastVuModelController::Impl
 		QJSEngine::setObjectOwnership(baseModel.get(), QJSEngine::CppOwnership);
 		QJSEngine::setObjectOwnership(screenObjectsModel.get(), QJSEngine::CppOwnership);
 		QJSEngine::setObjectOwnership(nearestObjectsModel.get(), QJSEngine::CppOwnership);
-		QJSEngine::setObjectOwnership(clusterModelScreen.get(), QJSEngine::CppOwnership);
-		QJSEngine::setObjectOwnership(nearestObjectsModel.get(), QJSEngine::CppOwnership);
+        QJSEngine::setObjectOwnership(clusterModelScreen.get(), QJSEngine::CppOwnership);
+        QJSEngine::setObjectOwnership(clusterModelNearest.get(), QJSEngine::CppOwnership);
 
-		positionSourceAdapter = std::make_unique<PositionSourceAdapter>(source.get());
-		QJSEngine::setObjectOwnership(positionSourceAdapter.get(), QJSEngine::CppOwnership);
+        positionSourceAdapter = std::make_unique<PositionSourceAdapter>(source.get());
+        QJSEngine::setObjectOwnership(positionSourceAdapter.get(), QJSEngine::CppOwnership);
 		if (!source)
 		{
 			const auto message = "POSITION SOURCE EMPTY!";

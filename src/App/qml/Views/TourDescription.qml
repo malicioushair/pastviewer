@@ -16,6 +16,12 @@ BasePage {
 
     property bool placeOnMap: false
 
+    MessageDialog {
+        id: creationErrorID
+        title: qsTr("Unable to create tour")
+        buttons: MessageDialog.Ok
+    }
+
     title: qsTr("Tour Description")
 
     header: Header {
@@ -52,8 +58,11 @@ BasePage {
                 StyledTextArea {
                     id: titleTextAreaID
 
+                    inputObjectName: "tourTitleInput"
+                    accessibleName: "Tour title input"
+
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 40
+                    Layout.preferredHeight: 45
                 }
 
                 Label {
@@ -150,9 +159,12 @@ BasePage {
             StyledButton {
                 text: qsTr("Next")
                 onClicked: {
-                    if (rootID.placeOnMap)
-                        TourController.StopRecording()
-                    TourController.CreateNewTour(titleTextAreaID.text, descriptionTextAreaID.text, tourImageID.source, languageComboBoxID.currentValue)
+                    const error = TourController.CreateNewTour(titleTextAreaID.text, descriptionTextAreaID.text, tourImageID.source, languageComboBoxID.currentValue)
+                    if (error !== "") {
+                        creationErrorID.text = error
+                        creationErrorID.open()
+                        return
+                    }
                     if (rootID.placeOnMap) {
                         mainWindowID.openPlaceTourPath()
                     } else {

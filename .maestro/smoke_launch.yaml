@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+name: Smoke — launch to map
+tags:
+  - smoke
+  - launch
+---
+- runFlow:
+    file: helpers/launch_clean.yaml
+# Require the interactive map controls, not only the application window.
+- assertVisible: Settings
+- assertVisible: Tours
+- assertVisible: Compass
+- assertVisible: Re-center
+- assertVisible: History near you

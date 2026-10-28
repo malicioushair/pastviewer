@@ -1,0 +1,7 @@
+appId: ${APP_ID}
+name: Return to normal map
+tags: [helper]
+---
+# Admin mode is session-only and resets when the app process restarts.
+- runFlow: launch_clean.yaml
+- assertVisible: History near you

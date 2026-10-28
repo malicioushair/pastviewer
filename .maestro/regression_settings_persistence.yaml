@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+name: regression settings persistence
+tags: [regression, settings, ios]
+---
+- runFlow:
+    when:
+      platform: Android
+    file: helpers/settings_persistence_android.yaml
+- runFlow:
+    when:
+      platform: iOS
+    file: helpers/settings_persistence_ios.yaml

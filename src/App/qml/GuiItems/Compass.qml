@@ -7,6 +7,10 @@ import "../Helpers/colors.js" as Colors
 Item {
     id: compassID
 
+    Accessible.role: Accessible.Button
+    Accessible.name: "Compass"
+    Accessible.onPressAction: mapID.bearing = 0
+
     readonly property alias bearing: needleID.rotation
 
     Rectangle {

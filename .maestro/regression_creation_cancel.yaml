@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+name: regression creation cancel
+tags: [regression, drafts]
+---
+- runFlow: helpers/launch_clean.yaml
+- runFlow: helpers/open_admin_tours.yaml
+- tapOn: Browse tours
+- assertVisible: Available tours
+- runFlow: helpers/go_back.yaml
+- tapOn: Create tour
+- assertVisible: How do you want to create the path?
+- tapOn: Record by walking
+- assertVisible: Tour Description
+- assertVisible: Add title image
+- assertVisible: Set tour language
+- tapOn: Cancel
+- assertVisible: Place the path on the map
+- tapOn: Place the path on the map
+- assertVisible: Tour Description
+- tapOn: Cancel
+- runFlow: helpers/go_back.yaml
+- tapOn: My draft tours
+- assertVisible: Drafts
+- runFlow: helpers/restore_admin.yaml

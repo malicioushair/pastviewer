@@ -1,0 +1,24 @@
+# PastViewer Maestro workspace
+# Open THIS folder (.maestro) in Maestro Studio for "Run All".
+# Studio ignores config.yaml for local discovery — runnable flows must live
+# at this folder's top level (helpers/ stays nested so Studio won't run them).
+name: PastViewer
+tags:
+  - pastviewer
+
+# Used by CLI: maestro test .maestro
+flows:
+  - "smoke_*.yaml"
+  - "regression_*.yaml"
+  - "!helpers/**"
+
+excludeTags:
+  - helper
+
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - smoke_launch
+    - smoke_settings
+    - smoke_available_tours
+    - smoke_tour_info

@@ -18,6 +18,8 @@ ToolBar {
     RowLayout {
         anchors.fill: parent
         ToolButton {
+            Accessible.name: "Back"
+
             implicitHeight: rootID.height
             implicitWidth: implicitHeight
             text: "←"

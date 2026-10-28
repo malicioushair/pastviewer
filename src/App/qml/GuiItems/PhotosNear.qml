@@ -132,6 +132,9 @@ Rectangle {
         spacing: 10
 
         Text {
+            Accessible.role: Accessible.StaticText
+            Accessible.name: text
+
             text: qsTr("History near you")
             font.bold: true
             font.pixelSize: 18

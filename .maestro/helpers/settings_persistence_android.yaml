@@ -1,0 +1,96 @@
+appId: ${APP_ID}
+name: regression settings persistence
+tags: [helper]
+---
+- runFlow: launch_clean.yaml
+- runFlow: open_settings.yaml
+- evalScript: ${output.wasSelected = false}
+- runFlow:
+    when:
+      visible:
+        text: "Show only nearest objects"
+        checked: true
+    commands:
+      - evalScript: ${output.wasSelected = true}
+- tapOn: "Show only nearest objects"
+- runFlow: launch_clean.yaml
+- runFlow: open_settings.yaml
+- runFlow:
+    when:
+      true: ${output.wasSelected}
+    commands:
+      - assertVisible:
+          text: "Show only nearest objects"
+          checked: false
+- runFlow:
+    when:
+      true: ${!output.wasSelected}
+    commands:
+      - assertVisible:
+          text: "Show only nearest objects"
+          checked: true
+- tapOn: "Show only nearest objects"
+- evalScript: ${output.wasSelected = false}
+- runFlow:
+    when:
+      visible:
+        text: "Show all objects in \"History near you\""
+        checked: true
+    commands:
+      - evalScript: ${output.wasSelected = true}
+- tapOn: "Show all objects in \"History near you\""
+- runFlow: launch_clean.yaml
+- runFlow: open_settings.yaml
+- runFlow:
+    when:
+      true: ${output.wasSelected}
+    commands:
+      - assertVisible:
+          text: "Show all objects in \"History near you\""
+          checked: false
+- runFlow:
+    when:
+      true: ${!output.wasSelected}
+    commands:
+      - assertVisible:
+          text: "Show all objects in \"History near you\""
+          checked: true
+- tapOn: "Show all objects in \"History near you\""
+- evalScript: ${output.wasSelected = false}
+- runFlow:
+    when:
+      visible:
+        text: "Proximity notifications"
+        checked: true
+    commands:
+      - evalScript: ${output.wasSelected = true}
+- tapOn: "Proximity notifications"
+- runFlow: launch_clean.yaml
+- runFlow: open_settings.yaml
+- runFlow:
+    when:
+      true: ${output.wasSelected}
+    commands:
+      - assertVisible:
+          text: "Proximity notifications"
+          checked: false
+- runFlow:
+    when:
+      true: ${!output.wasSelected}
+    commands:
+      - assertVisible:
+          text: "Proximity notifications"
+          checked: true
+- tapOn: "Proximity notifications"
+- scrollUntilVisible:
+    element: Reload map items
+    direction: DOWN
+    timeout: 10000
+- tapOn: Reload map items
+- scrollUntilVisible:
+    element: Language
+    direction: UP
+    timeout: 10000
+- assertVisible: Language
+- runFlow: go_back.yaml
+- assertVisible: History near you
