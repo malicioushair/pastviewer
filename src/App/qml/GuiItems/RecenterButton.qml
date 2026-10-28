@@ -6,6 +6,10 @@ import "../Helpers/colors.js" as Colors
 Rectangle {
     id: rootID
 
+    Accessible.role: Accessible.Button
+    Accessible.name: qsTr("Re-center")
+    Accessible.onPressAction: tapped()
+
     signal tapped()
 
     radius: width/2

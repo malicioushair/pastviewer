@@ -1,0 +1,35 @@
+appId: ${APP_ID}
+name: open admin tours
+tags: [helper]
+---
+- runFlow: open_settings.yaml
+# Scroll to the end before checking Tours: an enabled admin entry can be
+# below the viewport and would otherwise be mistaken for disabled admin mode.
+- scrollUntilVisible:
+    element: Reload map items
+    direction: DOWN
+    timeout: 10000
+- swipe:
+    start: "50%,75%"
+    end: "50%,30%"
+    duration: 400
+- evalScript: ${output.enabledAdmin = false}
+- runFlow:
+    when:
+      notVisible: Tours
+    commands:
+      - repeat:
+          times: 16
+          commands:
+            - tapOn:
+                text: "Version:.*"
+                retryTapIfNoChange: false
+      - evalScript: ${output.enabledAdmin = true}
+- scrollUntilVisible:
+    element: Tours
+    direction: DOWN
+    timeout: 10000
+- tapOn: Tours
+- assertVisible: Browse tours
+- assertVisible: Create tour
+- assertVisible: My draft tours

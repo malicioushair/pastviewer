@@ -1,0 +1,35 @@
+appId: ${APP_ID}
+name: regression onboarding
+tags: [regression, onboarding]
+---
+- runFlow: helpers/launch_clean.yaml
+- runFlow: helpers/open_settings.yaml
+- scrollUntilVisible:
+    element: Reset onboarding
+    direction: DOWN
+    timeout: 10000
+- tapOn: Reset onboarding
+- runFlow: helpers/go_back.yaml
+- assertVisible: Skip
+- assertVisible: Next
+- repeat:
+    times: 6
+    commands:
+      - tapOn: Next
+- assertVisible: Got it
+- tapOn: Got it
+- assertNotVisible: Skip
+- runFlow: helpers/launch_clean.yaml
+- assertNotVisible: Skip
+- assertVisible: History near you
+- runFlow: helpers/open_settings.yaml
+- scrollUntilVisible:
+    element: Reset onboarding
+    direction: DOWN
+    timeout: 10000
+- tapOn: Reset onboarding
+- runFlow: helpers/go_back.yaml
+- assertVisible: Skip
+- tapOn: Skip
+- runFlow: helpers/launch_clean.yaml
+- assertNotVisible: Skip

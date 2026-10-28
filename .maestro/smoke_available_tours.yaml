@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+name: Smoke — available tours
+tags:
+  - smoke
+  - tours
+---
+- runFlow:
+    file: helpers/launch_clean.yaml
+- runFlow:
+    file: helpers/open_available_tours.yaml
+- assertVisible:
+    text: "Belgrade Old Town Walk|sample|multi-img|lang"
+    label: "At least one tour is listed"
+- takeScreenshot: smoke_available_tours
+- runFlow:
+    file: helpers/go_back.yaml
+- extendedWaitUntil:
+    notVisible: "Available tours"
+    timeout: 5000
+- assertVisible: "History near you"

@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+name: regression language
+tags: [regression, settings]
+---
+- runFlow: helpers/launch_clean.yaml
+- runFlow: helpers/open_settings.yaml
+- assertVisible: English
+- tapOn: English
+- tapOn: French
+- assertVisible: Langue
+- assertVisible: Paramètres
+- runFlow: helpers/launch_clean.yaml
+- tapOn: Settings
+- assertVisible: French
+- assertVisible: Langue
+- tapOn: French
+- tapOn: English
+- assertVisible: Language
+- scrollUntilVisible:
+    element: Reset onboarding
+    direction: DOWN
+    timeout: 10000
+- assertVisible: Reset onboarding
+- runFlow: helpers/go_back.yaml

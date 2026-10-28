@@ -1,0 +1,16 @@
+appId: ${APP_ID}
+name: Launch clean
+tags:
+  - helper
+---
+# Warm launch — avoids clearState (SpringBoard permission sheets crash XCTest).
+# Overlays are usually already dismissed; call dismiss_overlays.yaml only when needed.
+- launchApp:
+    clearState: false
+    stopApp: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Compass"
+    timeout: 20000
+- assertVisible: Settings

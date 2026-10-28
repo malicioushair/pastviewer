@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+name: open gallery tour
+tags: [helper]
+---
+- runFlow: launch_clean.yaml
+- runFlow: open_available_tours.yaml
+- tapOn: ${GALLERY_TOUR}
+- extendedWaitUntil:
+    visible: Tour Info
+    timeout: 10000
+- runFlow: dismiss_overlays.yaml
+- assertVisible: Start tour
+- tapOn: Start tour
+- runFlow: dismiss_overlays.yaml
+- assertVisible: Exit Tour
+- assertVisible: "I'm here"
+- tapOn: "I'm here"
+- runFlow: dismiss_overlays.yaml
+- assertVisible: Stop Details

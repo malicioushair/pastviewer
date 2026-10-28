@@ -13,6 +13,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QList>
+#include <QQmlFile>
 #include <QRegularExpression>
 #include <QSaveFile>
 #include <QStandardPaths>
@@ -64,8 +65,10 @@ inline std::optional<QString> ChosenFileContentHash(const QUrl & fileUrl)
 	if (fileUrl.isEmpty())
 		return QString();
 
-	const auto basename = fileUrl.isLocalFile() ? QFileInfo(fileUrl.toLocalFile()).fileName() : fileUrl.fileName();
-	QFile file(fileUrl.toLocalFile());
+	const auto fileName = QQmlFile::urlToLocalFileOrQrc(fileUrl);
+	if (fileName.isEmpty())
+		return std::nullopt;
+	QFile file(fileName);
 	if (!file.open(QIODevice::ReadOnly))
 		return std::nullopt;
 

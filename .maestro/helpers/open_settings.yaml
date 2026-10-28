@@ -1,0 +1,10 @@
+appId: ${APP_ID}
+name: Open settings
+tags:
+  - helper
+---
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: "Language"
+    timeout: 5000
+- assertVisible: "Settings"

@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+name: Dismiss known overlays
+tags: [helper]
+---
+- runFlow:
+    when:
+      visible: Got it
+    commands:
+      - tapOn: Got it
+- runFlow:
+    when:
+      visible: Skip
+    commands:
+      - tapOn: Skip

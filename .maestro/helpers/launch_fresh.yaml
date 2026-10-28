@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+name: Launch fresh (clear state)
+tags:
+  - helper
+---
+# Use sparingly — clearState can re-trigger SpringBoard permission sheets
+# that crash Maestro's XCTest driver. Prefer launch_clean.yaml for CI.
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- tapOn:
+    text: "Allow"
+    optional: true
+- extendedWaitUntil:
+    visible: "Skip|Got it|Next|Past Viewer"
+    timeout: 20000
+- runFlow:
+    file: dismiss_fresh_overlays.yaml

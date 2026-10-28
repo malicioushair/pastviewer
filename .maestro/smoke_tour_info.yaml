@@ -1,0 +1,33 @@
+appId: ${APP_ID}
+name: Smoke — tour info
+tags:
+  - smoke
+  - tours
+---
+- runFlow:
+    file: helpers/launch_clean.yaml
+- runFlow:
+    file: helpers/open_available_tours.yaml
+- tapOn:
+    text: "sample|Belgrade Old Town Walk|multi-img|lang"
+    label: "Open first listed tour"
+- extendedWaitUntil:
+    visible: "Tour Info"
+    timeout: 8000
+- runFlow:
+    when:
+      visible: "Skip"
+    commands:
+      - tapOn:
+          text: "Skip"
+          label: "Skip tour-info onboarding"
+- assertVisible: "Tour Info"
+- assertVisible:
+    text: "Start tour|Unlock tour"
+    label: "Primary tour action is visible"
+- takeScreenshot: smoke_tour_info
+- runFlow:
+    file: helpers/go_back.yaml
+- extendedWaitUntil:
+    visible: "Available tours"
+    timeout: 5000

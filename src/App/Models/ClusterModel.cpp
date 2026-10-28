@@ -354,17 +354,17 @@ void ClusterModel::EndSourceChange()
 
 void ClusterModel::PublishNodes(std::vector<Node> nodes)
 {
-	if (nodes.size() < MAX_VISIBLE_CLUSTERS)
-		nodes.resize(MAX_VISIBLE_CLUSTERS);
+    if (nodes.size() < MAX_VISIBLE_CLUSTERS)
+        nodes.resize(MAX_VISIBLE_CLUSTERS);
 
-	if (!m_impl->slotsReady)
-	{
-		m_impl->nodes = std::move(nodes);
+    if (!m_impl->slotsReady)
+    {
+        m_impl->nodes = std::move(nodes);
 		m_impl->slotsReady = true;
 		return;
-	}
+    }
 
-	m_impl->nodes = std::move(nodes);
+    m_impl->nodes = std::move(nodes);
 	const auto lastRow = static_cast<int>(m_impl->nodes.size()) - 1;
 	if (lastRow >= 0)
 		emit dataChanged(index(0), index(lastRow));
