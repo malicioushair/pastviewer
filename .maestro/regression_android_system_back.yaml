@@ -1,0 +1,49 @@
+appId: ${APP_ID}
+name: Regression — Android system Back
+tags: [regression, android, navigation]
+---
+- launchApp:
+    clearState: false
+    stopApp: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible: Compass
+          timeout: 20000
+      - runFlow: helpers/open_settings.yaml
+      # Use the system Back action, never the app's toolbar button.
+      - back
+      - assertNotVisible: Language
+      - assertVisible: Compass
+      - assertVisible: History near you
+      # On a device configured for gesture navigation, the OS handles this edge
+      # swipe and delivers Back to Qt. Keep it below the status bar/keyboard.
+      - runFlow: helpers/open_settings.yaml
+      - swipe:
+          start: "0%, 46%"
+          end: "45%, 46%"
+          duration: 500
+      - assertNotVisible: Language
+      - assertVisible: Compass
+      # Home must still background the app and preserve the current page.
+      - runFlow: helpers/open_settings.yaml
+      - pressKey: Home
+      - assertNotVisible: Language
+      - launchApp:
+          clearState: false
+          stopApp: false
+      - assertVisible: Language
+      - back
+      - assertVisible: Compass
+      # At the root, system Back should retain Android's default behavior.
+      - back
+      - assertNotVisible: Compass
+      - launchApp:
+          clearState: false
+          stopApp: false
+      - extendedWaitUntil:
+          visible: Compass
+          timeout: 20000
+      - assertVisible: History near you

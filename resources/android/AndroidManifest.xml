@@ -20,6 +20,7 @@
     <application
         android:name="org.qtproject.qt.android.bindings.QtApplication"
         android:hardwareAccelerated="true"
+        android:enableOnBackInvokedCallback="false"
         android:label="PastViewer"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true"
