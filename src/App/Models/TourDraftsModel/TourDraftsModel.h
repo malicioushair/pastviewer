@@ -11,7 +11,7 @@
 class PositionSourceAdapter;
 
 class TourDraftsModel
-	: public QAbstractListModel
+    : public QAbstractListModel
 {
 public:
     Q_OBJECT
@@ -49,9 +49,9 @@ public: // QAbstractListModel
     QHash<int, QByteArray> roleNames() const override;
 
 public:
-	void Update();
-	std::vector<Tours::Tour> GetTourDrafts() const;
-	void AddTour(const Tours::Tour & tour);
+    void Update();
+    std::vector<Tours::Tour> GetTourDrafts() const;
+    void AddTour(const Tours::Tour & tour);
     QVariantList GetPlacedStopMarkers() const;
     QVariantMap GetDraft(qlonglong id) const;
     QString UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile);
@@ -80,6 +80,6 @@ private:
     void EmitCurrentTourPathEdited();
 
 private:
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };

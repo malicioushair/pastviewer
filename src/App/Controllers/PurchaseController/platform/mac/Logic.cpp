@@ -4,7 +4,7 @@ namespace PlatformDependentLogic {
 
 bool SupportsNativePurchases()
 {
-	return false;
+    return false;
 }
 
 void InitializeBilling(QStringList)
@@ -13,24 +13,24 @@ void InitializeBilling(QStringList)
 
 void LoadTipProducts(QStringList, TipProductsHandler handler)
 {
-	handler({}, QStringLiteral("Native tip purchases are unavailable on this platform."));
+    handler({}, QStringLiteral("Native tip purchases are unavailable on this platform."));
 }
 
 void Purchase(QString, PurchaseHandler handler, bool)
 {
-	handler(PurchaseResult::Failed, QStringLiteral("Native tip purchases are unavailable on this platform."));
+    handler(PurchaseResult::Failed, QStringLiteral("Native tip purchases are unavailable on this platform."));
 }
 
 void CheckOwned(const QString &, std::function<void(bool)> handler)
 {
-	if (handler)
-		handler(false);
+    if (handler)
+        handler(false);
 }
 
 void QueryPurchasePending(const QString &, std::function<void(PurchasePendingState)> handler)
 {
-	if (handler)
-		handler(PurchasePendingState::Unknown);
+    if (handler)
+        handler(PurchasePendingState::Unknown);
 }
 
 void SetVerifiedTransactionHandler(std::function<void(QString)>)

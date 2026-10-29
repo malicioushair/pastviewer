@@ -3,6 +3,7 @@
 #include <QAbstractListModel>
 
 #include "App/Tours/DisplayTours.h"
+
 class TourStopsModel : public QAbstractListModel
 {
     Q_OBJECT

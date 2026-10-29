@@ -20,93 +20,93 @@ Q_NAMESPACE
 
 enum Type
 {
-	Clustered,
-	Filtered,
-	Raw,
+    Clustered,
+    Filtered,
+    Raw,
 };
 Q_ENUM_NS(Type)
 
 }
 
 class PastVuModelController
-	: public QObject
+    : public QObject
 {
-	Q_OBJECT
-	QML_ELEMENT
-	QML_SINGLETON
+    Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
 
 signals:
-	void PositionPermissionGranted();
-	void NearestObjectsOnlyChanged();
-	void ModelChanged();
-	void HistoryNearModelChanged();
-	void ProximityNotificationsEnabledChanged();
-	void ProximityNotificationDistanceChanged();
-	void PhotoAreaApproached(const QString & title, int photoId);
-	void photoSelected(int modelIndex, const QGeoCoordinate & coordinate, bool isClustered, int zoomToDecluster);
-	void ZoomLevelChanged();
-	void YearFromChanged();
-	void YearToChanged();
-	void UserSelectedTimelineRangeChanged(const Range & timeline);
-	void PositionSourceEmpty(const QString & message) const;
+    void PositionPermissionGranted();
+    void NearestObjectsOnlyChanged();
+    void ModelChanged();
+    void HistoryNearModelChanged();
+    void ProximityNotificationsEnabledChanged();
+    void ProximityNotificationDistanceChanged();
+    void PhotoAreaApproached(const QString & title, int photoId);
+    void photoSelected(int modelIndex, const QGeoCoordinate & coordinate, bool isClustered, int zoomToDecluster);
+    void ZoomLevelChanged();
+    void YearFromChanged();
+    void YearToChanged();
+    void UserSelectedTimelineRangeChanged(const Range & timeline);
+    void PositionSourceEmpty(const QString & message) const;
 
-	// @IMPORTANT: signals exposed to QML and HAVE to be in camel case
-	void loadingItems();
-	void itemsLoaded();
+    // @IMPORTANT: signals exposed to QML and HAVE to be in camel case
+    void loadingItems();
+    void itemsLoaded();
 
 public:
-	explicit PastVuModelController(QObject * parent = nullptr);
-	~PastVuModelController();
+    explicit PastVuModelController(QObject * parent = nullptr);
+    ~PastVuModelController();
 
-	Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjectsOnlyChanged);
-	Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
-	Q_PROPERTY(bool proximityNotificationsEnabled READ GetProximityNotificationsEnabled WRITE SetProximityNotificationsEnabled NOTIFY ProximityNotificationsEnabledChanged);
-	Q_PROPERTY(int proximityNotificationDistance READ GetProximityNotificationDistance WRITE SetProximityNotificationDistance NOTIFY ProximityNotificationDistanceChanged);
-	Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
-	Q_PROPERTY(Range timelineRange READ GetTimelineRange);
-	Q_PROPERTY(Range userSelectedTimelineRange READ GetUserSelectedTimelineRange WRITE SetUserSelectedTimelineRange NOTIFY UserSelectedTimelineRangeChanged);
-	Q_PROPERTY(bool hasPositionSource READ GetHasPositionSource CONSTANT);
+    Q_PROPERTY(bool nearestObjectsOnly READ GetNearestObjectsOnly WRITE SetNearestObjectsOnly NOTIFY NearestObjectsOnlyChanged);
+    Q_PROPERTY(bool historyNearModelType READ GetHistoryNearModelType WRITE SetHistoryNearModelType NOTIFY HistoryNearModelChanged);
+    Q_PROPERTY(bool proximityNotificationsEnabled READ GetProximityNotificationsEnabled WRITE SetProximityNotificationsEnabled NOTIFY ProximityNotificationsEnabledChanged);
+    Q_PROPERTY(int proximityNotificationDistance READ GetProximityNotificationDistance WRITE SetProximityNotificationDistance NOTIFY ProximityNotificationDistanceChanged);
+    Q_PROPERTY(int zoomLevel READ GetZoomLevel WRITE SetZoomLevel NOTIFY ZoomLevelChanged);
+    Q_PROPERTY(Range timelineRange READ GetTimelineRange);
+    Q_PROPERTY(Range userSelectedTimelineRange READ GetUserSelectedTimelineRange WRITE SetUserSelectedTimelineRange NOTIFY UserSelectedTimelineRangeChanged);
+    Q_PROPERTY(bool hasPositionSource READ GetHasPositionSource CONSTANT);
 
-	Q_INVOKABLE QString GetMapHostApiKey();
-	Q_INVOKABLE PositionSourceAdapter * GetPositionSource();
-	Q_INVOKABLE void SetViewportCoordinates(const QGeoRectangle & viewport);
-	Q_INVOKABLE void ToggleOnlyNearestObjects();
-	Q_INVOKABLE void ToggleHistoryNearYouModel();
-	Q_INVOKABLE void ToggleProximityNotifications();
-	Q_INVOKABLE void ReloadItems();
-	Q_INVOKABLE bool SelectPhoto(int photoId);
-	Q_INVOKABLE int GetNotificationDistanceMin() const;
-	Q_INVOKABLE int GetNotificationDistanceMax() const;
+    Q_INVOKABLE QString GetMapHostApiKey();
+    Q_INVOKABLE PositionSourceAdapter * GetPositionSource();
+    Q_INVOKABLE void SetViewportCoordinates(const QGeoRectangle & viewport);
+    Q_INVOKABLE void ToggleOnlyNearestObjects();
+    Q_INVOKABLE void ToggleHistoryNearYouModel();
+    Q_INVOKABLE void ToggleProximityNotifications();
+    Q_INVOKABLE void ReloadItems();
+    Q_INVOKABLE bool SelectPhoto(int photoId);
+    Q_INVOKABLE int GetNotificationDistanceMin() const;
+    Q_INVOKABLE int GetNotificationDistanceMax() const;
 
-	void OnPositionPermissionGranted();
+    void OnPositionPermissionGranted();
 
-	Q_INVOKABLE QAbstractItemModel * GetModel(ModelType::Type modelType);
-
-private:
-	void EvaluatePhotoProximity();
-
-	bool GetNearestObjectsOnly();
-	void SetNearestObjectsOnly(bool value);
-
-	bool GetHistoryNearModelType();
-	void SetHistoryNearModelType(bool value);
-
-	bool GetProximityNotificationsEnabled();
-	void SetProximityNotificationsEnabled(bool value);
-
-	int GetProximityNotificationDistance();
-	void SetProximityNotificationDistance(int value);
-
-	int GetZoomLevel() const;
-	void SetZoomLevel(int value);
-
-	Range GetTimelineRange() const;
-	Range GetUserSelectedTimelineRange() const;
-	void SetUserSelectedTimelineRange(const Range & range);
-
-	bool GetHasPositionSource() const;
+    Q_INVOKABLE QAbstractItemModel * GetModel(ModelType::Type modelType);
 
 private:
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    void EvaluatePhotoProximity();
+
+    bool GetNearestObjectsOnly();
+    void SetNearestObjectsOnly(bool value);
+
+    bool GetHistoryNearModelType();
+    void SetHistoryNearModelType(bool value);
+
+    bool GetProximityNotificationsEnabled();
+    void SetProximityNotificationsEnabled(bool value);
+
+    int GetProximityNotificationDistance();
+    void SetProximityNotificationDistance(int value);
+
+    int GetZoomLevel() const;
+    void SetZoomLevel(int value);
+
+    Range GetTimelineRange() const;
+    Range GetUserSelectedTimelineRange() const;
+    void SetUserSelectedTimelineRange(const Range & range);
+
+    bool GetHasPositionSource() const;
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };

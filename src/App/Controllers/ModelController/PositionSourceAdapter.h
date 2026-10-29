@@ -8,31 +8,31 @@
 #include <QObject>
 
 class PositionSourceAdapter
-	: public QObject
+    : public QObject
 {
-	Q_OBJECT
-	Q_PROPERTY(QGeoCoordinate coordinate READ Coordinate NOTIFY PositionChanged)
-	Q_PROPERTY(double bearing READ Bearing NOTIFY PositionChanged)
-	Q_PROPERTY(bool positionAvailable READ IsPositionAvailable NOTIFY PositionAvailableChanged)
+    Q_OBJECT
+    Q_PROPERTY(QGeoCoordinate coordinate READ Coordinate NOTIFY PositionChanged)
+    Q_PROPERTY(double bearing READ Bearing NOTIFY PositionChanged)
+    Q_PROPERTY(bool positionAvailable READ IsPositionAvailable NOTIFY PositionAvailableChanged)
 
 signals:
-	void PositionChanged();
-	void PositionAvailableChanged();
+    void PositionChanged();
+    void PositionAvailableChanged();
 
 public:
-	explicit PositionSourceAdapter(const QGeoPositionInfoSource * const source, QObject * parent = nullptr);
-	~PositionSourceAdapter();
+    explicit PositionSourceAdapter(const QGeoPositionInfoSource * const source, QObject * parent = nullptr);
+    ~PositionSourceAdapter();
 
-	QGeoPositionInfo Position() const;
-	QGeoCoordinate Coordinate() const;
-	double Bearing() const;
-	bool IsPositionAvailable() const;
-	bool IsSourceAvailable() const;
+    QGeoPositionInfo Position() const;
+    QGeoCoordinate Coordinate() const;
+    double Bearing() const;
+    bool IsPositionAvailable() const;
+    bool IsSourceAvailable() const;
 
 private slots:
-	void OnPositionUpdated(const QGeoPositionInfo & info);
+    void OnPositionUpdated(const QGeoPositionInfo & info);
 
 private:
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };

@@ -10,24 +10,24 @@ namespace PlatformDependentLogic {
 
 struct TipProduct
 {
-	QString id;
-	QString title;
-	QString displayPrice;
+    QString id;
+    QString title;
+    QString displayPrice;
 };
 
 enum class PurchaseResult
 {
-	Succeeded,
-	Cancelled,
-	Pending,
-	Failed,
+    Succeeded,
+    Cancelled,
+    Pending,
+    Failed,
 };
 
 enum class PurchasePendingState
 {
-	Unknown,
-	Pending,
-	NotPending,
+    Unknown,
+    Pending,
+    NotPending,
 };
 
 using TipProductsHandler = std::function<void(QVector<TipProduct>, QString)>;

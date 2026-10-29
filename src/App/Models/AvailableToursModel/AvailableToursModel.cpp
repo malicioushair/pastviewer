@@ -22,44 +22,44 @@ constexpr auto URL = "https://pastviewer.com/api/v1/tours";
 
 struct AvailableToursModel::Impl
 {
-	QNetworkAccessManager networkManager {};
+    QNetworkAccessManager networkManager {};
     std::vector<DisplayTour> tours;
 };
 
 AvailableToursModel::AvailableToursModel(QObject * parent)
-	: QAbstractListModel(parent)
-	, m_impl(std::make_unique<Impl>())
+    : QAbstractListModel(parent)
+    , m_impl(std::make_unique<Impl>())
 {
-	connect(&m_impl->networkManager, &QNetworkAccessManager::finished, this, &AvailableToursModel::OnNetworkReplyFinished);
-	Update();
+    connect(&m_impl->networkManager, &QNetworkAccessManager::finished, this, &AvailableToursModel::OnNetworkReplyFinished);
+    Update();
 }
 
 AvailableToursModel::~AvailableToursModel() = default;
 
 void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
 {
-	if (reply->error())
-	{
-		LOG(ERROR) << std::format("Error occured when requested tour list: {}", reply->errorString().toStdString());
-		reply->deleteLater();
-		return;
-	}
+    if (reply->error())
+    {
+        LOG(ERROR) << std::format("Error occured when requested tour list: {}", reply->errorString().toStdString());
+        reply->deleteLater();
+        return;
+    }
 
-	LOG(INFO) << "Reply success";
-	const auto body = reply->readAll();
-	reply->deleteLater();
+    LOG(INFO) << "Reply success";
+    const auto body = reply->readAll();
+    reply->deleteLater();
 
-	QJsonParseError parserError;
-	const auto jsonDoc = QJsonDocument::fromJson(body, &parserError);
-	if (parserError.error != QJsonParseError::NoError)
-	{
-		LOG(WARNING) << "Failed to parse JSON with error" << parserError.errorString().toStdString();
-		return;
-	}
+    QJsonParseError parserError;
+    const auto jsonDoc = QJsonDocument::fromJson(body, &parserError);
+    if (parserError.error != QJsonParseError::NoError)
+    {
+        LOG(WARNING) << "Failed to parse JSON with error" << parserError.errorString().toStdString();
+        return;
+    }
 
-	const auto root = jsonDoc.object();
-	const auto items = root.value("items").toArray();
-	// The model is yet small, we can afford to reload it for now
+    const auto root = jsonDoc.object();
+    const auto items = root.value("items").toArray();
+    // The model is yet small, we can afford to reload it for now
     m_impl->tours.clear();
     for (const auto & item : items)
     {
@@ -132,8 +132,8 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
 
 void AvailableToursModel::Update()
 {
-	QNetworkRequest request({ URL });
-	m_impl->networkManager.get(request);
+    QNetworkRequest request({ URL });
+    m_impl->networkManager.get(request);
 }
 
 int AvailableToursModel::rowCount(const QModelIndex & parent) const
@@ -143,7 +143,7 @@ int AvailableToursModel::rowCount(const QModelIndex & parent) const
 
 QVariant AvailableToursModel::data(const QModelIndex & index, int role) const
 {
-	assert(index.isValid());
+    assert(index.isValid());
 
     const auto tour = m_impl->tours.at(index.row());
     switch (role)
@@ -173,9 +173,9 @@ QVariant AvailableToursModel::data(const QModelIndex & index, int role) const
 QHash<int, QByteArray> AvailableToursModel::roleNames() const
 {
 #define ROLENAME(NAME)     \
-	{                      \
-		Roles::NAME, #NAME \
-	}
+    {                      \
+        Roles::NAME, #NAME \
+    }
     return {
         ROLENAME(Title),
         ROLENAME(Description),

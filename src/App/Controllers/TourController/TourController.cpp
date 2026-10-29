@@ -2,6 +2,11 @@
 
 #include <memory>
 
+#include "App/Controllers/ModelController/PositionSourceAdapter.h"
+#include "App/Models/AvailableToursModel/AvailableToursModel.h"
+#include "App/Models/TourDraftsModel/TourDraftsModel.h"
+#include "App/Models/TourStopsModel/TourStopsModel.h"
+#include "App/Tours/Tours.h"
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
@@ -18,11 +23,6 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QVariant>
-#include "App/Controllers/ModelController/PositionSourceAdapter.h"
-#include "App/Models/AvailableToursModel/AvailableToursModel.h"
-#include "App/Models/TourDraftsModel/TourDraftsModel.h"
-#include "App/Models/TourStopsModel/TourStopsModel.h"
-#include "App/Tours/Tours.h"
 
 struct TourController::Impl
 {
@@ -35,8 +35,8 @@ struct TourController::Impl
 };
 
 TourController::TourController(const PositionSourceAdapter & positionSource, QObject * parent)
-	: QObject(parent)
-	, m_impl(std::make_unique<Impl>(positionSource))
+    : QObject(parent)
+    , m_impl(std::make_unique<Impl>(positionSource))
 {
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::CurrentDistanceChanged, this, &TourController::DistanceChanged);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::CurrentTourPathChanged, this, &TourController::TourPathChanged);
@@ -116,7 +116,7 @@ void TourController::RemoveLastPoint()
 
 QAbstractListModel * TourController::GetDraftsModel() const
 {
-	return &m_impl->tourDraftsModel;
+    return &m_impl->tourDraftsModel;
 }
 
 QString TourController::GetDistance() const
@@ -141,9 +141,9 @@ QList<QGeoCoordinate> TourController::GetTourPath() const
 
 QAbstractListModel * TourController::GetAvailableToursModel() const
 {
-	m_impl->availableToursModel.Update();
-	QQmlEngine::setObjectOwnership(&m_impl->availableToursModel, QJSEngine::CppOwnership);
-	return &m_impl->availableToursModel;
+    m_impl->availableToursModel.Update();
+    QQmlEngine::setObjectOwnership(&m_impl->availableToursModel, QJSEngine::CppOwnership);
+    return &m_impl->availableToursModel;
 }
 
 QAbstractListModel * TourController::GetTourStopsModel() const

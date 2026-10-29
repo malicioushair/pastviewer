@@ -22,71 +22,71 @@ using namespace PastViewer;
 
 void InitLogging(const std::string & execName)
 {
-	const auto logDir = QDir(QString::fromStdString(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString() + "/logs"));
-	if (!logDir.exists())
-	{
-		if (!logDir.mkpath(logDir.absolutePath()))
-		{
-			LOG(WARNING) << "Failed to create log directory: " << logDir.absolutePath().toStdString();
-			return;
-		}
-	}
+    const auto logDir = QDir(QString::fromStdString(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString() + "/logs"));
+    if (!logDir.exists())
+    {
+        if (!logDir.mkpath(logDir.absolutePath()))
+        {
+            LOG(WARNING) << "Failed to create log directory: " << logDir.absolutePath().toStdString();
+            return;
+        }
+    }
 
-	FLAGS_log_dir = logDir.absolutePath().toStdString();
-	FLAGS_alsologtostderr = true;
-	google::InitGoogleLogging(execName.data());
-	google::InstallFailureSignalHandler();
+    FLAGS_log_dir = logDir.absolutePath().toStdString();
+    FLAGS_alsologtostderr = true;
+    google::InitGoogleLogging(execName.data());
+    google::InstallFailureSignalHandler();
 }
 
 int RunApplication(int argc, char * argv[])
 {
-	// Initialize Sentry prior to everything
-	const auto success = SentryIntegration::InitSentry(QString("PastViewer@%1.%2.%3")
-			.arg(VERSION_MAJOR)
-			.arg(VERSION_MINOR)
-			.arg(VERSION_PATCH));
+    // Initialize Sentry prior to everything
+    const auto success = SentryIntegration::InitSentry(QString("PastViewer@%1.%2.%3")
+            .arg(VERSION_MAJOR)
+            .arg(VERSION_MINOR)
+            .arg(VERSION_PATCH));
 
-	if (!success)
-		throw std::runtime_error("Sentry is not initialized!");
+    if (!success)
+        throw std::runtime_error("Sentry is not initialized!");
 
-	auto sentryShutdown = qScopeGuard([] {
-		SentryIntegration::GetPlatform().Shutdown();
-	});
+    auto sentryShutdown = qScopeGuard([] {
+        SentryIntegration::GetPlatform().Shutdown();
+    });
 
-	QCoreApplication::setOrganizationName("MyOrg");
-	QCoreApplication::setApplicationName("PastViewer");
+    QCoreApplication::setOrganizationName("MyOrg");
+    QCoreApplication::setApplicationName("PastViewer");
 
-	InitLogging(argv[0]);
+    InitLogging(argv[0]);
 
 // Log backtrace implementation status (after glog is initialized)
 #if defined(__ANDROID__)
-	android_backtrace_log_status();
+    android_backtrace_log_status();
 #endif
 
-	QQuickStyle::setStyle("Basic");
+    QQuickStyle::setStyle("Basic");
 
-	QGuiApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
-	const auto guiController = GuiController::Create();
+    const auto guiController = GuiController::Create();
 
-	LOG(INFO) << "Starting PastViewer application";
-	return QGuiApplication::exec();
+    LOG(INFO) << "Starting PastViewer application";
+    return QGuiApplication::exec();
 }
 
 int main(int argc, char * argv[]) noexcept
 {
-	try
-	{
-		return RunApplication(argc, argv);
-	}
-	catch (const std::exception & error)
-	{
-		std::cerr << "PastViewer failed to start: " << error.what() << '\n';
-		return 1;
-	}
-	catch (...)
-	{
-		std::cerr << "PastViewer failed to start with an unknown error\n";
-		return 1;
-	}
+    try
+    {
+        return RunApplication(argc, argv);
+    }
+    catch (const std::exception & error)
+    {
+        std::cerr << "PastViewer failed to start: " << error.what() << '\n';
+        return 1;
+    }
+    catch (...)
+    {
+        std::cerr << "PastViewer failed to start with an unknown error\n";
+        return 1;
+    }
 }

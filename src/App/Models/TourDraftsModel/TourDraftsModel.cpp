@@ -56,6 +56,7 @@ double StraightPathDistance(const QList<QGeoCoordinate> & path)
     return distance;
 }
 }
+
 struct TourDraftsModel::Impl
 {
     const PositionSourceAdapter & positionSource;
@@ -87,7 +88,7 @@ TourDraftsModel::TourDraftsModel(const PositionSourceAdapter & positionSource, Q
     : QAbstractListModel(parent)
     , m_impl(std::make_unique<Impl>(positionSource))
 {
-	Update();
+    Update();
 
     m_impl->timer.setInterval(5000);
     connect(&m_impl->timer, &QTimer::timeout, this, [&] {
@@ -117,22 +118,22 @@ TourDraftsModel::~TourDraftsModel() = default;
 
 int TourDraftsModel::rowCount(const QModelIndex &) const
 {
-	return static_cast<int>(m_impl->tours.size());
+    return static_cast<int>(m_impl->tours.size());
 }
 
 QVariant TourDraftsModel::data(const QModelIndex & index, int role) const
 {
-	if (!index.isValid())
-		return {};
-	const auto item = m_impl->tours.at(index.row());
-	switch (role)
-	{
-		case Id:
+    if (!index.isValid())
+        return {};
+    const auto item = m_impl->tours.at(index.row());
+    switch (role)
+    {
+        case Id:
             return static_cast<qlonglong>(item.id);
         case Title:
             return item.title;
         case Description:
-			return item.description;
+            return item.description;
         case Distance:
             return item.distance;
         default:
@@ -143,17 +144,17 @@ QVariant TourDraftsModel::data(const QModelIndex & index, int role) const
 
 bool TourDraftsModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
-	if (!index.isValid())
-		return assert(false && "invalid index"), false;
+    if (!index.isValid())
+        return assert(false && "invalid index"), false;
 
-	auto item = m_impl->tours.at(index.row());
-	switch (role)
-	{
-		case AddStop:
-		{
-			m_impl->tours.at(index.row()).stops.emplace_back(value.value<Tours::TourStop>());
-			emit dataChanged(index, index);
-			return true;
+    auto item = m_impl->tours.at(index.row());
+    switch (role)
+    {
+        case AddStop:
+        {
+            m_impl->tours.at(index.row()).stops.emplace_back(value.value<Tours::TourStop>());
+            emit dataChanged(index, index);
+            return true;
         }
         case Publish:
         {
@@ -201,9 +202,9 @@ bool TourDraftsModel::setData(const QModelIndex & index, const QVariant & value,
 QHash<int, QByteArray> TourDraftsModel::roleNames() const
 {
 #define ROLENAME(NAME)     \
-	{                      \
-		Roles::NAME, #NAME \
-	}
+    {                      \
+        Roles::NAME, #NAME \
+    }
     return {
         ROLENAME(Id),
         ROLENAME(Title),
@@ -218,11 +219,11 @@ QHash<int, QByteArray> TourDraftsModel::roleNames() const
 
 void TourDraftsModel::Update()
 {
-	QJsonDocument doc;
-	const auto dirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/draft_tours";
-	for (const auto & dirEntry : QDirListing(dirPath))
-	{
-		const auto json = JsonHelpers::ReadJson(dirEntry.absoluteFilePath());
+    QJsonDocument doc;
+    const auto dirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/draft_tours";
+    for (const auto & dirEntry : QDirListing(dirPath))
+    {
+        const auto json = JsonHelpers::ReadJson(dirEntry.absoluteFilePath());
         Tours::Tour tour {
 #define PROPERTY(NAME) .NAME = json[#NAME]
             PROPERTY(id).toInt(),
@@ -241,7 +242,7 @@ void TourDraftsModel::Update()
         }
         const auto stops = json["stops"].toArray();
         std::ranges::transform(stops, std::back_inserter(tour.stops), [](decltype(stops)::const_reference value) {
-			const auto parts = value["coords"].toString().split(',');
+            const auto parts = value["coords"].toString().split(',');
             QList<QUrl> localImagePaths;
             QStringList imageFileHashes;
             for (const auto & pathValue : value["localImagePaths"].toArray())
@@ -262,9 +263,9 @@ void TourDraftsModel::Update()
 #undef PROPERTY
                 .coords = QGeoCoordinate(parts.value(0).toDouble(), parts.value(1).toDouble()),
             };
-		});
-		if (std::ranges::none_of(m_impl->tours, [&](const Tours::Tour & item) { return item.id == tour.id; }))
-		{
+        });
+        if (std::ranges::none_of(m_impl->tours, [&](const Tours::Tour & item) { return item.id == tour.id; }))
+        {
             const auto row = static_cast<int>(m_impl->tours.size());
             beginInsertRows({}, row, row);
             m_impl->tours.push_back(tour);
@@ -275,13 +276,13 @@ void TourDraftsModel::Update()
 
 std::vector<Tours::Tour> TourDraftsModel::GetTourDrafts() const
 {
-	return m_impl->tours;
+    return m_impl->tours;
 }
 
 void TourDraftsModel::AddTour(const Tours::Tour & tour)
 {
-	beginInsertRows({}, rowCount(), rowCount());
-	m_impl->tours.emplace_back(tour);
+    beginInsertRows({}, rowCount(), rowCount());
+    m_impl->tours.emplace_back(tour);
     m_impl->editedTourId = tour.id;
     endInsertRows();
 }

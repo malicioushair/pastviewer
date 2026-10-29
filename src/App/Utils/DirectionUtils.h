@@ -13,14 +13,14 @@ constexpr auto INCORRECT_DIRECTION = 361;
 
 inline int BearingFromDirection(const QString & direction)
 {
-	if (direction.isEmpty())
-	{
-		LOG(WARNING) << "Direction cannot be empty";
-		return INCORRECT_DIRECTION;
-	}
+    if (direction.isEmpty())
+    {
+        LOG(WARNING) << "Direction cannot be empty";
+        return INCORRECT_DIRECTION;
+    }
 
-	static constexpr std::array<std::pair<std::string_view, int>, 8> povDirectionToBearing {
-		{
+    static constexpr std::array<std::pair<std::string_view, int>, 8> povDirectionToBearing {
+        {
          { "n", 0 },
          { "ne", 45 },
          { "e", 90 },
@@ -29,19 +29,19 @@ inline int BearingFromDirection(const QString & direction)
          { "sw", 225 },
          { "w", 270 },
          { "nw", 315 },
-		 }
-	};
+         }
+    };
 
-	const auto it = std::find_if(povDirectionToBearing.begin(), povDirectionToBearing.end(), [&](decltype(povDirectionToBearing)::const_reference item) {
-		return item.first == direction;
-	});
-	if (it == povDirectionToBearing.cend())
-	{
-		LOG(WARNING) << "Incorrect direction: " << direction.toStdString();
-		return INCORRECT_DIRECTION;
-	}
+    const auto it = std::find_if(povDirectionToBearing.begin(), povDirectionToBearing.end(), [&](decltype(povDirectionToBearing)::const_reference item) {
+        return item.first == direction;
+    });
+    if (it == povDirectionToBearing.cend())
+    {
+        LOG(WARNING) << "Incorrect direction: " << direction.toStdString();
+        return INCORRECT_DIRECTION;
+    }
 
-	return it->second;
+    return it->second;
 }
 
 } // namespace DirectionUtils

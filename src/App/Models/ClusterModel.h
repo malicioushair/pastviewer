@@ -10,56 +10,56 @@
 
 struct IndividualNode
 {
-	QPersistentModelIndex indexIntoSourceModel;
+    QPersistentModelIndex indexIntoSourceModel;
 };
 
 struct ClusterNode
 {
-	QGeoCoordinate centroid;
-	QVector<QPersistentModelIndex> indicesIntoSourceModel;
+    QGeoCoordinate centroid;
+    QVector<QPersistentModelIndex> indicesIntoSourceModel;
 };
 
 using Node = std::variant<IndividualNode, ClusterNode>;
 
 class ClusterModel
-	: public QAbstractListModel
+    : public QAbstractListModel
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	enum Roles
-	{
-		ClusterCount = ScreenObjectsModel::Roles::LastRole + 1,
-		CidsInCluster,
-		IsCluster,
-	};
+    enum Roles
+    {
+        ClusterCount = ScreenObjectsModel::Roles::LastRole + 1,
+        CidsInCluster,
+        IsCluster,
+    };
 
-	Q_PROPERTY(int count READ rowCount NOTIFY CountChanged)
+    Q_PROPERTY(int count READ rowCount NOTIFY CountChanged)
 
-	explicit ClusterModel(QAbstractItemModel * sourceModel, QObject * parent = nullptr);
-	~ClusterModel();
+    explicit ClusterModel(QAbstractItemModel * sourceModel, QObject * parent = nullptr);
+    ~ClusterModel();
 
 signals:
-	void CountChanged();
-	void ZoomsToDecluster(const QHash<int, int> & cidToZoom);
-	void MarkersResetStarted();
-	void MarkersResetFinished();
+    void CountChanged();
+    void ZoomsToDecluster(const QHash<int, int> & cidToZoom);
+    void MarkersResetStarted();
+    void MarkersResetFinished();
 
 public:
-	int rowCount(const QModelIndex & parent = QModelIndex()) const override;
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-	QHash<int, QByteArray> roleNames() const override;
+    int rowCount(const QModelIndex & parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    QHash<int, QByteArray> roleNames() const override;
 
-	std::vector<Node> BuildClusters() const;
+    std::vector<Node> BuildClusters() const;
 
 public slots:
-	void OnViewportChanged(const QGeoRectangle & viewport);
+    void OnViewportChanged(const QGeoRectangle & viewport);
 
 private:
-	void BeginSourceChange();
-	void EndSourceChange();
-	void PublishNodes(std::vector<Node> nodes);
+    void BeginSourceChange();
+    void EndSourceChange();
+    void PublishNodes(std::vector<Node> nodes);
 
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };

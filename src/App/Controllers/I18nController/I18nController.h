@@ -10,36 +10,36 @@
 
 class I18nController : public QObject
 {
-	Q_OBJECT
-	QML_ELEMENT
-	QML_SINGLETON
+    Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
 
-	Q_PROPERTY(I18nModel * languageModel READ GetLanguageModel CONSTANT)
-	Q_PROPERTY(QString currentLanguage READ GetCurrentLanguage WRITE SetCurrentLanguage NOTIFY CurrentLanguageChanged)
+    Q_PROPERTY(I18nModel * languageModel READ GetLanguageModel CONSTANT)
+    Q_PROPERTY(QString currentLanguage READ GetCurrentLanguage WRITE SetCurrentLanguage NOTIFY CurrentLanguageChanged)
 
 public:
-	static I18nController * create(QQmlEngine * qmlEngine, QJSEngine * jsEngine);
-	~I18nController();
+    static I18nController * create(QQmlEngine * qmlEngine, QJSEngine * jsEngine);
+    ~I18nController();
 
-	NON_COPY_MOVABLE(I18nController);
+    NON_COPY_MOVABLE(I18nController);
 
 signals:
-	void CurrentLanguageChanged();
+    void CurrentLanguageChanged();
 
 public:
-	Q_INVOKABLE void SetCurrentLanguage(const QString & langCode);
-	Q_INVOKABLE QString GetCurrentLanguage();
-	Q_INVOKABLE int GetIndexOf(const QString & code) const;
+    Q_INVOKABLE void SetCurrentLanguage(const QString & langCode);
+    Q_INVOKABLE QString GetCurrentLanguage();
+    Q_INVOKABLE int GetIndexOf(const QString & code) const;
 
-	I18nModel * GetLanguageModel();
-
-private:
-	I18nController(QQmlEngine & engine, QObject * parent = nullptr);
+    I18nModel * GetLanguageModel();
 
 private:
-	QString GetSystemLocale() const;
+    I18nController(QQmlEngine & engine, QObject * parent = nullptr);
 
 private:
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    QString GetSystemLocale() const;
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };

@@ -22,27 +22,27 @@ inline bool SaveJson(const QJsonDocument & json, const QString & filePath)
 
 inline QJsonObject ReadJson(const QString & path)
 {
-	QFile file(path);
-	if (!file.open(QIODevice::ReadOnly))
-		return {};
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return {};
 
-	const auto data = file.readAll();
-	QJsonParseError error;
-	const auto document = QJsonDocument::fromJson(data, &error);
+    const auto data = file.readAll();
+    QJsonParseError error;
+    const auto document = QJsonDocument::fromJson(data, &error);
 
-	if (error.error != QJsonParseError::NoError)
-	{
-		LOG(WARNING) << "Error when parsing json: " << error.errorString().data();
-		return {};
-	}
+    if (error.error != QJsonParseError::NoError)
+    {
+        LOG(WARNING) << "Error when parsing json: " << error.errorString().data();
+        return {};
+    }
 
-	if (!document.isObject())
-	{
-		LOG(WARNING) << "Json is not an object";
-		return {};
-	}
+    if (!document.isObject())
+    {
+        LOG(WARNING) << "Json is not an object";
+        return {};
+    }
 
-	return document.object();
+    return document.object();
 }
 
 }

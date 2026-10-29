@@ -15,98 +15,98 @@ constexpr auto QM_PATH_TEMPLATE = ":/i18n/%1_%2.qm";
 
 bool LoadTranslator(QTranslator & translator, const QString & languageCode)
 {
-	const auto qmPath = QString(QM_PATH_TEMPLATE).arg(QCoreApplication::applicationName(), languageCode);
-	if (!translator.load(qmPath))
-	{
-		LOG(WARNING) << "Cannot load language from path: " << qmPath.toStdString();
-		return false;
-	}
-	return true;
+    const auto qmPath = QString(QM_PATH_TEMPLATE).arg(QCoreApplication::applicationName(), languageCode);
+    if (!translator.load(qmPath))
+    {
+        LOG(WARNING) << "Cannot load language from path: " << qmPath.toStdString();
+        return false;
+    }
+    return true;
 }
 
 }
 
 struct I18nController::Impl
 {
-	QQmlEngine & engine;
-	QString currentLanguage;
-	QTranslator runtimeTranslator;
-	I18nModel languageModel;
+    QQmlEngine & engine;
+    QString currentLanguage;
+    QTranslator runtimeTranslator;
+    I18nModel languageModel;
 };
 
 I18nController::I18nController(QQmlEngine & engine, QObject * parent)
-	: QObject(parent)
-	, m_impl(std::make_unique<Impl>(engine))
+    : QObject(parent)
+    , m_impl(std::make_unique<Impl>(engine))
 {
-	const QSettings settings;
-	auto currentLanguage = settings.value(LANGUANGE).toString();
-	if (currentLanguage.isEmpty())
-		currentLanguage = GetSystemLocale();
+    const QSettings settings;
+    auto currentLanguage = settings.value(LANGUANGE).toString();
+    if (currentLanguage.isEmpty())
+        currentLanguage = GetSystemLocale();
 
-	LoadTranslator(m_impl->runtimeTranslator, currentLanguage);
+    LoadTranslator(m_impl->runtimeTranslator, currentLanguage);
 
-	QCoreApplication::installTranslator(&m_impl->runtimeTranslator);
-	m_impl->currentLanguage = currentLanguage;
-	m_impl->engine.retranslate();
+    QCoreApplication::installTranslator(&m_impl->runtimeTranslator);
+    m_impl->currentLanguage = currentLanguage;
+    m_impl->engine.retranslate();
 }
 
 QString I18nController::GetSystemLocale() const
 {
-	for (const auto & locale : QLocale::system().uiLanguages())
-	{
-		const auto allLocales = m_impl->languageModel.GetAllLanguages();
-		const auto it = std::ranges::find_if(allLocales, [&](decltype(allLocales)::const_reference item) {
-			return item.code == locale;
-		});
-		if (it != allLocales.cend())
-			return it->code;
-	}
-	return {};
+    for (const auto & locale : QLocale::system().uiLanguages())
+    {
+        const auto allLocales = m_impl->languageModel.GetAllLanguages();
+        const auto it = std::ranges::find_if(allLocales, [&](decltype(allLocales)::const_reference item) {
+            return item.code == locale;
+        });
+        if (it != allLocales.cend())
+            return it->code;
+    }
+    return {};
 }
 
 I18nController * I18nController::create(QQmlEngine * qmlEngine, QJSEngine *)
 {
-	return new I18nController(*qmlEngine);
+    return new I18nController(*qmlEngine);
 }
 
 I18nController::~I18nController() = default;
 
 void I18nController::SetCurrentLanguage(const QString & languageCode)
 {
-	if (m_impl->currentLanguage == languageCode)
-		return;
+    if (m_impl->currentLanguage == languageCode)
+        return;
 
-	QCoreApplication::removeTranslator(&m_impl->runtimeTranslator);
-	if (!LoadTranslator(m_impl->runtimeTranslator, languageCode))
-		return;
+    QCoreApplication::removeTranslator(&m_impl->runtimeTranslator);
+    if (!LoadTranslator(m_impl->runtimeTranslator, languageCode))
+        return;
 
-	QCoreApplication::installTranslator(&m_impl->runtimeTranslator);
+    QCoreApplication::installTranslator(&m_impl->runtimeTranslator);
 
-	m_impl->currentLanguage = languageCode;
-	m_impl->engine.retranslate();
+    m_impl->currentLanguage = languageCode;
+    m_impl->engine.retranslate();
 
-	QSettings settings;
-	settings.setValue(LANGUANGE, languageCode);
+    QSettings settings;
+    settings.setValue(LANGUANGE, languageCode);
 
-	emit CurrentLanguageChanged();
+    emit CurrentLanguageChanged();
 }
 
 QString I18nController::GetCurrentLanguage()
 {
-	return m_impl->currentLanguage;
+    return m_impl->currentLanguage;
 }
 
 int I18nController::GetIndexOf(const QString & code) const
 {
-	const auto languages = m_impl->languageModel.GetAllLanguages();
-	const auto it = std::ranges::find_if(languages, [&](decltype(languages)::const_reference item) { return item.code == code; });
-	if (it == languages.cend())
-		return -1; // not found
+    const auto languages = m_impl->languageModel.GetAllLanguages();
+    const auto it = std::ranges::find_if(languages, [&](decltype(languages)::const_reference item) { return item.code == code; });
+    if (it == languages.cend())
+        return -1; // not found
 
-	return static_cast<int>(std::distance(languages.cbegin(), it));
+    return static_cast<int>(std::distance(languages.cbegin(), it));
 }
 
 I18nModel * I18nController::GetLanguageModel()
 {
-	return &m_impl->languageModel;
+    return &m_impl->languageModel;
 }

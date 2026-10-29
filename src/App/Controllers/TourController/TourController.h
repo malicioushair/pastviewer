@@ -21,15 +21,15 @@ struct Tour;
 }
 
 class TourController
-	: public QObject
+    : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	TourController(const PositionSourceAdapter & positionSource, QObject * parent = nullptr);
-	~TourController();
+    TourController(const PositionSourceAdapter & positionSource, QObject * parent = nullptr);
+    ~TourController();
 
-	Q_PROPERTY(QList<QGeoCoordinate> tourPath READ GetTourPath NOTIFY TourPathChanged)
+    Q_PROPERTY(QList<QGeoCoordinate> tourPath READ GetTourPath NOTIFY TourPathChanged)
     Q_PROPERTY(QString distance READ GetDistance NOTIFY DistanceChanged)             // @TODO creation distance?
     Q_PROPERTY(QString currentStops READ GetCurrentStops NOTIFY CurrentStopsChanged) // @TODO creation stops?
     Q_PROPERTY(QVariantList placedStopMarkers READ GetPlacedStopMarkers NOTIFY CurrentStopsChanged)
@@ -52,8 +52,8 @@ signals:
     void assetUploadFinished();
 
 public:
-	Q_INVOKABLE void StartRecording();
-	Q_INVOKABLE void PauseRecording();
+    Q_INVOKABLE void StartRecording();
+    Q_INVOKABLE void PauseRecording();
     Q_INVOKABLE void ResumeRecording();
     Q_INVOKABLE void StopRecording();
     Q_INVOKABLE QString CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang);
@@ -74,7 +74,7 @@ public:
     Q_INVOKABLE bool IsTourValid(const DisplayTour & tour);
 
 private:
-	QList<QGeoCoordinate> GetTourPath() const;
+    QList<QGeoCoordinate> GetTourPath() const;
     QString GetDistance() const;
     QString GetCurrentStops() const;
     QVariantList GetPlacedStopMarkers() const;
@@ -83,6 +83,6 @@ private:
     QString GetSelectedStopTitle() const;
 
 private:
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };

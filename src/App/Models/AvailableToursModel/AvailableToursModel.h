@@ -8,9 +8,9 @@
 class QNetworkReply;
 
 class AvailableToursModel
-	: public QAbstractListModel
+    : public QAbstractListModel
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
     enum Roles
@@ -29,17 +29,17 @@ public:
     ~AvailableToursModel();
 
 public: // QAbstractListModel
-	int rowCount(const QModelIndex & parent = {}) const override;
-	QVariant data(const QModelIndex & index, int role) const override;
+    int rowCount(const QModelIndex & parent = {}) const override;
+    QVariant data(const QModelIndex & index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
 public:
-	void Update();
+    void Update();
 
 private:
-	void OnNetworkReplyFinished(QNetworkReply * reply);
+    void OnNetworkReplyFinished(QNetworkReply * reply);
 
 private:
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };

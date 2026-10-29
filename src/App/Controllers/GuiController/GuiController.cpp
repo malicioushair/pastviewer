@@ -20,7 +20,6 @@
 
 #include "glog/logging.h"
 
-#include "App/Tours/DisplayTours.h"
 #include "App/Controllers/GuiController/PhotoNotificationPresenter.h"
 #include "App/Controllers/GuiController/TipPromptTracker.h"
 #include "App/Controllers/GuiController/platform/Logic.h"
@@ -29,6 +28,7 @@
 #include "App/Controllers/ModelController/PositionSourceAdapter.h"
 #include "App/Controllers/PurchaseController/PurchaseController.h"
 #include "App/Controllers/TourController/TourController.h"
+#include "App/Tours/DisplayTours.h"
 #include "App/Utils/HoleItem.h"
 #include "App/Utils/PlatformUtils.h"
 
@@ -44,49 +44,49 @@ constexpr auto LAST_SHOWN_CHANGELOG_VERSION_KEY = "Changelog/LastShownVersion";
 
 QString AppVersion()
 {
-	return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+    return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
 }
 
 class HotReloadUrlInterceptor
-	: public QQmlAbstractUrlInterceptor
+    : public QQmlAbstractUrlInterceptor
 {
 public:
-	explicit HotReloadUrlInterceptor(std::string token = {})
-		: m_token(std::move(token))
-	{
-	}
+    explicit HotReloadUrlInterceptor(std::string token = {})
+        : m_token(std::move(token))
+    {
+    }
 
-	void SetToken(const std::string & token)
-	{
-		m_token = token;
-	}
+    void SetToken(const std::string & token)
+    {
+        m_token = token;
+    }
 
-	QUrl intercept(const QUrl & url, DataType type) override
-	{
-		if (true
-			&& type != QQmlAbstractUrlInterceptor::QmlFile
-			&& type != QQmlAbstractUrlInterceptor::JavaScriptFile
-			&& type != QQmlAbstractUrlInterceptor::QmldirFile)
-			return url;
+    QUrl intercept(const QUrl & url, DataType type) override
+    {
+        if (true
+            && type != QQmlAbstractUrlInterceptor::QmlFile
+            && type != QQmlAbstractUrlInterceptor::JavaScriptFile
+            && type != QQmlAbstractUrlInterceptor::QmldirFile)
+            return url;
 
-		if (m_token.empty())
-			return url;
+        if (m_token.empty())
+            return url;
 
-		const auto scheme = url.scheme();
-		if (scheme != QStringLiteral("file") && scheme != QStringLiteral("qrc"))
-			return url;
+        const auto scheme = url.scheme();
+        if (scheme != QStringLiteral("file") && scheme != QStringLiteral("qrc"))
+            return url;
 
-		QUrl result(url);
-		QUrlQuery query(result);
-		query.removeAllQueryItems("r");
-		query.addQueryItem("r", QString::fromStdString(m_token));
-		result.setQuery(query);
+        QUrl result(url);
+        QUrlQuery query(result);
+        query.removeAllQueryItems("r");
+        query.addQueryItem("r", QString::fromStdString(m_token));
+        result.setQuery(query);
 
-		return result;
-	}
+        return result;
+    }
 
 private:
-	std::string m_token;
+    std::string m_token;
 };
 }
 
@@ -122,38 +122,38 @@ struct GuiController::Impl
     {
         if constexpr (Utils::IsAndroid())
             backgroundLocationPermission = [] {
-				QLocationPermission p;
-				p.setAccuracy(QLocationPermission::Precise);
-				p.setAvailability(QLocationPermission::Always);
-				return p;
-			}();
+                QLocationPermission p;
+                p.setAccuracy(QLocationPermission::Precise);
+                p.setAvailability(QLocationPermission::Always);
+                return p;
+            }();
     }
 
     void LoadQml()
     {
-		engine.
+        engine.
 #ifndef NDEBUG
-			load(MAIN_QML)
+            load(MAIN_QML)
 #else
-			loadFromModule("PastViewer", "Main")
+            loadFromModule("PastViewer", "Main")
 #endif
-			;
-	}
+            ;
+    }
 };
 
 GuiController::GuiController()
-	: QObject(nullptr)
-	, m_impl(std::make_unique<Impl>())
+    : QObject(nullptr)
+    , m_impl(std::make_unique<Impl>())
 {
-	if (s_guiController)
-		throw std::logic_error("Only one GuiController instance is supported");
-	s_guiController = this;
+    if (s_guiController)
+        throw std::logic_error("Only one GuiController instance is supported");
+    s_guiController = this;
 
-	qmlRegisterSingletonInstance("TourController", 1, 0, "TourController", &m_impl->tourController);
-	qmlRegisterSingletonInstance("PurchaseController", 1, 0, "PurchaseController", &m_impl->purchaseController);
-	qmlRegisterType<HoleItem>("PastViewer", 1, 0, "HoleItem");
-	qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
-	qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
+    qmlRegisterSingletonInstance("TourController", 1, 0, "TourController", &m_impl->tourController);
+    qmlRegisterSingletonInstance("PurchaseController", 1, 0, "PurchaseController", &m_impl->purchaseController);
+    qmlRegisterType<HoleItem>("PastViewer", 1, 0, "HoleItem");
+    qmlRegisterUncreatableType<PositionSourceAdapter>("PastViewer", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
+    qmlRegisterUncreatableType<Range>("PastViewer", 1, 0, "range", "Range is a value type");
     qmlRegisterUncreatableType<DisplayTourStop>("TourController", 1, 0, "DisplayTourStop", "DisplayTourStop is not meant to be created in qml, it is only passed from C++ as a signal argument");
     qmlRegisterUncreatableMetaObject(ModelType::staticMetaObject, "PastViewer", 1, 0, "ModelType", "ModelType is an enum namespace");
     qRegisterMetaType<DisplayTourStop>();
@@ -161,74 +161,74 @@ GuiController::GuiController()
     qRegisterMetaType<QGeoPositionInfo>();
     m_impl->engine.addImportPath("qrc:/qt/qml");
     m_impl->engine.addUrlInterceptor(m_impl->interceptor.get());
-	m_impl->LoadQml();
+    m_impl->LoadQml();
 
-	if (m_impl->engine.rootObjects().isEmpty())
-	{
-		LOG(ERROR) << "Failed to load QML";
-		throw std::runtime_error("Failed to load QML");
-	}
+    if (m_impl->engine.rootObjects().isEmpty())
+    {
+        LOG(ERROR) << "Failed to load QML";
+        throw std::runtime_error("Failed to load QML");
+    }
 
-	const auto updateBackgroundLocationTracking = [this] {
-		bool enabled = false;
-		if constexpr (Utils::IsAndroid())
-			enabled = m_impl->pastVuModelController
-				   && m_impl->pastVuModelController->property("proximityNotificationsEnabled").toBool()
-				   && qApp->checkPermission(m_impl->backgroundLocationPermission) == Qt::PermissionStatus::Granted;
-		PlatformDependentLogic::SetBackgroundLocationTrackingEnabled(enabled);
-	};
-	const auto requestBackgroundLocationPermission = [this] {
-		if constexpr (Utils::IsAndroid())
-		{
-			if (!m_impl->pastVuModelController
-				|| !m_impl->pastVuModelController->property("proximityNotificationsEnabled").toBool()
-				|| qApp->checkPermission(m_impl->locationPermission) != Qt::PermissionStatus::Granted)
-				return;
+    const auto updateBackgroundLocationTracking = [this] {
+        bool enabled = false;
+        if constexpr (Utils::IsAndroid())
+            enabled = m_impl->pastVuModelController
+                   && m_impl->pastVuModelController->property("proximityNotificationsEnabled").toBool()
+                   && qApp->checkPermission(m_impl->backgroundLocationPermission) == Qt::PermissionStatus::Granted;
+        PlatformDependentLogic::SetBackgroundLocationTrackingEnabled(enabled);
+    };
+    const auto requestBackgroundLocationPermission = [this] {
+        if constexpr (Utils::IsAndroid())
+        {
+            if (!m_impl->pastVuModelController
+                || !m_impl->pastVuModelController->property("proximityNotificationsEnabled").toBool()
+                || qApp->checkPermission(m_impl->locationPermission) != Qt::PermissionStatus::Granted)
+                return;
 
-			RequestPermission(m_impl->backgroundLocationPermission);
-		}
-	};
+            RequestPermission(m_impl->backgroundLocationPermission);
+        }
+    };
 
-	connect(m_impl->pastVuModelController, &PastVuModelController::PositionSourceEmpty, this, [&](const QString & message) { emit showErrorDialog(message); }, Qt::QueuedConnection);
-	connect(this, &GuiController::PermissionGranted, m_impl->pastVuModelController.get(), [this, requestBackgroundLocationPermission, updateBackgroundLocationTracking](const QPermission & permission) {
-		if (permission.type() == QLocationPermission::staticMetaObject.metaType())
-		{
-			m_impl->pastVuModelController->OnPositionPermissionGranted();
-			requestBackgroundLocationPermission();
-		}
+    connect(m_impl->pastVuModelController, &PastVuModelController::PositionSourceEmpty, this, [&](const QString & message) { emit showErrorDialog(message); }, Qt::QueuedConnection);
+    connect(this, &GuiController::PermissionGranted, m_impl->pastVuModelController.get(), [this, requestBackgroundLocationPermission, updateBackgroundLocationTracking](const QPermission & permission) {
+        if (permission.type() == QLocationPermission::staticMetaObject.metaType())
+        {
+            m_impl->pastVuModelController->OnPositionPermissionGranted();
+            requestBackgroundLocationPermission();
+        }
 
-		updateBackgroundLocationTracking();
-	});
-	connect(m_impl->pastVuModelController.get(), &PastVuModelController::ProximityNotificationsEnabledChanged, this, [requestBackgroundLocationPermission, updateBackgroundLocationTracking] {
-		requestBackgroundLocationPermission();
-		updateBackgroundLocationTracking();
-	});
-	connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, [requestBackgroundLocationPermission, updateBackgroundLocationTracking](Qt::ApplicationState state) {
-		if (state != Qt::ApplicationActive)
-			return;
+        updateBackgroundLocationTracking();
+    });
+    connect(m_impl->pastVuModelController.get(), &PastVuModelController::ProximityNotificationsEnabledChanged, this, [requestBackgroundLocationPermission, updateBackgroundLocationTracking] {
+        requestBackgroundLocationPermission();
+        updateBackgroundLocationTracking();
+    });
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, [requestBackgroundLocationPermission, updateBackgroundLocationTracking](Qt::ApplicationState state) {
+        if (state != Qt::ApplicationActive)
+            return;
 
-		requestBackgroundLocationPermission();
-		updateBackgroundLocationTracking();
-	});
-	connect(m_impl->pastVuModelController.get(), &PastVuModelController::PhotoAreaApproached, this, [](const QString & photoTitle, int photoId) {
-		PhotoNotificationPresenter::PresentPhotoApproach(
-			QGuiApplication::applicationState(),
-			GuiController::tr("Historical photo nearby"),
-			GuiController::tr("You are near \"%1\".").arg(photoTitle),
-			photoId,
-			[](QString title, QString body, int id) {
-				PlatformDependentLogic::ShowPhotoProximityNotification(std::move(title), std::move(body), id);
-			});
-	});
+        requestBackgroundLocationPermission();
+        updateBackgroundLocationTracking();
+    });
+    connect(m_impl->pastVuModelController.get(), &PastVuModelController::PhotoAreaApproached, this, [](const QString & photoTitle, int photoId) {
+        PhotoNotificationPresenter::PresentPhotoApproach(
+            QGuiApplication::applicationState(),
+            GuiController::tr("Historical photo nearby"),
+            GuiController::tr("You are near \"%1\".").arg(photoTitle),
+            photoId,
+            [](QString title, QString body, int id) {
+                PlatformDependentLogic::ShowPhotoProximityNotification(std::move(title), std::move(body), id);
+            });
+    });
     connect(&m_impl->tourController, &TourController::ShowErrorMessage, this, &GuiController::showErrorDialog);
     m_impl->purchaseController.SetTipPromptTracker(&m_impl->purchasePromptTracker);
     PlatformDependentLogic::InitializeNotifications([&](int photoId) {
-		if (!m_impl->pastVuModelController)
-			return;
+        if (!m_impl->pastVuModelController)
+            return;
 
-		m_impl->pastVuModelController->SelectPhoto(photoId);
-	});
-	RequestPermission(m_impl->locationPermission);
+        m_impl->pastVuModelController->SelectPhoto(photoId);
+    });
+    RequestPermission(m_impl->locationPermission);
     requestBackgroundLocationPermission();
     updateBackgroundLocationTracking();
     RequestCameraPermission();
@@ -238,57 +238,57 @@ GuiController::~GuiController() = default;
 
 std::unique_ptr<GuiController> GuiController::Create()
 {
-	return std::unique_ptr<GuiController>(new GuiController);
+    return std::unique_ptr<GuiController>(new GuiController);
 }
 
 GuiController * GuiController::create(QQmlEngine * qmlEngine, QJSEngine *)
 {
-	if (!s_guiController)
-	{
-		LOG(ERROR) << "GuiController must be constructed before it is accessed from QML";
-		return nullptr;
-	}
+    if (!s_guiController)
+    {
+        LOG(ERROR) << "GuiController must be constructed before it is accessed from QML";
+        return nullptr;
+    }
 
-	if (qmlEngine != &s_guiController->m_impl->engine)
-	{
-		LOG(ERROR) << "GuiController can only be accessed from its owning QML engine";
-		return nullptr;
-	}
+    if (qmlEngine != &s_guiController->m_impl->engine)
+    {
+        LOG(ERROR) << "GuiController can only be accessed from its owning QML engine";
+        return nullptr;
+    }
 
-	QJSEngine::setObjectOwnership(s_guiController, QJSEngine::CppOwnership);
-	return s_guiController;
+    QJSEngine::setObjectOwnership(s_guiController, QJSEngine::CppOwnership);
+    return s_guiController;
 }
 
 void GuiController::BumpHotReloadToken()
 {
-	m_impl->interceptor->SetToken(QString::number(QDateTime::currentSecsSinceEpoch()).toStdString());
-	m_impl->engine.clearComponentCache();
+    m_impl->interceptor->SetToken(QString::number(QDateTime::currentSecsSinceEpoch()).toStdString());
+    m_impl->engine.clearComponentCache();
 }
 
 bool GuiController::IsDebug()
 {
-	return
+    return
 #ifndef NDEBUG
-		true
+        true
 #else
-		false
+        false
 #endif
-		;
+        ;
 }
 
 QString GuiController::GetAppVersion()
 {
-	return AppVersion();
+    return AppVersion();
 }
 
 bool GuiController::ShouldShowChangelog() const
 {
-	return m_impl->settings.value(LAST_SHOWN_CHANGELOG_VERSION_KEY).toString() != AppVersion();
+    return m_impl->settings.value(LAST_SHOWN_CHANGELOG_VERSION_KEY).toString() != AppVersion();
 }
 
 void GuiController::MarkChangelogShown()
 {
-	m_impl->settings.setValue(LAST_SHOWN_CHANGELOG_VERSION_KEY, AppVersion());
+    m_impl->settings.setValue(LAST_SHOWN_CHANGELOG_VERSION_KEY, AppVersion());
 }
 
 bool GuiController::ShouldShowTipsPrompt()
@@ -302,8 +302,8 @@ bool GuiController::ShouldShowTipsPrompt()
 
 void GuiController::NotifyCameraModeLeft()
 {
-	if (ShouldShowTipsPrompt())
-		emit tipsPromptRequested();
+    if (ShouldShowTipsPrompt())
+        emit tipsPromptRequested();
 }
 
 void GuiController::MarkTipsPromptShown()
@@ -318,67 +318,67 @@ void GuiController::DismissTipsPrompt()
 
 bool GuiController::IsOnboardingStepCompleted(const QString & key)
 {
-	m_impl->settings.beginGroup("Onboarding");
-	const auto res = m_impl->settings.value(key, false).toBool();
-	m_impl->settings.endGroup();
-	return res;
+    m_impl->settings.beginGroup("Onboarding");
+    const auto res = m_impl->settings.value(key, false).toBool();
+    m_impl->settings.endGroup();
+    return res;
 }
 
 void GuiController::SetOnboardingStepCompleted(const QString & key)
 {
-	m_impl->settings.beginGroup("Onboarding");
-	m_impl->settings.setValue(key, true);
-	m_impl->settings.endGroup();
+    m_impl->settings.beginGroup("Onboarding");
+    m_impl->settings.setValue(key, true);
+    m_impl->settings.endGroup();
 }
 
 void GuiController::ResetOnboarding()
 {
-	m_impl->settings.remove("Onboarding");
-	emit onboardingReset();
+    m_impl->settings.remove("Onboarding");
+    emit onboardingReset();
 }
 
 void GuiController::RequestCameraPermission()
 {
-	QMediaDevices devices;
-	if (const auto cameras = devices.videoInputs(); cameras.isEmpty())
-	{
-		LOG(WARNING) << "No cameras available";
-		return;
-	}
+    QMediaDevices devices;
+    if (const auto cameras = devices.videoInputs(); cameras.isEmpty())
+    {
+        LOG(WARNING) << "No cameras available";
+        return;
+    }
 
-	RequestPermission(m_impl->cameraPermission);
+    RequestPermission(m_impl->cameraPermission);
 }
 
 bool GuiController::SaveScreenshotToGallery(const QString & filePath)
 {
-	return PlatformDependentLogic::SaveScreenshotToGallery(filePath);
+    return PlatformDependentLogic::SaveScreenshotToGallery(filePath);
 }
 
 QString GuiController::SaveImage(const QQuickItemGrabResult * grabResult)
 {
-	if (!grabResult)
-	{
-		LOG(WARNING) << "SaveImage called with null grabResult";
-		return {};
-	}
+    if (!grabResult)
+    {
+        LOG(WARNING) << "SaveImage called with null grabResult";
+        return {};
+    }
 
-	const auto timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-	const auto filename = QString("pastviewer_%1.png").arg(timestamp);
-	const auto capturesPath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).absoluteFilePath(qApp->applicationName());
-	if (!QDir().mkpath(capturesPath))
-	{
-		LOG(WARNING) << "Failed to create captures directory: " << capturesPath.toStdString();
-		return {};
-	}
+    const auto timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+    const auto filename = QString("pastviewer_%1.png").arg(timestamp);
+    const auto capturesPath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).absoluteFilePath(qApp->applicationName());
+    if (!QDir().mkpath(capturesPath))
+    {
+        LOG(WARNING) << "Failed to create captures directory: " << capturesPath.toStdString();
+        return {};
+    }
 
-	const auto filePath = QDir(capturesPath).absoluteFilePath(filename);
-	if (!grabResult->saveToFile(filePath))
-	{
-		LOG(WARNING) << "Failed to save screenshot to:" << filePath.toStdString();
-		return {};
-	}
+    const auto filePath = QDir(capturesPath).absoluteFilePath(filename);
+    if (!grabResult->saveToFile(filePath))
+    {
+        LOG(WARNING) << "Failed to save screenshot to:" << filePath.toStdString();
+        return {};
+    }
 
-	m_impl->lastSavedImagePath = filePath;
+    m_impl->lastSavedImagePath = filePath;
     m_impl->purchasePromptTracker.RecordSuccessfulRecreation();
     LOG(INFO) << "Screenshot saved to:" << filePath.toStdString();
 
@@ -390,49 +390,49 @@ QString GuiController::SaveImage(const QQuickItemGrabResult * grabResult)
 
 bool GuiController::ShareImage()
 {
-	if (m_impl->lastSavedImagePath.isEmpty())
-	{
-		LOG(WARNING) << "ShareImage called with no saved image";
-		return false;
-	}
+    if (m_impl->lastSavedImagePath.isEmpty())
+    {
+        LOG(WARNING) << "ShareImage called with no saved image";
+        return false;
+    }
 
-	return PlatformDependentLogic::ShareImage(m_impl->lastSavedImagePath);
+    return PlatformDependentLogic::ShareImage(m_impl->lastSavedImagePath);
 }
 
 void GuiController::RequestPermission(const QPermission & permission)
 {
-	const auto permissionStatus = qApp->checkPermission(permission);
-	const auto permissionName = permission.type().name();
-	switch (permissionStatus)
-	{
-		case Qt::PermissionStatus::Undetermined:
-		{
-			// permissionName and permission have to be captured by value to make sure they are valid
-			qApp->requestPermission(permission, this, [this, permissionName, permission] {
-				LOG(INFO) << permissionName << " requested";
-				if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted)
-				{
-					emit PermissionGranted(permission);
-					LOG(INFO) << permissionName << " granted";
-				}
-			});
-			break;
-		}
-		case Qt::PermissionStatus::Denied:
-			LOG(WARNING) << permissionName << " denied!";
-			break;
-		case Qt::PermissionStatus::Granted:
-			LOG(INFO) << permissionName << " has already been granted";
-			break;
-		default:
-			assert(false && "We should never get to this branch!");
-			throw std::runtime_error("Unknown permission status");
-	}
+    const auto permissionStatus = qApp->checkPermission(permission);
+    const auto permissionName = permission.type().name();
+    switch (permissionStatus)
+    {
+        case Qt::PermissionStatus::Undetermined:
+        {
+            // permissionName and permission have to be captured by value to make sure they are valid
+            qApp->requestPermission(permission, this, [this, permissionName, permission] {
+                LOG(INFO) << permissionName << " requested";
+                if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted)
+                {
+                    emit PermissionGranted(permission);
+                    LOG(INFO) << permissionName << " granted";
+                }
+            });
+            break;
+        }
+        case Qt::PermissionStatus::Denied:
+            LOG(WARNING) << permissionName << " denied!";
+            break;
+        case Qt::PermissionStatus::Granted:
+            LOG(INFO) << permissionName << " has already been granted";
+            break;
+        default:
+            assert(false && "We should never get to this branch!");
+            throw std::runtime_error("Unknown permission status");
+    }
 }
 
 void GuiController::ChangeMapMode(MapMode mode)
 {
-	emit mapModeChanged(mode);
+    emit mapModeChanged(mode);
 }
 
 bool GuiController::GetIsAdmin() const

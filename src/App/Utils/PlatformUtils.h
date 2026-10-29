@@ -5,20 +5,20 @@ namespace Utils {
 constexpr bool IsMobile()
 {
 #if defined(__ANDROID__) || (defined(__APPLE__) && (TARGET_OS_IPHONE || TARGET_OS_SIMULATOR))
-	return true;
+    return true;
 #else
-	return false;
+    return false;
 #endif
 }
 
 constexpr bool IsAndroid()
 {
-	return
+    return
 #ifdef Q_OS_ANDROID
-		true
+        true
 #else
-		false
+        false
 #endif
-		;
+        ;
 }
 }

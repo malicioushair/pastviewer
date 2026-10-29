@@ -17,48 +17,48 @@ class QNetworkAccessManager;
 class QNetworkReply;
 
 class ScreenObjectsModel
-	: public QSortFilterProxyModel
+    : public QSortFilterProxyModel
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit ScreenObjectsModel(QAbstractListModel * sourceModel, QObject * parent = nullptr);
-	NON_COPY_MOVABLE(ScreenObjectsModel);
+    explicit ScreenObjectsModel(QAbstractListModel * sourceModel, QObject * parent = nullptr);
+    NON_COPY_MOVABLE(ScreenObjectsModel);
 
-	~ScreenObjectsModel();
+    ~ScreenObjectsModel();
 
-	Q_PROPERTY(int count READ rowCount NOTIFY CountChanged)
+    Q_PROPERTY(int count READ rowCount NOTIFY CountChanged)
 
-	enum Roles
-	{
-		IsClustered = BaseModel::LastRole,
-		ZoomToDecluster,
+    enum Roles
+    {
+        IsClustered = BaseModel::LastRole,
+        ZoomToDecluster,
 
-		LastRole,
-	};
+        LastRole,
+    };
 
 signals:
-	void CountChanged();
+    void CountChanged();
 
 public slots:
-	void OnUserSelectedTimelineRangeChanged(const Range & timeline);
-	void UpdateZoomsToDecluster(const QHash<int, int> & cidsToZooms);
+    void OnUserSelectedTimelineRangeChanged(const Range & timeline);
+    void UpdateZoomsToDecluster(const QHash<int, int> & cidsToZooms);
 
 public:
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-	QHash<int, QByteArray> roleNames() const override;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    QHash<int, QByteArray> roleNames() const override;
 
 protected:
-	bool filterAcceptsRow(int source_row, const QModelIndex & source_parent) const override;
+    bool filterAcceptsRow(int source_row, const QModelIndex & source_parent) const override;
 
 private slots:
-	void OnPositionUpdated(const QGeoPositionInfo & info);
-	void OnSourceModelChanged();
-	void RebuildProxyModel();
+    void OnPositionUpdated(const QGeoPositionInfo & info);
+    void OnSourceModelChanged();
+    void RebuildProxyModel();
 
 private:
-	void UpdateAcceptedRows();
+    void UpdateAcceptedRows();
 
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };

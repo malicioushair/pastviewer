@@ -16,12 +16,12 @@ void ShowPhotoProximityNotification(const QString, const QString, int)
 
 bool SaveScreenshotToGallery(const QString)
 {
-	return true;
+    return true;
 }
 
 bool ShareImage(const QString)
 {
-	return true;
+    return true;
 }
 
 } // namespace PlatformDependentLogic

@@ -27,19 +27,19 @@ namespace Tours {
 
 inline QString GetDraftsLocation()
 {
-	return QString("%1/%2").arg(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation), "draft_tours");
+    return QString("%1/%2").arg(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation), "draft_tours");
 }
 
 inline QString GetDraftFileLocation(const QString & prefix)
 {
-	return QString("%1/%2_draft.json").arg(GetDraftsLocation(), prefix);
+    return QString("%1/%2_draft.json").arg(GetDraftsLocation(), prefix);
 }
 
 struct TourStop
 {
-	int64_t id {};
-	QString title {};
-	QString description {};
+    int64_t id {};
+    QString title {};
+    QString description {};
     QList<QUrl> localImagePaths {};
     QStringList imageFileHashes {};
     QUrl localAudioPath {};
@@ -49,9 +49,9 @@ struct TourStop
 
 struct Tour
 {
-	int64_t id {};
-	QString title {};
-	QString description {};
+    int64_t id {};
+    QString title {};
+    QString description {};
     double distance {};
     QUrl localImagePath {};
     QString imageFileHash {};
@@ -62,21 +62,21 @@ struct Tour
 
 inline std::optional<QString> ChosenFileContentHash(const QUrl & fileUrl)
 {
-	if (fileUrl.isEmpty())
-		return QString();
+    if (fileUrl.isEmpty())
+        return QString();
 
-	const auto fileName = QQmlFile::urlToLocalFileOrQrc(fileUrl);
-	if (fileName.isEmpty())
-		return std::nullopt;
-	QFile file(fileName);
-	if (!file.open(QIODevice::ReadOnly))
-		return std::nullopt;
+    const auto fileName = QQmlFile::urlToLocalFileOrQrc(fileUrl);
+    if (fileName.isEmpty())
+        return std::nullopt;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+        return std::nullopt;
 
-	QCryptographicHash hasher(QCryptographicHash::Sha256);
-	if (!hasher.addData(&file))
-		return std::nullopt;
+    QCryptographicHash hasher(QCryptographicHash::Sha256);
+    if (!hasher.addData(&file))
+        return std::nullopt;
 
-	return hasher.result().toHex();
+    return hasher.result().toHex();
 }
 
 inline std::optional<QJsonObject> StopToJson(const TourStop & stop)
@@ -109,18 +109,18 @@ inline std::optional<QJsonObject> StopToJson(const TourStop & stop)
 
 inline QJsonObject TourToJson(const Tour & tour)
 {
-	const auto imageFileHash = ChosenFileContentHash(tour.localImagePath);
-	if (!imageFileHash)
-		return {};
+    const auto imageFileHash = ChosenFileContentHash(tour.localImagePath);
+    if (!imageFileHash)
+        return {};
 
-	QJsonArray stops;
-	for (const auto & stop : tour.stops)
-	{
-		const auto stopJson = StopToJson(stop);
-		if (!stopJson)
-			return {};
-		stops.append(*stopJson);
-	}
+    QJsonArray stops;
+    for (const auto & stop : tour.stops)
+    {
+        const auto stopJson = StopToJson(stop);
+        if (!stopJson)
+            return {};
+        stops.append(*stopJson);
+    }
 
     QJsonArray pathCoords;
     for (const auto & point : tour.tourPath)

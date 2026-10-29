@@ -12,78 +12,78 @@
 
 namespace PastViewer {
 class GuiController
-	: public QObject
+    : public QObject
 {
-	Q_OBJECT
-	QML_ELEMENT
-	QML_SINGLETON
-	NON_COPY_MOVABLE(GuiController)
+    Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
+    NON_COPY_MOVABLE(GuiController)
 
-	Q_PROPERTY(bool isAdmin READ GetIsAdmin WRITE SetIsAdmin NOTIFY isAdminChanged)
+    Q_PROPERTY(bool isAdmin READ GetIsAdmin WRITE SetIsAdmin NOTIFY isAdminChanged)
 
 public:
-	enum class MapMode
-	{
-		Main,
-		TourCreation,
-		DisplayTour,
-		PlaceTour,
-	};
-	Q_ENUM(MapMode)
+    enum class MapMode
+    {
+        Main,
+        TourCreation,
+        DisplayTour,
+        PlaceTour,
+    };
+    Q_ENUM(MapMode)
 
-	enum class TourInfoMode
-	{
-		Info,
-		Edit,
-		Tour,
-	};
-	Q_ENUM(TourInfoMode)
+    enum class TourInfoMode
+    {
+        Info,
+        Edit,
+        Tour,
+    };
+    Q_ENUM(TourInfoMode)
 
 signals:
-	void PermissionGranted(const QPermission & permission);
+    void PermissionGranted(const QPermission & permission);
 
-	void showErrorDialog(const QString & errorMessage);
-	void onboardingReset();
-	void tipsPromptRequested();
-	void mapModeChanged(MapMode mode);
-	void isAdminChanged(bool value);
+    void showErrorDialog(const QString & errorMessage);
+    void onboardingReset();
+    void tipsPromptRequested();
+    void mapModeChanged(MapMode mode);
+    void isAdminChanged(bool value);
 
 public:
-	static std::unique_ptr<GuiController> Create();
-	static GuiController * create(QQmlEngine * qmlEngine, QJSEngine * jsEngine);
+    static std::unique_ptr<GuiController> Create();
+    static GuiController * create(QQmlEngine * qmlEngine, QJSEngine * jsEngine);
 
-	~GuiController();
+    ~GuiController();
 
-	Q_INVOKABLE bool IsDebug();
-	Q_INVOKABLE void BumpHotReloadToken();
-	Q_INVOKABLE QString GetAppVersion();
-	Q_INVOKABLE bool ShouldShowChangelog() const;
-	Q_INVOKABLE void MarkChangelogShown();
-	Q_INVOKABLE bool ShouldShowTipsPrompt();
-	Q_INVOKABLE void NotifyCameraModeLeft();
-	Q_INVOKABLE void MarkTipsPromptShown();
-	Q_INVOKABLE void DismissTipsPrompt();
-	Q_INVOKABLE void RequestCameraPermission();
-	Q_INVOKABLE bool SaveScreenshotToGallery(const QString & filePath);
-	Q_INVOKABLE QString SaveImage(const QQuickItemGrabResult * grabResult);
-	Q_INVOKABLE bool ShareImage();
-	Q_INVOKABLE void ChangeMapMode(MapMode mode);
+    Q_INVOKABLE bool IsDebug();
+    Q_INVOKABLE void BumpHotReloadToken();
+    Q_INVOKABLE QString GetAppVersion();
+    Q_INVOKABLE bool ShouldShowChangelog() const;
+    Q_INVOKABLE void MarkChangelogShown();
+    Q_INVOKABLE bool ShouldShowTipsPrompt();
+    Q_INVOKABLE void NotifyCameraModeLeft();
+    Q_INVOKABLE void MarkTipsPromptShown();
+    Q_INVOKABLE void DismissTipsPrompt();
+    Q_INVOKABLE void RequestCameraPermission();
+    Q_INVOKABLE bool SaveScreenshotToGallery(const QString & filePath);
+    Q_INVOKABLE QString SaveImage(const QQuickItemGrabResult * grabResult);
+    Q_INVOKABLE bool ShareImage();
+    Q_INVOKABLE void ChangeMapMode(MapMode mode);
 
-	Q_INVOKABLE bool IsOnboardingStepCompleted(const QString & key);
-	Q_INVOKABLE void SetOnboardingStepCompleted(const QString & key);
-	Q_INVOKABLE void ResetOnboarding();
-
-private:
-	// hiding the constructor from QML so it will have to use the static create(QQmlEngine * qmlEngine, QJSEngine * jsEngine)
-	GuiController();
+    Q_INVOKABLE bool IsOnboardingStepCompleted(const QString & key);
+    Q_INVOKABLE void SetOnboardingStepCompleted(const QString & key);
+    Q_INVOKABLE void ResetOnboarding();
 
 private:
-	void RequestPermission(const QPermission & permission);
-	bool GetIsAdmin() const;
-	void SetIsAdmin(bool value);
+    // hiding the constructor from QML so it will have to use the static create(QQmlEngine * qmlEngine, QJSEngine * jsEngine)
+    GuiController();
 
 private:
-	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+    void RequestPermission(const QPermission & permission);
+    bool GetIsAdmin() const;
+    void SetIsAdmin(bool value);
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };
 } // namespace PastViewer
