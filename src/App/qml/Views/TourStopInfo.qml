@@ -130,16 +130,34 @@ BasePage {
                 highlightMoveDuration: 0
 
 
-                delegate: Image {
+                delegate: Item {
+                    id: delegateID
+
                     required property var modelData
 
                     width: stopImagesViewID.width
                     height: stopImagesViewID.height
-                    source: modelData
-                    fillMode: Image.PreserveAspectFit
 
-                    TapHandler {
-                        onDoubleTapped: mainWindowID.openInspectPhotos(parent.source)
+                    Image {
+                        id: stopImageID
+
+                        anchors.fill: parent
+
+                        source: delegateID.modelData
+                        fillMode: Image.PreserveAspectFit
+                        visible: status === Image.Ready
+
+                        TapHandler {
+                            onDoubleTapped: mainWindowID.openInspectPhotos(parent.source)
+                        }
+                    }
+
+                    StyledBusyIndicator {
+                        anchors.centerIn: parent
+
+                        implicitHeight: 80
+                        implicitWidth: implicitHeight
+                        visible: stopImageID.status !== Image.Ready
                     }
                 }
             }

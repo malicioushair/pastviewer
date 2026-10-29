@@ -220,9 +220,9 @@ GuiController::GuiController()
 				PlatformDependentLogic::ShowPhotoProximityNotification(std::move(title), std::move(body), id);
 			});
 	});
-	connect(&m_impl->tourController, &TourController::ImageUploadFailed, this, &GuiController::showErrorDialog);
-	m_impl->purchaseController.SetTipPromptTracker(&m_impl->purchasePromptTracker);
-	PlatformDependentLogic::InitializeNotifications([&](int photoId) {
+    connect(&m_impl->tourController, &TourController::ShowErrorMessage, this, &GuiController::showErrorDialog);
+    m_impl->purchaseController.SetTipPromptTracker(&m_impl->purchasePromptTracker);
+    PlatformDependentLogic::InitializeNotifications([&](int photoId) {
 		if (!m_impl->pastVuModelController)
 			return;
 

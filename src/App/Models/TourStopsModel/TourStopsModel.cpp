@@ -92,8 +92,7 @@ QString TourStopsModel::GetSelectedStopTitle() const
     const auto it = std::ranges::find_if(m_stops, [&](decltype(m_stops)::const_reference stop) {
         return stop.selected;
     });
-    assert(it != m_stops.cend());
-    return it->title;
+    return it != m_stops.cend() ? it->title : QString();
 }
 
 void TourStopsModel::SelectNextStop()

@@ -40,7 +40,7 @@ signals:
     void TourPathChanged();
     void DistanceChanged();
     void TourPublished(int row, bool success, const QString & errorMessage);
-    void ImageUploadFailed(const QString & errorMessage);
+    void ShowErrorMessage(const QString & errorMessage);
     void UploadTour();
     void CurrentStopsChanged();
     void CurrentTourChanged();
@@ -71,6 +71,7 @@ public:
     Q_INVOKABLE void UploadAsset(const QList<QUrl> & assetFile);
     Q_INVOKABLE void HighlightNextStop();
     Q_INVOKABLE void HighlightPrevStop();
+    Q_INVOKABLE bool IsTourValid(const DisplayTour & tour);
 
 private:
 	QList<QGeoCoordinate> GetTourPath() const;
