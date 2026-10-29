@@ -71,8 +71,10 @@ BasePage {
                 Image {
                     id: fullImageID
 
-                    anchors.fill: parent
-                    anchors.centerIn: parent
+                    anchors {
+                        fill: parent
+                        centerIn: parent
+                    }
 
                     source: photoDetailsPageID.imageSource
                     fillMode: Image.PreserveAspectFit
@@ -80,6 +82,13 @@ BasePage {
                     antialiasing: true
 
                     visible: status == Image.Ready
+                }
+
+                StyledBusyIndicator {
+                    anchors.centerIn: parent
+                    implicitWidth: 80
+                    implicitHeight: implicitWidth
+                    visible: fullImageID.status !== Image.Ready
                 }
             }
 

@@ -67,11 +67,20 @@ BasePage {
 
                 transformOrigin: Item.Center
 
+                StyledBusyIndicator {
+                    anchors.centerIn: parent
+                    implicitWidth: 80
+                    implicitHeight: implicitWidth
+                    visible: thumbnailImageID.status !== Image.Ready
+                }
+
                 Image {
                     id: thumbnailImageID
 
-                    anchors.fill: parent
-                    anchors.centerIn: parent
+                    anchors {
+                        fill: parent
+                        centerIn: parent
+                    }
 
                     source: photoDetailsPageID.thumbnailSource
                     fillMode: Image.PreserveAspectFit
@@ -84,8 +93,10 @@ BasePage {
                 Image {
                     id: fullImageID
 
-                    anchors.fill: parent
-                    anchors.centerIn: parent
+                    anchors {
+                        fill: parent
+                        centerIn: parent
+                    }
 
                     source: photoDetailsPageID.imageSource
                     fillMode: Image.PreserveAspectFit

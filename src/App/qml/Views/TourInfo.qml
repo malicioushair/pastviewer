@@ -77,12 +77,22 @@ BasePage {
         }
 
         Image {
+            id: tourInfoImageID
+
             Layout.preferredWidth: 200
             Layout.preferredHeight: 200
             Layout.alignment: Qt.AlignHCenter
 
             source: rootID.tour.imageUrl
+            visible: status === Image.Ready
+        }
 
+        StyledBusyIndicator {
+            Layout.preferredWidth: 80
+            Layout.preferredHeight: 80
+            Layout.alignment: Qt.AlignHCenter
+
+            visible: tourInfoImageID.status !== Image.Ready
         }
 
         Label {
@@ -121,6 +131,9 @@ BasePage {
             text: qsTr("Start tour")
             visible: !unlockTourButtonID.visible
             onClicked: {
+                if (!TourController.IsTourValid(rootID.tour))
+                    return
+
                 TourController.currentTour = rootID.tour
                 mainWindowID.toMainPage()
                 GuiController.ChangeMapMode(GuiController.MapMode.DisplayTour)

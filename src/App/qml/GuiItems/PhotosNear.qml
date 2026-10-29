@@ -196,11 +196,16 @@ Rectangle {
                                 maskEnabled: true
                                 maskSource: maskTextureID
                         }
+                        visible: status === Image.Ready
 
                         TapHandler {
                             onTapped: PastVuModelController.SelectPhoto(model.Cid)
                             onDoubleTapped: mainWindowID.openPhotoDetails(Photo, Thumbnail, Title, Year)
                         }
+                    }
+
+                    StyledBusyIndicator {
+                        visible: imageID.status !== Image.Ready
                     }
 
                     Text {

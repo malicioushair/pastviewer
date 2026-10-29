@@ -98,6 +98,11 @@ BasePage {
             fillMode: Image.PreserveAspectFit
             smooth: true
             antialiasing: true
+            visible: status === Image.Ready
+        }
+
+        StyledBusyIndicator {
+            visible: imageID.status !== Image.Ready
         }
 
         Text {
@@ -176,12 +181,22 @@ BasePage {
         }
 
         Image {
+            id: thumbnailImageID
+
             anchors.fill: parent
             anchors.margins: parent.radius > 0 ? 3 : 0
             source: rootID.thumbnailSource
             fillMode: Image.PreserveAspectCrop
             asynchronous: false
             cache: false
+            visible: status === Image.Ready
+        }
+
+        StyledBusyIndicator {
+            anchors.centerIn: parent
+            implicitWidth: 80
+            implicitHeight: implicitWidth
+            visible: thumbnailImageID.status !== thumbnailImageID
         }
     }
 
@@ -257,12 +272,22 @@ BasePage {
         }
 
         Image {
+            id: thumbnailButtonImageID
+
             anchors.fill: parent
             anchors.margins: 3
             source: rootID.thumbnailSource
             fillMode: Image.PreserveAspectCrop
             asynchronous: false
             cache: false
+            visible: status === Image.Ready
+        }
+
+        StyledBusyIndicator {
+            anchors.centerIn: parent
+            implicitWidth: 80
+            implicitHeight: implicitWidth
+            visible: thumbnailButtonImageID.status !== Image.Ready
         }
 
         Rectangle {
@@ -285,8 +310,10 @@ BasePage {
             }
 
             Image {
-                anchors.fill: parent
+                id: shareBadgeImageID
+
                 anchors {
+                    fill: parent
                     leftMargin: 5
                     topMargin: 6
                     rightMargin: 7
@@ -294,6 +321,18 @@ BasePage {
                 }
                 source: "../resources/share.png"
                 fillMode: Image.PreserveAspectFit
+                visible: status === Image.Ready
+            }
+
+            StyledBusyIndicator {
+                anchors {
+                    fill: parent
+                    leftMargin: 5
+                    topMargin: 6
+                    rightMargin: 7
+                    bottomMargin: 6
+                }
+                visible: shareBadgeImageID.status !== Image.Ready
             }
         }
 

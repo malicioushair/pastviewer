@@ -41,7 +41,7 @@ TourController::TourController(const PositionSourceAdapter & positionSource, QOb
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::CurrentDistanceChanged, this, &TourController::DistanceChanged);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::CurrentTourPathChanged, this, &TourController::TourPathChanged);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::AssetsUploadFinished, this, &TourController::assetUploadFinished);
-    connect(&m_impl->tourDraftsModel, &TourDraftsModel::ImageUploadFailed, this, &TourController::ImageUploadFailed);
+    connect(&m_impl->tourDraftsModel, &TourDraftsModel::ImageUploadFailed, this, &TourController::ShowErrorMessage);
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::StopsUpdated, this, &TourController::CurrentStopsChanged);
     connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::SelectedStopTitleChanged, Qt::QueuedConnection);
     connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::selectedStopChanged, Qt::QueuedConnection);
@@ -170,6 +170,15 @@ void TourController::HighlightNextStop()
 void TourController::HighlightPrevStop()
 {
     m_impl->tourStopsModel.SelectPrevStop();
+}
+
+bool TourController::IsTourValid(const DisplayTour & tour)
+{
+    const auto isValid = !tour.stops.empty();
+    if (!isValid)
+        emit ShowErrorMessage("Cannot open a tour without stops.");
+
+    return isValid;
 }
 
 QVariant TourController::GetCurrentTour() const
