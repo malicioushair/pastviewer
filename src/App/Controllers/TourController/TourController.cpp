@@ -45,6 +45,10 @@ TourController::TourController(const PositionSourceAdapter & positionSource, QOb
     connect(&m_impl->tourDraftsModel, &TourDraftsModel::StopsUpdated, this, &TourController::CurrentStopsChanged);
     connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::SelectedStopTitleChanged, Qt::QueuedConnection);
     connect(&m_impl->tourStopsModel, &TourStopsModel::SelectionChanged, this, &TourController::selectedStopChanged, Qt::QueuedConnection);
+
+    QQmlEngine::setObjectOwnership(&m_impl->tourDraftsModel, QJSEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(&m_impl->availableToursModel, QJSEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(&m_impl->tourStopsModel, QJSEngine::CppOwnership);
 }
 
 TourController::~TourController() = default;
@@ -142,13 +146,11 @@ QList<QGeoCoordinate> TourController::GetTourPath() const
 QAbstractListModel * TourController::GetAvailableToursModel() const
 {
     m_impl->availableToursModel.Update();
-    QQmlEngine::setObjectOwnership(&m_impl->availableToursModel, QJSEngine::CppOwnership);
     return &m_impl->availableToursModel;
 }
 
 QAbstractListModel * TourController::GetTourStopsModel() const
 {
-    QQmlEngine::setObjectOwnership(&m_impl->tourStopsModel, QJSEngine::CppOwnership);
     return &m_impl->tourStopsModel;
 }
 

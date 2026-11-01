@@ -20,7 +20,7 @@ extern "C" void android_backtrace_log_status();
 
 using namespace PastViewer;
 
-void InitLogging(const std::string & execName)
+void InitLogging(const char * execName)
 {
     const auto logDir = QDir(QString::fromStdString(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString() + "/logs"));
     if (!logDir.exists())
@@ -34,7 +34,7 @@ void InitLogging(const std::string & execName)
 
     FLAGS_log_dir = logDir.absolutePath().toStdString();
     FLAGS_alsologtostderr = true;
-    google::InitGoogleLogging(execName.data());
+    google::InitGoogleLogging(execName);
     google::InstallFailureSignalHandler();
 }
 
