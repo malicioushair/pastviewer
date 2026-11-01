@@ -57,6 +57,8 @@ BasePage {
             StyledTextArea {
                 id: titleTextAreaID
 
+                singleLine: true
+
                 Layout.fillWidth: true
                 Layout.preferredHeight: 45
             }

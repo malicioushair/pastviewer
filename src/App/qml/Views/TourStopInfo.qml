@@ -105,12 +105,16 @@ BasePage {
     }
 
     ColumnLayout {
+        id: contentLayoutID
+
         anchors {
             fill: parent
             margins: 10
         }
 
         Item {
+            Layout.minimumHeight: 0
+            Layout.preferredHeight: contentLayoutID.height * 0.5
             Layout.fillHeight: true
             Layout.fillWidth: true
 
@@ -209,11 +213,51 @@ BasePage {
             font.pixelSize: 20
         }
 
-        Label {
-            Layout.fillWidth: true
+        ScrollView {
+            id: descriptionScrollViewID
 
-            text: rootID.tourStop.description
-            wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.minimumHeight: 0
+            Layout.preferredHeight: contentLayoutID.height * 0.4
+            Layout.maximumHeight: descriptionLabelID.implicitHeight
+
+            clip: true
+            contentWidth: availableWidth
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical: ScrollBar {
+                id: descriptionScrollBarID
+
+                parent: descriptionScrollViewID
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    right: parent.right
+                }
+                orientation: Qt.Vertical
+                policy: ScrollBar.AsNeeded
+                visible: size < 1.0
+                padding: 2
+                implicitWidth: 8
+
+                contentItem: Rectangle {
+                    implicitWidth: 4
+                    implicitHeight: 24
+                    radius: width / 2
+                    color: Colors.palette.text
+                    opacity: descriptionScrollBarID.pressed ? 0.6 : 0.25
+                }
+                background: Item {}
+            }
+
+            Label {
+                id: descriptionLabelID
+
+                width: descriptionScrollViewID.availableWidth
+                rightPadding: descriptionScrollViewID.effectiveScrollBarWidth
+                text: rootID.tourStop.description
+                wrapMode: Text.WordWrap
+            }
         }
 
         RowLayout {

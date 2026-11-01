@@ -58,6 +58,8 @@ BasePage {
                 StyledTextArea {
                     id: titleTextAreaID
 
+                    singleLine: true
+
                     inputObjectName: "tourTitleInput"
                     accessibleName: "Tour title input"
 
