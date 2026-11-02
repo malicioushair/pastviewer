@@ -52,7 +52,7 @@ protected:
     bool filterAcceptsRow(int source_row, const QModelIndex & source_parent) const override;
 
 private slots:
-    void OnPositionUpdated(const QGeoPositionInfo & info);
+    void OnPositionUpdated(const QGeoPositionInfo & info); // @TODO: redundant?
     void OnSourceModelChanged();
     void RebuildProxyModel();
 

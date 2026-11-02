@@ -13,8 +13,10 @@
 #include <QUrlQuery>
 #include <QVariant>
 
+#include <algorithm>
 #include <memory>
 #include <ranges>
+#include <unordered_set>
 #include <vector>
 
 #include "glog/logging.h"
@@ -282,8 +284,34 @@ void BaseModel::AddItemsToModel(std::span<const Item> newItems)
     if (newItems.empty())
         return;
 
-    beginResetModel();
-    m_impl->items.Push(newItems);
-    endResetModel();
+    std::vector<Item> uniqueNewItems {};
+    uniqueNewItems.reserve(newItems.size());
+    std::unordered_set<int> incomingCids;
+    for (const auto & item : newItems)
+        if (!m_impl->items.Contains(item) && incomingCids.insert(item.cid).second)
+            uniqueNewItems.emplace_back(item);
+
+    // An oversized batch retains its newest unique photos, matching FIFO eviction.
+    const auto capacity = m_impl->items.Capacity();
+    if (uniqueNewItems.size() > capacity)
+        uniqueNewItems.erase(uniqueNewItems.begin(), uniqueNewItems.end() - static_cast<int>(capacity));
+
+    const auto newItemsCount = static_cast<int>(uniqueNewItems.size());
+    const auto removeCount = std::max(0, rowCount() + newItemsCount - static_cast<int>(capacity));
+    if (removeCount > 0)
+    {
+        beginRemoveRows(QModelIndex(), 0, removeCount - 1);
+        for (auto i = 0; i < removeCount; ++i)
+            m_impl->items.Pop();
+        endRemoveRows();
+    }
+
+    if (newItemsCount > 0)
+    {
+        const auto first = rowCount();
+        beginInsertRows(QModelIndex(), first, first + newItemsCount - 1);
+        m_impl->items.AppendWithoutEviction(uniqueNewItems);
+        endInsertRows();
+    }
     emit ItemsLoaded();
 }

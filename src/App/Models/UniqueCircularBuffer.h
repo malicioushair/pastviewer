@@ -8,6 +8,7 @@
 #include <ranges>
 #include <stdexcept>
 #include <unordered_set>
+#include <utility>
 
 template <typename T, typename ID, size_t CAPACITY, typename KeyOfFn>
 class UniqueCircularBuffer
@@ -34,39 +35,17 @@ public:
 
     T & At(size_t idx)
     {
-        if (m_size == 0)
-            throw std::out_of_range("Attempt to access item of an empty UniqueCircularBuffer");
-        else if (idx >= m_size)
-            throw std::out_of_range("Attempt to access item outside of UniqueCircularBuffer bounds");
-        return m_data.at((m_tail + idx) % CAPACITY);
+        return const_cast<T &>(std::as_const(*this).At(idx));
     }
 
     void Push(const T & item)
     {
-        const auto id = std::invoke(m_getKeyOf, item);
-        if (m_keys.contains(id))
-            return;
-
-        m_data[m_head++ % CAPACITY] = item;
-        m_keys.insert(id);
-        ++m_size;
-        if (m_size > CAPACITY)
-            (void)Pop();
+        Insert(item, EvictionPolicy::Allow);
     }
 
     void Push(T && item)
     {
-        const auto id = std::invoke(m_getKeyOf, item);
-        if (m_keys.contains(id))
-            return;
-
-        if (m_size == CAPACITY)
-            (void)Pop();
-
-        m_data[m_head % CAPACITY] = std::forward<T>(item);
-        ++m_head;
-        m_keys.insert(id);
-        ++m_size;
+        Insert(std::move(item), EvictionPolicy::Allow);
     }
 
     template <std::ranges::input_range Range>
@@ -101,6 +80,40 @@ public:
         m_keys.clear();
     }
 
+    bool IsEmpty()
+    {
+        return m_size < 1;
+    }
+
+    bool Contains(const T & item)
+    {
+        const auto id = std::invoke(m_getKeyOf, item);
+        return m_keys.contains(id);
+    }
+
+    void AppendWithoutEviction(const T & item)
+    {
+        Insert(item, EvictionPolicy::Forbid);
+    }
+
+    void AppendWithoutEviction(T && item)
+    {
+        Insert(std::move(item), EvictionPolicy::Forbid);
+    }
+
+    template <std::ranges::input_range Range>
+    requires std::convertible_to<std::ranges::range_reference_t<Range>, T>
+    void AppendWithoutEviction(Range && newItems)
+    {
+        for (auto && item : newItems)
+            AppendWithoutEviction(std::forward<decltype(item)>(item));
+    }
+
+    size_t Capacity()
+    {
+        return CAPACITY;
+    }
+
     auto begin()
     {
         return m_data.begin();
@@ -122,6 +135,28 @@ public:
     }
 
 private:
+    enum class EvictionPolicy { Allow, Forbid };
+
+    template <typename Item>
+    void Insert(Item && item, EvictionPolicy evictionPolicy)
+    {
+        const auto id = std::invoke(m_getKeyOf, item);
+        if (m_keys.contains(id))
+            return;
+
+        if (m_size >= CAPACITY)
+        {
+            if (evictionPolicy == EvictionPolicy::Forbid)
+                throw std::logic_error("No eviction allowed.");
+            (void)Pop();
+        }
+
+        m_data[m_head % CAPACITY] = std::forward<Item>(item);
+        ++m_head;
+        m_keys.insert(id);
+        ++m_size;
+    }
+
     std::array<T, CAPACITY> m_data;
     std::unordered_set<ID> m_keys;
     KeyOfFn m_getKeyOf;

@@ -151,7 +151,8 @@ Rectangle {
             orientation: ListView.Horizontal
             spacing: 10
 
-            onCountChanged: Utils.setTimeout(positionViewAtEnd, 300)
+            // Keep the selected item visible in the row of photos
+            onCountChanged: Utils.setTimeout(() => { positionViewAtIndex(listViewID.currentIndex, ListView.Visible)}, 300 )
 
             delegate: Item {
                 width: 100

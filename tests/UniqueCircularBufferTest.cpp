@@ -5,6 +5,71 @@
 
 #include "App/Models/UniqueCircularBuffer.h"
 
+TEST(UniqueCircularBufferPushTest, CopyInsertionEvictsOldestKeyBeforeOverwriting)
+{
+    auto getKey = [](int value) { return value; };
+    UniqueCircularBuffer<int, int, 2, decltype(getKey)> buffer(getKey);
+    const int first = 1;
+    const int second = 2;
+    const int third = 3;
+    buffer.Push(first);
+    buffer.Push(second);
+    buffer.Push(third);
+
+    EXPECT_EQ(buffer.Size(), 2);
+    EXPECT_EQ(buffer.At(0), second);
+    EXPECT_EQ(buffer.At(1), third);
+    EXPECT_FALSE(buffer.Contains(first));
+    EXPECT_TRUE(buffer.Contains(second));
+    EXPECT_TRUE(buffer.Contains(third));
+
+    buffer.Push(third);
+    EXPECT_EQ(buffer.Size(), 2);
+    EXPECT_EQ(buffer.At(0), second);
+
+    buffer.Push(first);
+    EXPECT_EQ(buffer.At(0), third);
+    EXPECT_EQ(buffer.At(1), first);
+    EXPECT_FALSE(buffer.Contains(second));
+    EXPECT_TRUE(buffer.Contains(first));
+}
+
+TEST(UniqueCircularBufferAppendTest, FullBufferRejectsBothOverloadsWithoutChangingData)
+{
+    auto getKey = [](int value) { return value; };
+    UniqueCircularBuffer<int, int, 2, decltype(getKey)> buffer(getKey);
+    const int first = 1;
+    buffer.AppendWithoutEviction(first);
+    buffer.AppendWithoutEviction(2);
+
+    const int third = 3;
+    EXPECT_THROW(buffer.AppendWithoutEviction(third), std::logic_error);
+    EXPECT_THROW(buffer.AppendWithoutEviction(3), std::logic_error);
+    EXPECT_EQ(buffer.Size(), 2);
+    EXPECT_EQ(buffer.At(0), 1);
+    EXPECT_EQ(buffer.At(1), 2);
+    EXPECT_TRUE(buffer.Contains(first));
+    EXPECT_FALSE(buffer.Contains(third));
+    EXPECT_NO_THROW(buffer.AppendWithoutEviction(first));
+}
+
+TEST(UniqueCircularBufferAppendTest, AppendsBatchAfterExplicitRemovalAcrossWraparound)
+{
+    auto getKey = [](int value) { return value; };
+    UniqueCircularBuffer<int, int, 3, decltype(getKey)> buffer(getKey);
+    buffer.AppendWithoutEviction(std::vector<int>{1, 2, 3});
+    EXPECT_EQ(buffer.Pop(), 1);
+    EXPECT_EQ(buffer.Pop(), 2);
+    buffer.AppendWithoutEviction(std::vector<int>{4, 5});
+
+    EXPECT_EQ(buffer.Size(), 3);
+    EXPECT_EQ(buffer.At(0), 3);
+    EXPECT_EQ(buffer.At(1), 4);
+    EXPECT_EQ(buffer.At(2), 5);
+    EXPECT_FALSE(buffer.Contains(1));
+    EXPECT_TRUE(buffer.Contains(5));
+}
+
 /*
  * Unit tests for UniqueCircularBuffer<T, ID, KeyOfFn>
  * 
