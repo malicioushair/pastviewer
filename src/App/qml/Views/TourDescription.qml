@@ -104,6 +104,7 @@ BasePage {
             Layout.maximumHeight: 200
             Layout.maximumWidth: 200
 
+            asynchronous: true
             fillMode: Image.PreserveAspectCrop
         }
 

@@ -148,6 +148,7 @@ BasePage {
                         anchors.fill: parent
 
                         source: delegateID.modelData
+                        asynchronous: true
                         fillMode: Image.PreserveAspectFit
                         visible: status === Image.Ready
 

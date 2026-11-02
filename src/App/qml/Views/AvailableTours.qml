@@ -45,6 +45,7 @@ BasePage {
 
                         anchors.fill: parent
                         source: model.ImageUrl
+                        asynchronous: true
                     }
                     StyledBusyIndicator {
                         anchors.fill: parent
