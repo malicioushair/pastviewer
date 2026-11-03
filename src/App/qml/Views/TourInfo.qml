@@ -84,6 +84,7 @@ BasePage {
             Layout.alignment: Qt.AlignHCenter
 
             source: rootID.tour.imageUrl
+            asynchronous: true
             visible: status === Image.Ready
         }
 

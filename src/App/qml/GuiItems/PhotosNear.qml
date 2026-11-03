@@ -190,6 +190,7 @@ Rectangle {
                         Layout.preferredHeight: 100
 
                         source: Thumbnail
+                        asynchronous: true
                         fillMode: Image.PreserveAspectCrop
 
                         layer.enabled: true

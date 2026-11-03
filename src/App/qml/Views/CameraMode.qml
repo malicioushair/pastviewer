@@ -95,6 +95,7 @@ BasePage {
             Layout.maximumHeight: 250
 
             source: rootID.imageSource
+            asynchronous: true
             fillMode: Image.PreserveAspectFit
             smooth: true
             antialiasing: true
@@ -186,8 +187,8 @@ BasePage {
             anchors.fill: parent
             anchors.margins: parent.radius > 0 ? 3 : 0
             source: rootID.thumbnailSource
+            asynchronous: true
             fillMode: Image.PreserveAspectCrop
-            asynchronous: false
             cache: false
             visible: status === Image.Ready
         }
@@ -278,7 +279,7 @@ BasePage {
             anchors.margins: 3
             source: rootID.thumbnailSource
             fillMode: Image.PreserveAspectCrop
-            asynchronous: false
+            asynchronous: true
             cache: false
             visible: status === Image.Ready
         }

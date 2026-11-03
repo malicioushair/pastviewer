@@ -77,6 +77,7 @@ BasePage {
                     }
 
                     source: photoDetailsPageID.imageSource
+                    asynchronous: true
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     antialiasing: true

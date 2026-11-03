@@ -74,17 +74,21 @@ BasePage {
             Image {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 180
+
                 visible: !rootID.editingStop && rootID.coverFile.toString().length > 0
                 source: rootID.coverFile
+                asynchronous: true
                 fillMode: Image.PreserveAspectFit
             }
             Repeater {
                 model: rootID.editingStop ? rootID.imageFiles : []
                 Image {
                     required property var modelData
+
                     Layout.fillWidth: true
                     Layout.preferredHeight: 180
                     source: modelData
+                    asynchronous: true
                     fillMode: Image.PreserveAspectFit
                 }
             }

@@ -83,6 +83,7 @@ BasePage {
                     }
 
                     source: photoDetailsPageID.thumbnailSource
+                    asynchronous: true
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     antialiasing: true
@@ -99,6 +100,7 @@ BasePage {
                     }
 
                     source: photoDetailsPageID.imageSource
+                    asynchronous: true
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     antialiasing: true
