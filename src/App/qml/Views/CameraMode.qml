@@ -18,7 +18,7 @@ BasePage {
 
     required property string imageSource
     required property int year
-    
+
     property string thumbnailSource: ""
     property bool thumbnailVisible: false
     property bool thumbnailAnimationVisible: false
@@ -60,6 +60,7 @@ BasePage {
 
     header: Header {
         label.text: qsTr("Back")
+        visible: !rootID.controlsHidden
     }
 
     footer: Footer {
