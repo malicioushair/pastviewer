@@ -79,11 +79,12 @@ BasePage {
         Image {
             id: tourInfoImageID
 
-            Layout.preferredWidth: 200
-            Layout.preferredHeight: 200
+            Layout.preferredHeight: 300
+            Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
 
             source: rootID.tour.imageUrl
+            fillMode: Image.PreserveAspectFit
             asynchronous: true
             visible: status === Image.Ready
         }
