@@ -88,6 +88,17 @@ QVariantMap TourController::GetDraft(qlonglong id) const
     return m_impl->tourDraftsModel.GetDraft(id);
 }
 
+bool TourController::BackupDraft(qlonglong id, const QUrl & destination)
+{
+    const auto error = m_impl->tourDraftsModel.BackupDraft(id, destination);
+    if (!error.isEmpty())
+    {
+        emit ShowErrorMessage(error);
+        return false;
+    }
+    return true;
+}
+
 QString TourController::UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile)
 {
     return m_impl->tourDraftsModel.UpdateDraftDetails(id, title, description, imageFile);
@@ -154,9 +165,9 @@ QAbstractListModel * TourController::GetTourStopsModel() const
     return &m_impl->tourStopsModel;
 }
 
-void TourController::UploadAsset(const QList<QUrl> & assetFiles)
+void TourController::UploadAssets(const QList<QUrl> & assetFiles)
 {
-    m_impl->tourDraftsModel.UploadAsset(assetFiles);
+    m_impl->tourDraftsModel.UploadAssets(assetFiles);
 }
 
 QString TourController::GetSelectedStopTitle() const

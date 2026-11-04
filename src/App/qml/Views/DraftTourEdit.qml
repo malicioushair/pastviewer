@@ -80,17 +80,10 @@ BasePage {
                 asynchronous: true
                 fillMode: Image.PreserveAspectFit
             }
-            Repeater {
-                model: rootID.editingStop ? rootID.imageFiles : []
-                Image {
-                    required property var modelData
-
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 180
-                    source: modelData
-                    asynchronous: true
-                    fillMode: Image.PreserveAspectFit
-                }
+            CompactImageGallery {
+                Layout.fillWidth: true
+                Layout.preferredHeight: implicitHeight
+                imageUrls: rootID.editingStop ? rootID.imageFiles : []
             }
             RowLayout {
                 StyledButton {

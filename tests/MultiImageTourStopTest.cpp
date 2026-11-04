@@ -272,6 +272,124 @@ protected:
 
 }
 
+TEST_F(MultiImageTourStop, SerializationReportsTheUnreadableCoverImageStopImageOrAudio)
+{
+    const auto cover = WriteMedia("cover.png", kAbcBytes);
+    const auto image = WriteMedia("stop.png", kSecondBytes);
+    const auto audio = WriteMedia("audio.wav", kNarrationBytes);
+    ASSERT_TRUE(model->CreateNewTour("Readable tour", "", cover, "en").isEmpty());
+    model->CreateTourStop("Stop", "", { image }, audio, QGeoCoordinate(44.8, 20.4));
+    const auto tour = model->GetTourDrafts().back();
+
+    for (const auto & file : { cover, image, audio })
+    {
+        SCOPED_TRACE(file.toString().toStdString());
+        QFile input(file.toLocalFile());
+        ASSERT_TRUE(input.open(QIODevice::ReadOnly));
+        const auto bytes = input.readAll();
+        input.close();
+        ASSERT_TRUE(QFile::remove(file.toLocalFile()));
+
+        QUrl unreadable;
+        EXPECT_TRUE(Tours::TourToJson(tour, &unreadable).isEmpty());
+        EXPECT_EQ(unreadable, file);
+
+        WriteMedia(QFileInfo(file.toLocalFile()).fileName(), bytes);
+        EXPECT_FALSE(Tours::TourToJson(tour, &unreadable).isEmpty());
+        EXPECT_TRUE(unreadable.isEmpty());
+    }
+}
+
+TEST_F(MultiImageTourStop, PublishRejectsUnreadableMediaBeforeStartingUploadsAndKeepsTheDraft)
+{
+    const auto cover = WriteMedia("cover.png", kAbcBytes);
+    const auto image = WriteMedia("stop.png", kSecondBytes);
+    const auto audio = WriteMedia("audio.wav", kNarrationBytes);
+    ASSERT_TRUE(model->CreateNewTour("Keep unreadable draft", "", cover, "en").isEmpty());
+    model->CreateTourStop("Stop", "", { image }, audio, QGeoCoordinate(44.8, 20.4));
+    const auto original = ReadDraftObject("Keep unreadable draft");
+    QObject observer;
+    QString error;
+    QObject::connect(model.get(), &TourDraftsModel::ImageUploadFailed, &observer,
+        [&](const QString & message) { error = message; });
+
+    for (const auto & file : { cover, image, audio })
+    {
+        SCOPED_TRACE(file.toString().toStdString());
+        QFile input(file.toLocalFile());
+        ASSERT_TRUE(input.open(QIODevice::ReadOnly));
+        const auto bytes = input.readAll();
+        input.close();
+        ASSERT_TRUE(QFile::remove(file.toLocalFile()));
+        error.clear();
+
+        EXPECT_FALSE(model->setData(model->index(0), true, TourDraftsModel::Publish));
+        EXPECT_TRUE(error.contains(file.toLocalFile())) << error.toStdString();
+        EXPECT_TRUE(error.contains("cannot be read")) << error.toStdString();
+        EXPECT_EQ(model->rowCount(), 1);
+        EXPECT_EQ(ReadDraftObject("Keep unreadable draft"), original);
+
+        WriteMedia(QFileInfo(file.toLocalFile()).fileName(), bytes);
+    }
+}
+
+TEST_F(MultiImageTourStop, BackupCopiesSavedJsonIncludingStopMediaAndPreservesDraft)
+{
+    const auto cover = WriteMedia(QStringLiteral("cover.png"), kAbcBytes);
+    const auto image = WriteMedia(QStringLiteral("stop.png"), kSecondBytes);
+    const auto audio = WriteMedia(QStringLiteral("audio.wav"), kNarrationBytes);
+    ASSERT_TRUE(model->CreateNewTour("Backup tour", "Description", cover, "en").isEmpty());
+    model->CreateTourStop("Stop", "Details", { image }, audio, QGeoCoordinate(44.8, 20.4));
+    const auto id = model->GetTourDrafts().back().id;
+    QFile source(Tours::GetDraftFileLocation("Backup tour"));
+    ASSERT_TRUE(source.open(QIODevice::ReadOnly));
+    const auto original = source.readAll();
+    const auto destination = WriteMedia(QStringLiteral("backup.json"), "old backup");
+
+    ASSERT_TRUE(model->BackupDraft(id, destination).isEmpty());
+    QFile backup(destination.toLocalFile());
+    ASSERT_TRUE(backup.open(QIODevice::ReadOnly));
+    EXPECT_EQ(backup.readAll(), original);
+    ASSERT_TRUE(source.seek(0));
+    EXPECT_EQ(source.readAll(), original);
+    EXPECT_EQ(model->rowCount(), 1);
+    EXPECT_EQ(model->GetTourDrafts().back().stops.size(), 1);
+}
+
+TEST_F(MultiImageTourStop, BackupDoesNotRequireTheOriginalMediaToRemainReadable)
+{
+    const auto cover = WriteMedia(QStringLiteral("cover.png"), kAbcBytes);
+    ASSERT_TRUE(model->CreateNewTour("Backup without media", "", cover, "en").isEmpty());
+    const auto id = model->GetTourDrafts().back().id;
+    ASSERT_TRUE(QFile::remove(cover.toLocalFile()));
+    const auto destination = QUrl::fromLocalFile(media->filePath("backup.json"));
+
+    EXPECT_TRUE(model->BackupDraft(id, destination).isEmpty());
+    QFile backup(destination.toLocalFile());
+    ASSERT_TRUE(backup.open(QIODevice::ReadOnly));
+    const auto object = QJsonDocument::fromJson(backup.readAll()).object();
+    EXPECT_EQ(object.value("localImagePath").toString(), cover.toString());
+    EXPECT_EQ(object.value("title").toString(), "Backup without media");
+}
+
+TEST_F(MultiImageTourStop, BackupRejectsInvalidDestinationsAndMissingDraftWithoutDeletingData)
+{
+    ASSERT_TRUE(model->CreateNewTour("Keep draft", "", {}, "en").isEmpty());
+    const auto id = model->GetTourDrafts().back().id;
+    const auto original = ReadDraftObject("Keep draft");
+    const auto source = QUrl::fromLocalFile(Tours::GetDraftFileLocation("Keep draft"));
+    const auto missingParent = QUrl::fromLocalFile(media->filePath("missing/backup.json"));
+    const auto destination = QUrl::fromLocalFile(media->filePath("backup.json"));
+
+    EXPECT_FALSE(model->BackupDraft(id, {}).isEmpty());
+    EXPECT_FALSE(model->BackupDraft(id, source).isEmpty());
+    EXPECT_FALSE(model->BackupDraft(id, missingParent).isEmpty());
+    EXPECT_FALSE(model->BackupDraft(id + 1, destination).isEmpty());
+    EXPECT_FALSE(QFile::exists(destination.toLocalFile()));
+    EXPECT_EQ(ReadDraftObject("Keep draft"), original);
+    EXPECT_EQ(model->rowCount(), 1);
+}
+
 TEST_F(MultiImageTourStop, CreateTourStopAcceptsImageListAndRoundTripsDraft)
 {
     const auto coverUrl = WriteMedia(QStringLiteral("cover.png"), kAbcBytes);

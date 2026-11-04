@@ -152,6 +152,7 @@ jobs:
         env:
           OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
         run: |
           if [ -z "$OSM_API_KEY" ]; then
             echo "::error::OSM_API_KEY secret is not set. Add it in repository Settings → Secrets and variables → Actions."
@@ -318,6 +319,7 @@ jobs:
         env:
           OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
           QT_ANDROID_ARM64: ${{ env.QT_ANDROID_PREFIX }}
           TIP_PRODUCT_IDS: ${{ secrets.TIP_PRODUCT_IDS }}
         run: |
@@ -512,6 +514,7 @@ jobs:
         env:
           OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_PROVISION_PROFILE_NAME: ${{ secrets.APPLE_PROVISION_PROFILE_NAME }}
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}

@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtPositioning
+import QtCore
 
 import "../GuiItems"
 import "Helpers"
@@ -102,15 +103,18 @@ BasePage {
                 onClicked: addImageDialogID.open()
             }
 
+            CompactImageGallery {
+                Layout.fillWidth: true
+                Layout.preferredHeight: implicitHeight
+                imageUrls: addImageDialogID.selectedFiles
+            }
+
             RowLayout {
                 StyledButton {
                     id: uploadImageButtonID
 
                     text: qsTr("Upload Images")
-                    onClicked: {
-                        for (let i = 0; i < addImageDialogID.selectedFiles.length; ++i)
-                            TourController.UploadAsset(addImageDialogID.selectedFiles[i])
-                    }
+                    onClicked: TourController.UploadAssets(addImageDialogID.selectedFiles)
                 }
                 Rectangle {
                     id: uploadImageIndicatorID
@@ -129,7 +133,7 @@ BasePage {
 
                 title: qsTr("Please add an audio")
                 currentFolder: StandardPaths.standardLocations(StandardPaths.MusicLocation)
-                onAccepted: TourController.UploadAsset(addAudioDialogID.selectedFile)
+                onAccepted: TourController.UploadAssets(addAudioDialogID.selectedFiles)
                 onRejected: {
                     console.log("Canceled")
                 }
@@ -155,7 +159,7 @@ BasePage {
                     id: uploadAudioButtonID
 
                     text: qsTr("Upload Audio")
-                    onClicked: TourController.UploadAsset(addAudioDialogID.selectedFile) // @todo: handle audio / image upload indications
+                    onClicked: TourController.UploadAssets(addAudioDialogID.selectedFiles) // @todo: handle audio / image upload indications
                 }
                 Rectangle {
                     id: uploadAudioIndicatorID

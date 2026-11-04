@@ -114,6 +114,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE SENTRY_DSN="${SENTRY_DSN}") #
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MAJOR="${CMAKE_PROJECT_VERSION_MAJOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_MINOR="${CMAKE_PROJECT_VERSION_MINOR}")
 target_compile_definitions(${PROJECT_NAME} PRIVATE VERSION_PATCH="${CMAKE_PROJECT_VERSION_PATCH}")
+set(ADMIN_TOKEN "$ENV{ADMIN_TOKEN}" CACHE STRING "Backend token for admin uploads")
+if ("${ADMIN_TOKEN}" STREQUAL "")
+    message(WARNING "ADMIN_TOKEN is empty; admin tour and asset uploads will be unavailable")
+endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE ADMIN_TOKEN="${ADMIN_TOKEN}")
 
 set(_pastviewer_apple_tip_product_ids_list "${TIP_PRODUCT_IDS}")

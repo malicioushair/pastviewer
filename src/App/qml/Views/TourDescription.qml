@@ -129,7 +129,7 @@ BasePage {
 
                 text: qsTr("Upload image")
 
-                onClicked: TourController.UploadAsset(addImageDialogID.selectedFiles)
+                onClicked: TourController.UploadAssets(addImageDialogID.selectedFiles)
             }
             Rectangle {
                 id: uploadIndicator

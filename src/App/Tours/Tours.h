@@ -79,20 +79,30 @@ inline std::optional<QString> ChosenFileContentHash(const QUrl & fileUrl)
     return hasher.result().toHex();
 }
 
-inline std::optional<QJsonObject> StopToJson(const TourStop & stop)
+inline std::optional<QJsonObject> StopToJson(const TourStop & stop, QUrl * unreadableFile = nullptr)
 {
+    if (unreadableFile)
+        *unreadableFile = QUrl();
     QJsonArray imageFileHashes;
     for (const auto & imagePath : stop.localImagePaths)
     {
         const auto imageFileHash = ChosenFileContentHash(imagePath);
         if (!imageFileHash)
+        {
+            if (unreadableFile)
+                *unreadableFile = imagePath;
             return std::nullopt;
+        }
         imageFileHashes.append(*imageFileHash);
     }
 
     const auto audioFileHash = ChosenFileContentHash(stop.localAudioPath);
     if (!audioFileHash)
+    {
+        if (unreadableFile)
+            *unreadableFile = stop.localAudioPath;
         return std::nullopt;
+    }
 
     const auto coords = QJsonObject {
         { "latitude",  stop.coords.latitude()  },
@@ -107,16 +117,22 @@ inline std::optional<QJsonObject> StopToJson(const TourStop & stop)
     };
 }
 
-inline QJsonObject TourToJson(const Tour & tour)
+inline QJsonObject TourToJson(const Tour & tour, QUrl * unreadableFile = nullptr)
 {
+    if (unreadableFile)
+        *unreadableFile = QUrl();
     const auto imageFileHash = ChosenFileContentHash(tour.localImagePath);
     if (!imageFileHash)
+    {
+        if (unreadableFile)
+            *unreadableFile = tour.localImagePath;
         return {};
+    }
 
     QJsonArray stops;
     for (const auto & stop : tour.stops)
     {
-        const auto stopJson = StopToJson(stop);
+        const auto stopJson = StopToJson(stop, unreadableFile);
         if (!stopJson)
             return {};
         stops.append(*stopJson);

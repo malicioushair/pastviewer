@@ -7,8 +7,10 @@
 #include "PositionSourceAdapter.h"
 
 #include <memory>
+#include <functional>
 
 class PositionSourceAdapter;
+class QNetworkAccessManager;
 
 class TourDraftsModel
     : public QAbstractListModel
@@ -30,9 +32,14 @@ public:
         AddStop,
         Publish,
         Delete,
+
+        // Upload progress (appended to preserve existing role values)
+        Uploading,
     };
 
-    TourDraftsModel(const PositionSourceAdapter & positionSource, QObject * parent = nullptr);
+    // An injected manager must outlive the model; otherwise the model owns one.
+    TourDraftsModel(const PositionSourceAdapter & positionSource, QObject * parent = nullptr,
+        QNetworkAccessManager * networkManager = nullptr);
     ~TourDraftsModel();
 
 signals:
@@ -54,6 +61,7 @@ public:
     void AddTour(const Tours::Tour & tour);
     QVariantList GetPlacedStopMarkers() const;
     QVariantMap GetDraft(qlonglong id) const;
+    QString BackupDraft(qlonglong id, const QUrl & destination) const;
     QString UpdateDraftDetails(qlonglong id, const QString & title, const QString & description, const QUrl & imageFile);
     bool SelectDraft(qlonglong id);
     QVariantMap GetDraftStop(qlonglong id) const;
@@ -66,7 +74,7 @@ public:
     QString CreateNewTour(const QString & title, const QString & description, const QUrl & imageFile, const QString & tourLang);
     void CreateTourStop(const QString & title, const QString & description, const QList<QUrl> & imageFiles, const QUrl & audioFile, const QGeoCoordinate & coordinate = QGeoCoordinate());
     QString GetCurrentStops() const;
-    void UploadAsset(const QList<QUrl> & assetFile);
+    void UploadAssets(const QList<QUrl> & assetFile);
 
     void StartRecording();
     void PauseRecording();
@@ -76,6 +84,16 @@ public:
     QString GetDistance();
 
 private:
+    using UploadCompletion = std::function<void(const QString &)>;
+    struct AssetUpload;
+    struct PublishOperation;
+    bool StartPublishing(const Tours::Tour & tour);
+    void SubmitTour(const std::shared_ptr<PublishOperation> & operation);
+    void FinishPublishing(qlonglong id, const QString & error);
+    void NotifyUploadingChanged(qlonglong id);
+    void StartAssetUploads(const QList<QUrl> & files, UploadCompletion completion,
+        const QHash<QUrl, QString> & expectedHashes = {});
+    void UploadNextAsset(const std::shared_ptr<AssetUpload> & upload);
     void DeleteTourItem(const QModelIndex & index);
     void EmitCurrentTourPathEdited();
 

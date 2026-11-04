@@ -12,6 +12,7 @@ add_executable(PastViewerTests
     DirectionUtilsTest.cpp
     FileHashTest.cpp
     MultiImageTourStopTest.cpp
+    TourDraftPublishingTest.cpp
     PhotoNotificationCoordinatorTest.cpp
     PhotoNotificationPresenterTest.cpp
     PhotoNotificationSettingsTest.cpp
