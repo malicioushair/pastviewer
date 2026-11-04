@@ -406,6 +406,8 @@ QVariant ClusterModel::data(const QModelIndex & index, int role) const
 
             return cids;
         }
+        case BaseModel::Selected:
+            return false;
         default:
             break;
     }
