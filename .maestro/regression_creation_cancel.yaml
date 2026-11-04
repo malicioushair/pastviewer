@@ -1,6 +1,6 @@
 appId: ${APP_ID}
 name: regression creation cancel
-tags: [regression, drafts]
+tags: [offline, regression, drafts]
 ---
 - runFlow: helpers/launch_clean.yaml
 - runFlow: helpers/open_admin_tours.yaml
@@ -12,6 +12,7 @@ tags: [regression, drafts]
 - tapOn: Record by walking
 - assertVisible: Tour Description
 - assertVisible: Add title image
+- assertVisible: Upload image
 - assertVisible: Set tour language
 - tapOn: Cancel
 - assertVisible: Place the path on the map

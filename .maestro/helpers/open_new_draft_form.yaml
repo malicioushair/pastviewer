@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+- runFlow: open_admin_tours.yaml
+- tapOn: Create tour
+- tapOn: Place the path on the map
+- assertVisible: Tour Description
+- tapOn: Tour title input
+- inputText: ${DRAFT_TITLE}
+# Qt exposes the field label, but not its entered value, on both platforms.
+# Verify the actual value in Drafts after saving instead of matching hidden text.
+- assertVisible: Tour title input

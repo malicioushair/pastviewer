@@ -3,14 +3,21 @@ name: Smoke — available tours
 tags:
   - smoke
   - tours
+  - catalog
+env:
+  CATALOG_TOUR: Belgrade City Center Walk
 ---
 - runFlow:
     file: helpers/launch_clean.yaml
 - runFlow:
     file: helpers/open_available_tours.yaml
+- scrollUntilVisible:
+    element: ${CATALOG_TOUR}
+    direction: DOWN
+    timeout: 15000
 - assertVisible:
-    text: "Belgrade Old Town Walk|sample|multi-img|lang"
-    label: "At least one tour is listed"
+    text: ${CATALOG_TOUR}
+    label: "Configured catalog fixture is listed"
 - takeScreenshot: smoke_available_tours
 - runFlow:
     file: helpers/go_back.yaml

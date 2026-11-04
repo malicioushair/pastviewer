@@ -1,6 +1,7 @@
 appId: ${APP_ID}
 name: Smoke — launch to map
 tags:
+  - offline
   - smoke
   - launch
 ---

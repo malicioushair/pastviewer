@@ -1,0 +1,17 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+# addMedia is done by the caller. Native Android Files picker only.
+- tapOn: Add title image
+- extendedWaitUntil:
+    visible:
+      id: android:id/title
+      text: 'pastviewer-maestro-cover( \([0-9]+\))?\.png'
+    timeout: 10000
+- tapOn:
+    id: android:id/title
+    text: 'pastviewer-maestro-cover( \([0-9]+\))?\.png'
+    index: 0
+- extendedWaitUntil:
+    visible: Tour Description
+    timeout: 10000

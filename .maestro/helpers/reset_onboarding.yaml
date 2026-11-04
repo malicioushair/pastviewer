@@ -1,0 +1,11 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+# Start in Settings; keep reset/navigation identical in both onboarding cases.
+- scrollUntilVisible:
+    element: Reset onboarding
+    direction: DOWN
+    timeout: 10000
+- tapOn: Reset onboarding
+- runFlow: go_back.yaml
+- assertVisible: Skip

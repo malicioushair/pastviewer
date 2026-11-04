@@ -1,6 +1,6 @@
 appId: ${APP_ID}
 name: regression language
-tags: [regression, settings]
+tags: [offline, regression, settings]
 ---
 - runFlow: helpers/launch_clean.yaml
 - runFlow: helpers/open_settings.yaml

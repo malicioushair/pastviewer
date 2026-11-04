@@ -1,0 +1,7 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+# Start from the normal map; enable admin mode through the shared helper.
+- runFlow: open_admin_tours.yaml
+- tapOn: My draft tours
+- assertVisible: Drafts

@@ -1,5 +1,59 @@
 # Validation record
 
+2026-11-03, suite refresh (Android and iOS):
+
+- Installed the existing signed Android release APK on Pixel_6_Pro / Android 16
+  (`emulator-5554`). Rebuilt `build-ios-release` and installed it on iPhone 17
+  Pro / iOS 26.3 (`0A92CF42-4D72-4252-AE4D-D7C5B1A764A3`). Runs below used Maestro MCP.
+- Passed on both platforms: `smoke_launch`, `smoke_settings`, and
+  `regression_settings_persistence`. All three checkbox preferences were toggled,
+  checked after relaunch and restored by the shared helper.
+- iOS additionally passed `regression_creation_cancel`, `regression_draft_lifecycle`,
+  `regression_language`, `regression_onboarding`, and `regression_ios_back_gesture`.
+  Language finished in English. A focused rename/save probe also passed using the
+  observed editor TextField resource identifier, without a title-field coordinate.
+- Android's focused `regression_draft_lifecycle` passed after the final guarded
+  keyboard-dismiss helper was added. It selected a cover from the native picker,
+  checked point-removal cancel/confirm, stop form controls/cancel, renamed the
+  draft, relaunched, and reopened the saved route.
+- Android `optional/stop_image_gallery.yaml` passed end-to-end: two fixture
+  images selected, `1 / 2` -> `2 / 2` -> `1 / 2` checked, no image-load error
+  label, stop form cancelled, local draft retained, normal map restored.
+  The native multi-select action is `Select` (`action_menu_select`), not Open.
+  A guarded launch helper also closes an orphaned external Android Files picker
+  left behind by a failed run before restarting the app. No other page receives
+  that helper's Back action.
+- Initial title-value assertions failed even though screenshots showed the
+  correct input: Qt exposes the title-field accessibility label rather than the
+  typed value on both platforms. The tests now verify actual titles in Drafts
+  after saving. A single center-tap/erase could leave a suffix; two passes were
+  verified with a focused iOS rename/save run.
+- Android `hideKeyboard` after returning from a file picker could navigate Back
+  out of the form. The shared helper now taps `android:id/input_method_nav_back`
+  only when that keyboard-dismiss button is visible. The lifecycle rerun passed.
+- Standalone CLI attempts hit `DeviceServerDiedException` / gRPC UNAVAILABLE before
+  flow commands ran. These are not assertion failures or passing validations.
+  A six-flow Android MCP batch exceeded the tool's 300-second request timeout;
+  no individual passes are credited from that batch. Focused MCP runs were used.
+- Final checks: all 35 flow/helper YAML files passed Maestro `check-syntax`;
+  all 77 helper references resolve; all 12 ordered workspace flow names resolve;
+  `git diff --check` passed.
+- Workspace configuration now uses the declared flow names for ordering, removes
+  unsupported `name`/`tags` workspace keys, and disables automatic retries.
+- The default suite preserves existing drafts. New timestamped test drafts remain
+  for inspection; no publishing, purchase or upload action was executed.
+
+Current evidence boundaries:
+
+- Catalog smoke/gallery flows require the configured server fixtures and have not
+  been rerun during this refresh. Missing fixtures fail explicitly.
+- The new opt-in compact-gallery flow passed on Android. iOS needs
+  both PNG fixtures available in the native Files picker; iOS media import and
+  gallery execution have not been verified during this refresh.
+- No physical-device UI run is claimed. New local stop persistence, saved-media
+  removal, narration playback, upload and publication are not covered by the new
+  selection/cancellation gallery regression.
+
 2026-10-28, Android Pixel_6_Pro emulator:
 
 - `regression_android_system_back.yaml` was accepted by Maestro's syntax check.
@@ -66,3 +120,20 @@ not a claim about an ARM build or the current source.
 The suite stops at the first failed flow to avoid cascading retries after an app
 crash. The draft test intentionally leaves its uniquely named test draft in place
 because the current UI does not expose a reliably row-specific delete selector.
+
+
+## 2026-11-04 catalog fixture correction
+
+The Studio workspace run ending at 20:27 had nine completed flows and three
+failures. All three catalog flows failed while looking for `multi-img`; the
+Available tours screen contained only `Belgrade City Center Walk`.
+
+- Updated the two catalog smoke flows to default to `Belgrade City Center Walk`.
+- Re-ran both saved smoke flows on iPhone 17 Pro, iOS 26.3, with
+  `APP_ID=com.dv.pastviewer` using Maestro MCP: both passed (18 commands total).
+- Moved the fixture-dependent gallery flow to
+  `optional/regression_tour_gallery.yaml`, preserving its assertions and updating
+  relative helper paths. It remains unverified until `multi-img` (or an equivalent
+  explicitly configured fixture) is available. It is excluded from default Studio
+  discovery and CLI workspace ordering.
+- No full workspace rerun or Android validation was performed for this change.

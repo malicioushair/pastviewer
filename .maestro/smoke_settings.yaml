@@ -1,6 +1,7 @@
 appId: ${APP_ID}
 name: Smoke — settings
 tags:
+  - offline
   - smoke
   - settings
 ---

@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+- runFlow: dismiss_android_keyboard.yaml
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # Qt iOS keeps the keyboard open; opening/closing the language picker
+      # removes text-field focus without changing the selected language.
+      - tapOn: English
+      - tapOn: English
+- tapOn: Next
+- assertVisible: Add point

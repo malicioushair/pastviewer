@@ -1,0 +1,16 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+# hideKeyboard can send Back even after a file picker has already hidden the
+# keyboard. Only tap the observed system keyboard-dismiss button when present.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: android:id/input_method_nav_back
+          commands:
+            - tapOn:
+                id: android:id/input_method_nav_back
