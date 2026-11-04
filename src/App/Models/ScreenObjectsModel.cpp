@@ -109,10 +109,6 @@ bool ScreenObjectsModel::filterAcceptsRow(int source_row, const QModelIndex & so
     return m_impl->belongsToTimeline.find(source_row) != m_impl->belongsToTimeline.cend();
 }
 
-void ScreenObjectsModel::OnPositionUpdated(const QGeoPositionInfo & info)
-{
-}
-
 void ScreenObjectsModel::OnSourceModelChanged()
 {
     RebuildProxyModel();
