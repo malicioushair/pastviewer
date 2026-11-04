@@ -1,10 +1,10 @@
 appId: ${APP_ID}
 name: regression tour gallery
-tags: [regression, tours, fixture]
+tags: [regression, tours, fixture, catalog]
 env:
   GALLERY_TOUR: multi-img
 ---
-- runFlow: helpers/open_gallery_tour.yaml
+- runFlow: ../helpers/open_gallery_tour.yaml
 - assertVisible: 1 / 2
 - assertVisible: st1
 - assertNotVisible: Listen
@@ -19,7 +19,7 @@ env:
     point: 50%,45%
 - assertNotVisible: 2 / 2
 - assertNotVisible: st1
-- runFlow: helpers/go_back.yaml
+- runFlow: ../helpers/go_back.yaml
 - assertVisible: 2 / 2
 - swipe:
     start: 15%,45%
@@ -32,7 +32,7 @@ env:
 - tapOn: "I'm here"
 - assertVisible: Stop Details
 - assertVisible: 1 / 2
-- runFlow: helpers/go_back.yaml
+- runFlow: ../helpers/go_back.yaml
 - tapOn: Exit Tour
 - assertVisible: History near you
 - assertNotVisible: "I'm here"

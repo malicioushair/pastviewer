@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+# Android's external document picker can survive a force-stop of the Qt app.
+# Leave selection mode, then close the picker; never send Back on an app page.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - repeat:
+          times: 2
+          commands:
+            - runFlow:
+                when:
+                  visible:
+                    id: .*documentsui:id/header_title
+                commands:
+                  - back

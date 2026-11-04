@@ -1,12 +1,30 @@
 appId: ${APP_ID}
-name: regression settings persistence
-tags: [regression, settings, ios]
+name: Settings persistence on Android and iOS
+tags: [regression, settings, offline]
 ---
+- runFlow: helpers/launch_clean.yaml
+- runFlow: helpers/open_settings.yaml
 - runFlow:
-    when:
-      platform: Android
-    file: helpers/settings_persistence_android.yaml
+    file: helpers/toggle_setting_persistence.yaml
+    env:
+      CHECKBOX: Show only nearest objects
 - runFlow:
-    when:
-      platform: iOS
-    file: helpers/settings_persistence_ios.yaml
+    file: helpers/toggle_setting_persistence.yaml
+    env:
+      CHECKBOX: Show all objects in "History near you"
+- runFlow:
+    file: helpers/toggle_setting_persistence.yaml
+    env:
+      CHECKBOX: Proximity notifications
+- scrollUntilVisible:
+    element: Reload map items
+    direction: DOWN
+    timeout: 10000
+- tapOn: Reload map items
+- scrollUntilVisible:
+    element: Language
+    direction: UP
+    timeout: 10000
+- assertVisible: Language
+- runFlow: helpers/go_back.yaml
+- runFlow: helpers/assert_map.yaml

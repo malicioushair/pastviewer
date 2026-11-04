@@ -3,25 +3,13 @@ name: Smoke — tour info
 tags:
   - smoke
   - tours
+  - catalog
+env:
+  CATALOG_TOUR: Belgrade City Center Walk
 ---
 - runFlow:
     file: helpers/launch_clean.yaml
-- runFlow:
-    file: helpers/open_available_tours.yaml
-- tapOn:
-    text: "sample|Belgrade Old Town Walk|multi-img|lang"
-    label: "Open first listed tour"
-- extendedWaitUntil:
-    visible: "Tour Info"
-    timeout: 8000
-- runFlow:
-    when:
-      visible: "Skip"
-    commands:
-      - tapOn:
-          text: "Skip"
-          label: "Skip tour-info onboarding"
-- assertVisible: "Tour Info"
+- runFlow: helpers/open_tour_info.yaml
 - assertVisible:
     text: "Start tour|Unlock tour"
     label: "Primary tour action is visible"

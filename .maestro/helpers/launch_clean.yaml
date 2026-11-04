@@ -1,16 +1,15 @@
 appId: ${APP_ID}
-name: Launch clean
-tags:
-  - helper
+tags: [helper]
 ---
-# Warm launch — avoids clearState (SpringBoard permission sheets crash XCTest).
-# Overlays are usually already dismissed; call dismiss_overlays.yaml only when needed.
+# Preserve drafts and preferences. Dismiss only known first-launch overlays.
+- runFlow: dismiss_android_picker.yaml
 - launchApp:
     clearState: false
     stopApp: true
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Compass"
+    visible: Compass|Got it|Skip
     timeout: 20000
-- assertVisible: Settings
+- runFlow: dismiss_overlays.yaml
+- runFlow: assert_map.yaml

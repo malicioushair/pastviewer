@@ -1,0 +1,22 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+- scrollUntilVisible:
+    element: 1 / 2
+    direction: DOWN
+    centerElement: true
+    timeout: 10000
+- assertNotVisible: Could not load image
+# Images have no accessibility node. Center the counter first, then swipe
+# below it, inside the 180px gallery; percentages support both portrait sizes.
+- swipe:
+    start: 80%,55%
+    end: 20%,55%
+    duration: 500
+- assertVisible: 2 / 2
+- assertNotVisible: Could not load image
+- swipe:
+    start: 20%,55%
+    end: 80%,55%
+    duration: 500
+- assertVisible: 1 / 2

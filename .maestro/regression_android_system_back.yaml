@@ -1,17 +1,12 @@
 appId: ${APP_ID}
 name: Regression — Android system Back
-tags: [regression, android, navigation]
+tags: [offline, regression, android, navigation]
 ---
-- launchApp:
-    clearState: false
-    stopApp: true
 - runFlow:
     when:
       platform: Android
     commands:
-      - extendedWaitUntil:
-          visible: Compass
-          timeout: 20000
+      - runFlow: helpers/launch_clean.yaml
       - runFlow: helpers/open_settings.yaml
       # Use the system Back action, never the app's toolbar button.
       - back

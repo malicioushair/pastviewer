@@ -1,0 +1,38 @@
+appId: ${APP_ID}
+name: Local stop image selection and compact gallery
+tags: [regression, drafts, media, fixture]
+---
+# Explicit opt-in: does not upload, publish, buy, or remove existing drafts.
+- runFlow: ../helpers/launch_clean.yaml
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - addMedia:
+          - ../fixtures/pastviewer-maestro-cover.png
+          - ../fixtures/pastviewer-maestro-second.png
+- evalScript: ${output.mediaDraftTitle = 'Maestro-Media-' + Date.now()}
+- runFlow:
+    file: ../helpers/open_new_draft_form.yaml
+    env:
+      DRAFT_TITLE: ${output.mediaDraftTitle}
+- runFlow: ../helpers/confirm_draft_form.yaml
+- tapOn: Add stop
+- assertVisible: Add tour stop
+- runFlow: ../helpers/select_stop_images.yaml
+- runFlow: ../helpers/check_compact_gallery.yaml
+- takeScreenshot: stop_compact_gallery
+- scrollUntilVisible:
+    element: Cancel
+    direction: DOWN
+    timeout: 10000
+- tapOn: Cancel
+- assertVisible: Add point
+- tapOn: Finish
+- assertVisible: Drafts
+- scrollUntilVisible:
+    element: ${output.mediaDraftTitle}
+    direction: DOWN
+    timeout: 10000
+- assertVisible: ${output.mediaDraftTitle}
+- runFlow: ../helpers/restore_admin.yaml

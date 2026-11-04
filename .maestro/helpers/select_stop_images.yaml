@@ -1,0 +1,39 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+# Two known files must already be present in the native picker.
+- tapOn: Add images
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: android:id/title
+            text: 'pastviewer-maestro-cover( \([0-9]+\))?\.png'
+          timeout: 10000
+      - longPressOn:
+          id: android:id/title
+          text: 'pastviewer-maestro-cover( \([0-9]+\))?\.png'
+          index: 0
+      - tapOn:
+          id: android:id/title
+          text: 'pastviewer-maestro-second( \([0-9]+\))?\.png'
+          index: 0
+      - tapOn:
+          id: .*documentsui:id/action_menu_select
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # Seed both fixtures into Files first (see README); addMedia alone only
+      # imports into Photos and does not populate the iOS document picker.
+      - tapOn:
+          text: Select
+          optional: true
+      - tapOn: pastviewer-maestro-cover.*
+      - tapOn: pastviewer-maestro-second.*
+      - tapOn: Open|Done
+- extendedWaitUntil:
+    visible: Add tour stop
+    timeout: 10000

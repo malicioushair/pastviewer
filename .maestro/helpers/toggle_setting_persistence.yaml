@@ -1,0 +1,76 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+# CHECKBOX is a label, not a coordinate. Android exposes checked; iOS selected.
+- scrollUntilVisible:
+    element: ${CHECKBOX}
+    direction: UP
+    timeout: 10000
+- evalScript: ${output.wasSelected = false}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow:
+          when:
+            visible:
+              text: ${CHECKBOX}
+              checked: true
+          commands:
+            - evalScript: ${output.wasSelected = true}
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            visible:
+              text: ${CHECKBOX}
+              selected: true
+          commands:
+            - evalScript: ${output.wasSelected = true}
+- tapOn: ${CHECKBOX}
+- runFlow: launch_clean.yaml
+- runFlow: open_settings.yaml
+- scrollUntilVisible:
+    element: ${CHECKBOX}
+    direction: UP
+    timeout: 10000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow:
+          when:
+            true: ${output.wasSelected}
+          commands:
+            - assertVisible:
+                text: ${CHECKBOX}
+                checked: false
+      - runFlow:
+          when:
+            true: ${!output.wasSelected}
+          commands:
+            - assertVisible:
+                text: ${CHECKBOX}
+                checked: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            true: ${output.wasSelected}
+          commands:
+            - assertVisible:
+                text: ${CHECKBOX}
+                selected: false
+      - runFlow:
+          when:
+            true: ${!output.wasSelected}
+          commands:
+            - assertVisible:
+                text: ${CHECKBOX}
+                selected: true
+# Restore this preference before moving to the next checkbox.
+- tapOn: ${CHECKBOX}

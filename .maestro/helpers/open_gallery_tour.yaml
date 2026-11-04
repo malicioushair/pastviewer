@@ -3,12 +3,10 @@ name: open gallery tour
 tags: [helper]
 ---
 - runFlow: launch_clean.yaml
-- runFlow: open_available_tours.yaml
-- tapOn: ${GALLERY_TOUR}
-- extendedWaitUntil:
-    visible: Tour Info
-    timeout: 10000
-- runFlow: dismiss_overlays.yaml
+- runFlow:
+    file: open_tour_info.yaml
+    env:
+      CATALOG_TOUR: ${GALLERY_TOUR}
 - assertVisible: Start tour
 - tapOn: Start tour
 - runFlow: dismiss_overlays.yaml

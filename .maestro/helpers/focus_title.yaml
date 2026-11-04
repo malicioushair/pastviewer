@@ -1,0 +1,15 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+# Qt iOS hides TextField values from accessibility. Match the observed control
+# class path instead; the editor contains exactly one TextField (its title).
+- tapOn:
+    id: .*DraftTourEdit.*TextField.*
+- eraseText
+# A center tap can place the cursor mid-title. After erasing the prefix, the
+# remaining suffix fits before the same tap; a second erase clears it as well.
+- tapOn:
+    id: .*DraftTourEdit.*TextField.*
+- eraseText
+- inputText: ${NEW_TITLE}
+- runFlow: dismiss_android_keyboard.yaml

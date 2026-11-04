@@ -1,17 +1,12 @@
 appId: ${APP_ID}
 name: Regression — iOS interactive back gesture
-tags: [regression, ios, navigation]
+tags: [offline, regression, ios, navigation]
 ---
-- launchApp:
-    clearState: false
-    stopApp: true
 - runFlow:
     when:
       platform: iOS
     commands:
-      - extendedWaitUntil:
-          visible: Compass
-          timeout: 20000
+      - runFlow: helpers/launch_clean.yaml
       - runFlow:
           file: helpers/open_settings.yaml
       # Slow, short edge drag must settle back without popping Settings.

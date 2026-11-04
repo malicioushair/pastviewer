@@ -1,0 +1,8 @@
+appId: ${APP_ID}
+tags: [helper]
+---
+- extendedWaitUntil:
+    visible: Compass
+    timeout: 20000
+- assertVisible: Settings
+- assertVisible: Tours
