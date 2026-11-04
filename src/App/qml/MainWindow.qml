@@ -125,7 +125,7 @@ Rectangle {
     }
 
     function openTourInfoView(tour) {
-        stackViewID.push("Views/TourInfo.qml", {tour: tour})
+        stackViewID.push("Views/TourInfo.qml", { tour: tour })
     }
 
     function hasPendingPrompt() {

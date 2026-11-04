@@ -1,5 +1,6 @@
 #include "AvailableToursModel.h"
 
+#include <QtCore/qfloat16.h>
 #include <cassert>
 #include <format>
 
@@ -115,7 +116,7 @@ void AvailableToursModel::OnNetworkReplyFinished(QNetworkReply * reply)
             .title = itemObj.value("title").toString(),
             .description = itemObj.value("description").toString(),
             .imageUrl = itemObj.value("imageUrl").toString(),
-            .distance = itemObj.value("distance").toInt(),
+            .distance = qRound(itemObj.value("distance").toDouble()),
             .stopCount = itemObj.value("stopCount").toInt(),
             .stops = tourStops,
             .lang = itemObj.value("lang").toString(),
