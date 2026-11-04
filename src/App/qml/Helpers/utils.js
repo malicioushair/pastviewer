@@ -1,4 +1,4 @@
-function setTimeout(callback, delayMs) { // @TODO: replace with Qt.callLater()
+function setTimeout(callback, delayMs) {
     const timer = Qt.createQmlObject(
         'import QtQuick 2.0; Timer { repeat: false; running: false }',
         Qt.application,
