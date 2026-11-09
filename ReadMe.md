@@ -62,13 +62,13 @@ The app currently includes translations for English, German, Spanish, French, It
 ### Requirements
 
 - CMake 3.28 or later
-- Qt 6.10.2 or later
+- Qt 6.12.0 or later
 - Conan
 - C++20-compatible compiler
 - Stadia Maps API key
 - Sentry DSN
 
-For Android builds, install Android SDK Platform 36, Android SDK Build Tools 35.0.0 or later, Android NDK 26.3 or later, and JDK 17 or later. The app explicitly compiles against and targets Android 16 (API level 36); the native API level remains a separate compatibility setting. For iOS builds, configure a valid Apple team and provisioning profile through CMake options.
+For Android builds, install Android SDK Platform 36, Build Tools 36.0.0, NDK 29.0.14206865, and JDK 21. The app compiles against and targets Android 16 (API 36). The macOS build requires macOS 14.4 or later. For iOS builds, configure a valid Apple team and provisioning profile through CMake options.
 
 ### Configure Keys
 
@@ -90,12 +90,13 @@ mkdir -p build
 cd build
 
 conan install .. --output-folder=. --build=missing \
-  -s build_type=Debug \
+  -s build_type=Debug -s:h os.version=14.4 \
   -s compiler.cppstd=20
 
 cmake .. \
   -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_PREFIX_PATH=/path/to/Qt/6.9.2/macos \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=14.4 \
+  -DCMAKE_PREFIX_PATH=/path/to/Qt/6.12.0/macos \
   -DOSM_API_KEY=your-stadiamaps-api-key \
   -DSENTRY_DSN=your-sentry-dsn
 
@@ -104,7 +105,7 @@ cmake --build . --config Debug
 
 ### iOS Build
 
-Install Xcode, the Qt iOS package, and the matching Qt macOS host package. You also need an Apple Developer team, a provisioning profile, and the app bundle identifier you want to sign.
+Install Xcode and the Qt iOS Device and macOS host packages. The minimum iOS version is 18. You also need an Apple Developer team, a provisioning profile, and the app bundle identifier you want to sign.
 
 ```bash
 mkdir -p build-ios-release
@@ -116,8 +117,9 @@ conan install .. --output-folder=. --build=missing \
 
 cmake .. \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_TOOLCHAIN_FILE=/path/to/Qt/6.10.2/ios/lib/cmake/Qt6/qt.toolchain.cmake \
-  -DQT_HOST_PATH=/path/to/Qt/6.10.2/macos \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=18.0 \
+  -DCMAKE_TOOLCHAIN_FILE=/path/to/Qt/6.12.0/ios_device/lib/cmake/Qt6/qt.toolchain.cmake \
+  -DQT_HOST_PATH=/path/to/Qt/6.12.0/macos \
   -DAPPLE_TEAM_ID=your-apple-team-id \
   -DAPPLE_PROVISION_PROFILE_NAME="Your Provisioning Profile" \
   -DAPPLE_APP_REVERSED_DOMAIN=com.example.pastviewer \
@@ -132,27 +134,28 @@ Before testing purchases, create matching **Consumable** products in App Store C
 
 ### Android Build
 
+Install the standard Qt Android ARM64 and matching macOS host kits, with Qt Location, Positioning, Multimedia, and Shader Tools for Android. Use JDK 21.
+
 ```bash
 export ANDROID_SDK_ROOT="/path/to/Android/sdk"
-export ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/26.3.11579264"
-export JAVA_HOME="/path/to/jdk-17"
+export ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/29.0.14206865"
+export JAVA_HOME="/path/to/jdk-21"
 
 mkdir -p build-android-release
 cd build-android-release
 
 conan install .. --output-folder=. --build=missing \
-  -s build_type=Release \
-  -s os=Android \
-  -s os.api_level=26 \
-  -s arch=armv8 \
-  -s compiler.cppstd=20
+  -pr:h=../profiles/android-release -pr:b=default \
+  -c:h "tools.android:ndk_path=${ANDROID_NDK_ROOT}"
 
 cmake .. \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_TOOLCHAIN_FILE=/path/to/Qt/6.9.2/android_arm64_v8a/lib/cmake/Qt6/qt.toolchain.cmake \
+  -DCMAKE_TOOLCHAIN_FILE=/path/to/Qt/6.12.0/android_arm64_v8a/lib/cmake/Qt6/qt.toolchain.cmake \
   -DANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
-  -DANDROID_NDK="${ANDROID_NDK_ROOT}" \
-  -DQT_HOST_PATH=/path/to/Qt/6.9.2/macos \
+  -DANDROID_NDK_ROOT="${ANDROID_NDK_ROOT}" \
+  -DANDROID_PLATFORM=android-33 \
+  -DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON \
+  -DQT_HOST_PATH=/path/to/Qt/6.12.0/macos \
   -DTIP_PRODUCT_IDS="com.example.pastviewer.tip.small;com.example.pastviewer.tip.medium;com.example.pastviewer.tip.large" \
   -DOSM_API_KEY=your-stadiamaps-api-key \
   -DSENTRY_DSN=your-sentry-dsn
@@ -160,10 +163,10 @@ cmake .. \
 cmake --build .
 ```
 
-Install the generated APK with:
+Build the APK with `cmake --build . --target apk`. Sign it with your development key before installing it:
 
 ```bash
-adb install -r android-build/build/outputs/apk/release/android-build-release-unsigned.apk
+adb install -r /path/to/signed-pastviewer.apk
 ```
 
 VS Code users can also run the project tasks from `.vscode/tasks.json`.

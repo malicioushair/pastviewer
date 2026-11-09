@@ -31,7 +31,7 @@ if(NOT ANDROID)
     find_package(sentry CONFIG REQUIRED)
 endif()
 
-find_package(Qt6 COMPONENTS
+find_package(Qt6 6.12 COMPONENTS
     Core
     Gui
     Quick
@@ -167,6 +167,9 @@ if (APPLE)
         target_sources(${PROJECT_NAME} PRIVATE ${APP_ICON})
     endif()
 elseif(ANDROID)
+    if(NOT TARGET Qt6::QFFmpegMediaPlugin)
+        message(FATAL_ERROR "PastViewer for Android requires Qt Multimedia with the FFmpeg backend.")
+    endif()
     add_android_openssl_libraries(${PROJECT_NAME})
     set_target_properties(${PROJECT_NAME} PROPERTIES
         QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/resources/android"

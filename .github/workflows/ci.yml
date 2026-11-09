@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  QT_VERSION: "6.10.2"
+  QT_VERSION: "6.12.0"
   BUILD_TYPE: Release
   BUILD_DIR: build
 
@@ -68,6 +68,7 @@ jobs:
         run: |
           conan install . \
             -pr:b=default \
+            -s:h os.version=14.4 \
             -of "${{ env.BUILD_DIR }}" \
             -s build_type=${{ env.BUILD_TYPE }} \
             --build=missing
@@ -79,6 +80,7 @@ jobs:
 
           cmake -G Ninja -S . -B "${{ env.BUILD_DIR }}" \
             -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=14.4 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DCMAKE_OSX_SYSROOT="$MACOS_SDK" \
             -DCMAKE_CXX_FLAGS="-isystem $MACOS_CXX_INCLUDE" \
@@ -144,6 +146,7 @@ jobs:
         run: |
           conan install . \
             -pr:b=default \
+            -s:h os.version=14.4 \
             -of "${{ env.BUILD_DIR }}" \
             -s build_type=${{ env.BUILD_TYPE }} \
             --build=missing
@@ -165,6 +168,7 @@ jobs:
 
           cmake -G Ninja -S . -B "${{ env.BUILD_DIR }}" \
             -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=14.4 \
             -DCMAKE_PREFIX_PATH="${QT_ROOT_DIR}" \
             -DQT_HOST_PATH="${QT_ROOT_DIR}" \
             -DOSM_API_KEY="$OSM_API_KEY" \
@@ -183,7 +187,7 @@ jobs:
 
   android-build:
     name: Android Build
-    if: github.ref_type != 'tag' || startsWith(github.ref, 'refs/tags/iOS/') || startsWith(github.ref, 'refs/tags/v/')
+    if: github.ref_type != 'tag' || startsWith(github.ref, 'refs/tags/Android/') || startsWith(github.ref, 'refs/tags/v/')
     runs-on: macos-15
     timeout-minutes: 360
     environment: default
@@ -203,7 +207,7 @@ jobs:
           submodules: recursive
 
       - name: Validate Google Play release secrets
-        if: startsWith(github.ref, 'refs/tags/Android/')
+        if: github.ref_type == 'tag'
         env:
           PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_BASE64 }}
           PLAY_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
@@ -227,29 +231,22 @@ jobs:
           fi
           echo "PLAYSTORE_BUILD_NUMBER=$playstore_build_number" >> "$GITHUB_ENV"
 
-      - name: Set build paths
-        run: |
-          echo "QT_ANDROID_PREFIX=$RUNNER_TEMP/Qt/6.10.2/android_arm64_v8a_openssl_16kb" >> "$GITHUB_ENV"
-          echo "QT_SOURCE_DIR=$RUNNER_TEMP/qt6-src" >> "$GITHUB_ENV"
-          echo "QT_HOST_BUILD=$RUNNER_TEMP/qt6-host-build" >> "$GITHUB_ENV"
-          echo "QT_ANDROID_BUILD=$RUNNER_TEMP/qt6-android-build" >> "$GITHUB_ENV"
-
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: Set up Android SDK/NDK
         uses: android-actions/setup-android@v4
         with:
-          packages: platforms;android-${{ env.ANDROID_COMPILE_SDK_LEVEL }} build-tools;35.0.0 ndk;${{ env.ANDROID_NDK_VERSION }}
+          packages: platforms;android-${{ env.ANDROID_COMPILE_SDK_LEVEL }} build-tools;36.0.0 ndk;${{ env.ANDROID_NDK_VERSION }}
 
       - name: Set Android NDK path
         run: echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/${{ env.ANDROID_NDK_VERSION }}" >> "$GITHUB_ENV"
 
       - name: Install build tools
-        run: brew install cmake ninja
+        run: brew install cmake ninja bundletool
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -260,41 +257,25 @@ jobs:
         run: pip install conan
 
       - name: Install Qt (macOS host)
-        uses: jurplel/install-qt-action@v4.3.1
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           host: mac
           target: desktop
           arch: clang_64
-          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          dir: ${{ runner.temp }}
           cache: true
 
-      - name: Cache custom Qt Android
-        uses: actions/cache@v5
-        id: qt-android-cache
+      - name: Install Qt (Android ARM64)
+        uses: jurplel/install-qt-action@v4
         with:
-          path: |
-            ${{ env.QT_SOURCE_DIR }}
-            ${{ env.QT_HOST_BUILD }}
-            ${{ env.QT_ANDROID_BUILD }}
-            ${{ env.QT_ANDROID_PREFIX }}
-          key: qt-android-${{ env.QT_VERSION }}-${{ hashFiles('deployScripts/android/build_qt_android_openssl_16kb.sh', 'deployScripts/android/qt6-macos-mime-db-workaround.patch') }}
-
-      - name: Build custom Qt for Android (OpenSSL + 16 KB)
-        if: steps.qt-android-cache.outputs.cache-hit != 'true'
-        env:
-          INSTALL_PREFIX: ${{ env.QT_ANDROID_PREFIX }}
-        run: |
-          export ANDROID_NDK="$ANDROID_NDK_ROOT"
-          export ANDROID_SDK="$ANDROID_SDK_ROOT"
-          ./deployScripts/android/build_qt_android_openssl_16kb.sh
-
-      - name: Verify custom Qt Android install
-        run: |
-          if [ ! -f "${{ env.QT_ANDROID_PREFIX }}/lib/cmake/Qt6/qt.toolchain.cmake" ]; then
-            echo "::error::Custom Qt Android install is missing at ${{ env.QT_ANDROID_PREFIX }}"
-            exit 1
-          fi
+          version: ${{ env.QT_VERSION }}
+          host: all_os
+          target: android
+          arch: android_arm64_v8a
+          dir: ${{ runner.temp }}
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          cache: true
 
       - name: Configure Conan profile
         run: conan profile detect --force
@@ -320,7 +301,8 @@ jobs:
           OSM_API_KEY: ${{ secrets.OSM_API_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
-          QT_ANDROID_ARM64: ${{ env.QT_ANDROID_PREFIX }}
+          QT_ANDROID_ARM64: ${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/android_arm64_v8a
+          QT_MACOS_PREFIX: ${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/macos
           TIP_PRODUCT_IDS: ${{ secrets.TIP_PRODUCT_IDS }}
         run: |
           if [ -z "$OSM_API_KEY" ]; then
@@ -331,16 +313,16 @@ jobs:
             echo "::error::SENTRY_DSN secret is not set. Add it in repository Settings → Secrets and variables → Actions."
             exit 1
           fi
-          if [ -z "$QT_ROOT_DIR" ]; then
-            echo "::error::QT_ROOT_DIR is not set. The macOS host Qt install step may have failed."
+          if [ ! -f "$QT_MACOS_PREFIX/lib/cmake/Qt6/Qt6Config.cmake" ]; then
+            echo "::error::Qt macOS host kit is missing at $QT_MACOS_PREFIX."
             exit 1
           fi
 
           cmake -G Ninja -S . -B "${{ env.BUILD_DIR }}" \
             -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
             -DCMAKE_TOOLCHAIN_FILE="$QT_ANDROID_ARM64/lib/cmake/Qt6/qt.toolchain.cmake" \
-            -DQT_HOST_PATH="$QT_ROOT_DIR" \
-            -DCMAKE_PREFIX_PATH="$QT_ANDROID_ARM64;$QT_ROOT_DIR;${{ github.workspace }}/${{ env.BUILD_DIR }}" \
+            -DQT_HOST_PATH="$QT_MACOS_PREFIX" \
+            -DCMAKE_PREFIX_PATH="$QT_ANDROID_ARM64;$QT_MACOS_PREFIX;${{ github.workspace }}/${{ env.BUILD_DIR }}" \
             -DANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
             -DANDROID_NDK_ROOT="$ANDROID_NDK_ROOT" \
             -DANDROID_ABI=arm64-v8a \
@@ -363,9 +345,21 @@ jobs:
         if: github.ref_type != 'tag'
         run: cmake --build "${{ env.BUILD_DIR }}" --target apk
 
-      - name: Package AAB
-        if: startsWith(github.ref, 'refs/tags/Android/') || startsWith(github.ref, 'refs/tags/v/')
-        run: cmake --build "${{ env.BUILD_DIR }}" --target aab
+      - name: Package and check AAB
+        run: |
+          cmake --build "${{ env.BUILD_DIR }}" --target aab
+          aab="${{ env.BUILD_DIR }}/android-build/build/outputs/bundle/release/android-build-release.aab"
+          bash deployScripts/android/check-aab-16kb.sh "$aab"
+          config="$(bundletool dump config --bundle="$aab")"
+          if [[ "$config" != *PAGE_ALIGNMENT_16K* ]]; then
+            echo "::error::Android App Bundle does not request 16 KB APK alignment."
+            exit 1
+          fi
+          entries="$(unzip -Z1 "$aab")"
+          if [[ "$entries" != *base/lib/arm64-v8a/libplugins_multimedia_ffmpegmediaplugin_arm64-v8a.so* ]]; then
+            echo "::error::Android App Bundle is missing the Qt FFmpeg plugin."
+            exit 1
+          fi
 
       - name: Sign and verify AAB
         if: startsWith(github.ref, 'refs/tags/Android/') || startsWith(github.ref, 'refs/tags/v/')
@@ -433,8 +427,8 @@ jobs:
       - name: Set Qt install paths
         run: |
           echo "QT_BASE=$RUNNER_TEMP" >> "$GITHUB_ENV"
-          echo "QT_MACOS_PREFIX=$RUNNER_TEMP/Qt/6.10.2/macos" >> "$GITHUB_ENV"
-          echo "QT_IOS_PREFIX=$RUNNER_TEMP/Qt/6.10.2/ios" >> "$GITHUB_ENV"
+          echo "QT_MACOS_PREFIX=$RUNNER_TEMP/Qt/$QT_VERSION/macos" >> "$GITHUB_ENV"
+          echo "QT_IOS_PREFIX=$RUNNER_TEMP/Qt/$QT_VERSION/ios_device" >> "$GITHUB_ENV"
 
       - name: Install build tools
         run: brew install cmake ninja protobuf
@@ -458,15 +452,17 @@ jobs:
           modules: qtmultimedia qtlocation qtpositioning qtshadertools
           cache: true
 
-      - name: Install Qt (iOS)
-        uses: jurplel/install-qt-action@v4
+      # Qt 6.12 split iOS Device and simulator kits into separate repositories.
+      - name: Cache Qt iOS Device
+        id: qt-ios-cache
+        uses: actions/cache@v5
         with:
-          version: ${{ env.QT_VERSION }}
-          host: mac
-          target: ios
-          dir: ${{ env.QT_BASE }}
-          modules: qtmultimedia qtlocation qtpositioning qtshadertools
-          cache: true
+          path: ${{ env.QT_IOS_PREFIX }}
+          key: qt-ios-device-${{ runner.os }}-${{ runner.arch }}-${{ env.QT_VERSION }}-${{ hashFiles('deployScripts/install-qt-ios-device.py') }}
+
+      - name: Install Qt (iOS Device)
+        if: steps.qt-ios-cache.outputs.cache-hit != 'true'
+        run: python3 deployScripts/install-qt-ios-device.py "$QT_VERSION" "$QT_IOS_PREFIX"
 
       - name: Install code signing certificate and provisioning profile
         env:
@@ -547,7 +543,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE="${{ env.QT_IOS_PREFIX }}/lib/cmake/Qt6/qt.toolchain.cmake" \
             -DQT_HOST_PATH="${{ env.QT_MACOS_PREFIX }}" \
             -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=16.3 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=18.0 \
             -DAPPSTORE_BUILD_NUMBER="$GITHUB_RUN_NUMBER" \
             -DOSM_API_KEY="$OSM_API_KEY" \
             -DSENTRY_DSN="$SENTRY_DSN" \

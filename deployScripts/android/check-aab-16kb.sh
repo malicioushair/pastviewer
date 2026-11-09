@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Check an Android App Bundle (AAB) for 16 KB page size alignment.
-# All native .so files must have LOAD segment alignment 2**14 (16384) for Google Play.
+# Every LOAD segment must have alignment of at least 2**14 (16384).
 # Usage: ./check-aab-16kb.sh [path/to/app.aab]
 
 set -euo pipefail
@@ -64,20 +64,28 @@ for f in "$LIB_DIR"/*.so; do
   [[ -f "$f" ]] || continue
   total=$((total + 1))
   name=$(basename "$f")
-  align=$("$OBJDUMP" -p "$f" 2>/dev/null | grep "LOAD" | head -1)
-  if echo "$align" | grep -q "2\*\*12\|2\*\*13"; then
-    bad=$((bad + 1))
-    echo "BAD (4KB): $name"
-  elif echo "$align" | grep -q "2\*\*14"; then
+  if "$OBJDUMP" -p "$f" | awk '
+    $1 == "LOAD" {
+      found = 1
+      if ($NF !~ /^2\*\*[0-9]+$/ || substr($NF, 4) + 0 < 14)
+        bad = 1
+    }
+    END { exit !found || bad }
+  '; then
     ok=$((ok + 1))
-    echo "OK (16KB): $name"
+    echo "OK (16 KB): $name"
   else
-    echo "? $name"
+    bad=$((bad + 1))
+    echo "BAD (LOAD alignment): $name"
   fi
 done
 
 echo "---"
-echo "Summary: $ok OK (16KB), $bad BAD (4KB), total .so: $total"
+echo "Summary: $ok OK, $bad BAD, total .so: $total"
+if [[ $total -eq 0 ]]; then
+  echo "Error: No ARM64 shared libraries found." >&2
+  exit 1
+fi
 if [[ $bad -eq 0 ]]; then
   echo "Result: All libs are 16 KB aligned."
   exit 0
