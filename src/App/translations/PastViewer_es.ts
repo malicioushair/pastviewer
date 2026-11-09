@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>Alertas de fotos cercanas</translation>
+        <source>Walking tours</source>
+        <translation>Rutas a pie</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>Recibe una notificación cuando pases cerca de una foto histórica.</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>Descubre las rutas disponibles y síguelas en el mapa.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>Funciona en segundo plano</translation>
+        <source>Smoother browsing</source>
+        <translation>Navegación más fluida</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>Sigue explorando mientras PastViewer está en segundo plano y toca una alerta para abrir la foto correspondiente.</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>Mira cuándo se están cargando las fotos y usa el gesto de retroceso en iOS o Android.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>Control de distancia</translation>
+        <source>Stories at each stop</source>
+        <translation>Historias en cada parada</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>Elige en Ajustes a qué distancia quieres recibir las alertas.</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>Explora galerías de fotos y escucha las narraciones de audio cuando estén disponibles.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>PastViewer ahora te ayuda a descubrir la historia mientras exploras.</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>Descubre la historia local con las rutas a pie de PastViewer.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>

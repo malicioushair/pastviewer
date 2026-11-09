@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>附近历史照片提醒</translation>
+        <source>Walking tours</source>
+        <translation>步行游览</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>当您走近一张历史照片时接收通知。</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>浏览可用的游览路线，跟着地图步行探索。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>支持后台运行</translation>
+        <source>Smoother browsing</source>
+        <translation>浏览更流畅</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>PastViewer 在后台运行时也能继续探索，点按提醒即可打开对应的照片。</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>查看照片的加载状态，并在 iOS 或 Android 上使用返回手势。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>距离控制</translation>
+        <source>Stories at each stop</source>
+        <translation>每一站的故事</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>在“设置”中选择要靠多近才接收提醒。</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>浏览照片图集，并在有语音导览时收听。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>现在，PastViewer 可在您探索时帮助您发现历史。</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>跟随 PastViewer 的步行游览路线，探索当地历史。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>

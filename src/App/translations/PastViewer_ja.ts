@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>近くの写真をお知らせ</translation>
+        <source>Walking tours</source>
+        <translation>ウォーキングツアー</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>歴史的な写真の近くを通ると通知を受け取れます。</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>利用できるツアーを探し、地図に沿って歩きましょう。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>バックグラウンドで動作</translation>
+        <source>Smoother browsing</source>
+        <translation>よりスムーズな操作</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>PastViewer がバックグラウンドにあっても探索を続けられます。通知をタップすると該当する写真が開きます。</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>写真の読み込み状況を確認でき、iOS や Android の戻るジェスチャーも使えます。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>通知距離の設定</translation>
+        <source>Stories at each stop</source>
+        <translation>各スポットの物語</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>設定で、どのくらい近づいたときに通知するかを選べます。</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>写真ギャラリーを見たり、音声ガイドがある場合は聴いたりできます。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>PastViewer が、街を探索しながら歴史を発見するお手伝いをします。</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>PastViewer のウォーキングツアーで、その土地の歴史を巡りましょう。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>

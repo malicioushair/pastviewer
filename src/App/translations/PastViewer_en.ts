@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>Nearby photo alerts</translation>
+        <source>Walking tours</source>
+        <translation>Walking tours</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>Get a notification when you walk close to a historical photo.</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>Browse available tours and follow routes on the map.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>Works in the background</translation>
+        <source>Smoother browsing</source>
+        <translation>Smoother browsing</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>See when photos are loading and use the back gesture on iOS or Android.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>Distance control</translation>
+        <source>Stories at each stop</source>
+        <translation>Stories at each stop</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>Choose how close you need to be in Settings.</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>Explore photo galleries and listen to audio narration where available.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>PastViewer can now help you discover history while you explore.</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>Explore local history with walking tours in PastViewer.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>

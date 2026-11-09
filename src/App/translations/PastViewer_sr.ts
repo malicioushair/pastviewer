@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>Обавештења о фотографијама у близини</translation>
+        <source>Walking tours</source>
+        <translation>Pešačke ture</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>Примите обавештење када се приближите историјској фотографији.</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>Pogledajte dostupne ture i pratite rute na mapi.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>Ради у позадини</translation>
+        <source>Smoother browsing</source>
+        <translation>Lakše pregledanje</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>Наставите да истражујете док PastViewer ради у позадини, а затим додирните обавештење да отворите одговарајућу фотографију.</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>Pogledajte kada se fotografije učitavaju i koristite pokret za povratak na iOS-u ili Androidu.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>Подешавање удаљености</translation>
+        <source>Stories at each stop</source>
+        <translation>Priče na svakoj stanici</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>У Подешавањима изаберите колико близу треба да будете.</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>Pogledajte galerije fotografija i poslušajte audio-priče tamo gde su dostupne.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>PastViewer вам сада помаже да откривате историју док истражујете.</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>Istražite lokalnu istoriju uz pešačke ture u aplikaciji PastViewer.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>

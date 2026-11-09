@@ -11,16 +11,16 @@ PromptDialog {
 
     readonly property var changes: [
         {
-            "title": qsTr("Nearby photo alerts"),
-            "body": qsTr("Get a notification when you walk close to a historical photo.")
+            "title": qsTr("Walking tours"),
+            "body": qsTr("Browse available tours and follow routes on the map.")
         },
         {
-            "title": qsTr("Distance control"),
-            "body": qsTr("Choose how close you need to be in Settings.")
+            "title": qsTr("Stories at each stop"),
+            "body": qsTr("Explore photo galleries and listen to audio narration where available.")
         },
         {
-            "title": qsTr("Works in the background"),
-            "body": qsTr("Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.")
+            "title": qsTr("Smoother browsing"),
+            "body": qsTr("See when photos are loading and use the back gesture on iOS or Android.")
         }
     ]
 
@@ -40,7 +40,7 @@ PromptDialog {
         Text {
             Layout.fillWidth: true
 
-            text: qsTr("PastViewer can now help you discover history while you explore.")
+            text: qsTr("Explore local history with walking tours in PastViewer.")
             wrapMode: Text.WordWrap
             color: Colors.palette.text
             font.pixelSize: 14
