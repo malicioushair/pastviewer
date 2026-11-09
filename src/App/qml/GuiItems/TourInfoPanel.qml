@@ -167,7 +167,7 @@ Rectangle {
                     InfoLabel {
                         id: distanceInfoID
 
-                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
                         Layout.fillHeight: true
 
                         infoText: qsTr("Distance")
@@ -177,7 +177,7 @@ Rectangle {
                     InfoLabel {
                         id: stopsID
 
-                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
                         Layout.fillHeight: true
 
                         infoText: qsTr("Stops")

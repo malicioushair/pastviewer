@@ -547,6 +547,11 @@
         <source>The App Store could not complete this purchase.</source>
         <translation>App Store에서 이 구매를 완료하지 못했습니다.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/PurchaseController/PurchaseController.cpp" line="535"/>
+        <source>No purchase was found for this tour.</source>
+        <translation>이 투어의 구매 내역을 찾을 수 없습니다.</translation>
+    </message>
 </context>
 <context>
     <name>RecenterButton</name>
@@ -861,6 +866,11 @@
         <location filename="../qml/Views/TourInfo.qml" line="187"/>
         <source>Unlock tour</source>
         <translation>투어 잠금 해제</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/TourInfo.qml" line="254"/>
+        <source>Restore purchase</source>
+        <translation>구매 복원</translation>
     </message>
 </context>
 <context>

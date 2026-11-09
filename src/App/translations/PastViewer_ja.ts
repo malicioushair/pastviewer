@@ -547,6 +547,11 @@
         <source>The App Store could not complete this purchase.</source>
         <translation>App Storeでこの購入を完了できませんでした。</translation>
     </message>
+    <message>
+        <location filename="../Controllers/PurchaseController/PurchaseController.cpp" line="535"/>
+        <source>No purchase was found for this tour.</source>
+        <translation>このツアーの購入が見つかりませんでした。</translation>
+    </message>
 </context>
 <context>
     <name>RecenterButton</name>
@@ -861,6 +866,11 @@
         <location filename="../qml/Views/TourInfo.qml" line="187"/>
         <source>Unlock tour</source>
         <translation>ツアーを解除</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/TourInfo.qml" line="254"/>
+        <source>Restore purchase</source>
+        <translation>購入を復元</translation>
     </message>
 </context>
 <context>

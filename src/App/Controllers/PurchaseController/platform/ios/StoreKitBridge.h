@@ -20,6 +20,7 @@ extern "C"
         const char * productId,
         int nonConsumable,
         PastViewerStoreKitPurchaseCallback callback);
+    void PastViewerStoreKitSyncPurchases(void (*callback)(const char * errorMessage));
     void PastViewerStoreKitCheckOwned(
         const char * productId,
         uint64_t requestId,

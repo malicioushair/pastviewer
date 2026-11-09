@@ -547,6 +547,11 @@
         <source>The App Store could not complete this purchase.</source>
         <translation>App Store није могао да заврши ову куповину.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/PurchaseController/PurchaseController.cpp" line="535"/>
+        <source>No purchase was found for this tour.</source>
+        <translation>Није пронађена куповина за ову туру.</translation>
+    </message>
 </context>
 <context>
     <name>RecenterButton</name>
@@ -861,6 +866,11 @@
         <location filename="../qml/Views/TourInfo.qml" line="187"/>
         <source>Unlock tour</source>
         <translation>Откључај туру</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/TourInfo.qml" line="254"/>
+        <source>Restore purchase</source>
+        <translation>Врати куповину</translation>
     </message>
 </context>
 <context>

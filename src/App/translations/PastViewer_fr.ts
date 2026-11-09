@@ -547,6 +547,11 @@
         <source>The App Store could not complete this purchase.</source>
         <translation>L’App Store n’a pas pu finaliser cet achat.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/PurchaseController/PurchaseController.cpp" line="535"/>
+        <source>No purchase was found for this tour.</source>
+        <translation>Aucun achat n’a été trouvé pour ce parcours.</translation>
+    </message>
 </context>
 <context>
     <name>RecenterButton</name>
@@ -861,6 +866,11 @@
         <location filename="../qml/Views/TourInfo.qml" line="187"/>
         <source>Unlock tour</source>
         <translation>Débloquer le tour</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/TourInfo.qml" line="254"/>
+        <source>Restore purchase</source>
+        <translation>Restaurer l’achat</translation>
     </message>
 </context>
 <context>

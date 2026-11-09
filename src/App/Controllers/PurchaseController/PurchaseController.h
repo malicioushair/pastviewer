@@ -48,12 +48,14 @@ public:
     Q_INVOKABLE void LoadTipProducts();
     Q_INVOKABLE void PurchaseTip(const QString & productId);
     Q_INVOKABLE void CheckTourOwned(const DisplayTour & tour);
+    Q_INVOKABLE void RestoreTourPurchase(const DisplayTour & tour);
 
     QVariantList TipProducts() const;
     bool TipProductsLoading() const;
     bool PurchaseInProgress() const;
 
 private:
+    void QueryTourOwnership(const DisplayTour & tour, bool restore);
     void NotePendingTourPurchase(const QString & productId, const QString & tourId);
     void ClearPendingTourMessage(const QString & productId);
     void CompletePendingTourPurchase(const QString & productId);

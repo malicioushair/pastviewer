@@ -320,6 +320,20 @@ func purchasePastViewerStoreKitProduct(
   }
 }
 
+@_cdecl("PastViewerStoreKitSyncPurchases")
+func syncPastViewerStoreKitPurchases(
+  _ callback: @escaping @convention(c) (UnsafePointer<CChar>?) -> Void
+) {
+  Task { @MainActor in
+    do {
+      try await AppStore.sync()
+      callback(nil)
+    } catch {
+      error.localizedDescription.withCString { callback($0) }
+    }
+  }
+}
+
 @_cdecl("PastViewerStoreKitCheckOwned")
 func checkPastViewerStoreKitOwned(
   _ productId: UnsafePointer<CChar>?,

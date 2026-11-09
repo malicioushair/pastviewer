@@ -17,6 +17,7 @@ namespace {
 std::mutex callbackMutex;
 PlatformDependentLogic::TipProductsHandler tipProductsHandler;
 PlatformDependentLogic::PurchaseHandler purchaseHandler;
+std::function<void(QString)> syncPurchasesHandler;
 std::unordered_map<uint64_t, std::function<void(bool)>> ownershipHandlers;
 std::unordered_map<uint64_t, std::function<void(PlatformDependentLogic::PurchasePendingState)>> pendingHandlers;
 uint64_t nextOwnershipRequestId = 1;
@@ -213,6 +214,23 @@ void Purchase(QString productId, PurchaseHandler handler, bool nonConsumable)
 
 	const auto productIdUtf8 = productId.toUtf8();
 	PastViewerStoreKitPurchase(productIdUtf8.constData(), nonConsumable ? 1 : 0, StoreKitPurchaseFinished);
+}
+
+void SyncPurchases(std::function<void(QString)> handler)
+{
+	{
+		const std::scoped_lock lock(callbackMutex);
+		syncPurchasesHandler = std::move(handler);
+	}
+
+	PastViewerStoreKitSyncPurchases([](const char * errorMessage) {
+		std::function<void(QString)> handler;
+		{
+			const std::scoped_lock lock(callbackMutex);
+			handler = std::move(syncPurchasesHandler);
+		}
+		DispatchToQt(std::move(handler), errorMessage ? QString::fromUtf8(errorMessage) : QString {});
+	});
 }
 
 void CheckOwned(const QString & productId, std::function<void(bool)> handler)
