@@ -1027,4 +1027,27 @@
         <translation>我的导览草稿</translation>
     </message>
 </context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="35"/>
+        <source>Location access</source>
+        <translation>位置访问权限</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="44"/>
+        <source>PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.</source>
+        <translation>PastViewer 使用您的位置信息在地图上显示您的位置，并在您靠近历史照片时通知您，即使应用已关闭或未在使用时也是如此。搜索附近照片时会使用您所在位置周围的地图区域。</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="48"/>
+        <source>Not now</source>
+        <translation>暂不</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="49"/>
+        <source>Continue</source>
+        <translation>继续</translation>
+    </message>
+</context>
 </TS>

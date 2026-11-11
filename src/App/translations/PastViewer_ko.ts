@@ -1027,4 +1027,27 @@
         <translation>내 투어 초안</translation>
     </message>
 </context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="35"/>
+        <source>Location access</source>
+        <translation>위치 액세스</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="44"/>
+        <source>PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.</source>
+        <translation>PastViewer는 위치를 사용하여 지도에 현재 위치를 표시하고 역사적인 사진 근처에 있을 때 알림을 보냅니다. 이는 앱이 닫혀 있거나 사용 중이 아닐 때도 적용됩니다. 주변 사진을 검색할 때는 현재 위치 주변의 지도 영역을 사용합니다.</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="48"/>
+        <source>Not now</source>
+        <translation>나중에</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="49"/>
+        <source>Continue</source>
+        <translation>계속</translation>
+    </message>
+</context>
 </TS>

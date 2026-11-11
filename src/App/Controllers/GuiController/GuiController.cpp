@@ -15,6 +15,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStringLiteral>
+#include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
 
@@ -92,6 +93,13 @@ private:
 
 struct GuiController::Impl
 {
+    enum class LocationRequest
+    {
+        None,
+        Foreground,
+        Background,
+    };
+
     QQmlApplicationEngine engine {};
     // owned by qml
     QPointer<I18nController> i18nController {
@@ -117,6 +125,8 @@ struct GuiController::Impl
     TourController tourController { *pastVuModelController->GetPositionSource(), nullptr };
     PurchaseController purchaseController {};
     bool isAdmin { false };
+    LocationRequest pendingLocationRequest { LocationRequest::None };
+    bool locationDisclosureRejected { false };
 
     Impl()
     {
@@ -185,7 +195,13 @@ GuiController::GuiController()
                 || qApp->checkPermission(m_impl->locationPermission) != Qt::PermissionStatus::Granted)
                 return;
 
-            RequestPermission(m_impl->backgroundLocationPermission);
+            if (false
+                || qApp->checkPermission(m_impl->backgroundLocationPermission) != Qt::PermissionStatus::Undetermined
+                || m_impl->locationDisclosureRejected
+                || m_impl->pendingLocationRequest != Impl::LocationRequest::None)
+                return;
+            m_impl->pendingLocationRequest = Impl::LocationRequest::Background;
+            emit locationDisclosureRequested();
         }
     };
 
@@ -228,13 +244,36 @@ GuiController::GuiController()
 
         m_impl->pastVuModelController->SelectPhoto(photoId);
     });
-    RequestPermission(m_impl->locationPermission);
-    requestBackgroundLocationPermission();
+    if constexpr (Utils::IsAndroid())
+        if (qApp->checkPermission(m_impl->locationPermission) == Qt::PermissionStatus::Undetermined)
+        {
+            m_impl->pendingLocationRequest = Impl::LocationRequest::Foreground;
+            QTimer::singleShot(0, this, [this] { emit locationDisclosureRequested(); });
+        }
+        else
+            QTimer::singleShot(0, this, requestBackgroundLocationPermission);
+    else
+        RequestPermission(m_impl->locationPermission);
     updateBackgroundLocationTracking();
     RequestCameraPermission();
 }
 
 GuiController::~GuiController() = default;
+
+void GuiController::RespondToLocationDisclosure(bool accepted)
+{
+    const auto request = m_impl->pendingLocationRequest;
+    m_impl->pendingLocationRequest = Impl::LocationRequest::None;
+    if (!accepted)
+    {
+        m_impl->locationDisclosureRejected = true;
+        return;
+    }
+    if (request == Impl::LocationRequest::Foreground)
+        RequestPermission(m_impl->locationPermission);
+    else if (request == Impl::LocationRequest::Background)
+        RequestPermission(m_impl->backgroundLocationPermission);
+}
 
 std::unique_ptr<GuiController> GuiController::Create()
 {

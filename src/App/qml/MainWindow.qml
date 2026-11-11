@@ -24,6 +24,33 @@ Rectangle {
     property bool changelogPromptPending: false
     property bool tipsPromptPending: false
 
+    PromptDialog {
+        id: locationDisclosureID
+        anchors.centerIn: parent
+        closePolicy: Popup.NoAutoClose
+        contentItem: ColumnLayout {
+            spacing: 16
+            Text {
+                Layout.fillWidth: true
+                text: qsTr("Location access")
+                color: Colors.palette.text
+                font.pixelSize: 18
+                font.bold: true
+            }
+            Text {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Colors.palette.text
+                text: qsTr("PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.")
+            }
+            RowLayout {
+                Layout.alignment: Qt.AlignRight
+                Button { text: qsTr("Not now"); onClicked: { locationDisclosureID.close(); GuiController.RespondToLocationDisclosure(false) } }
+                Button { text: qsTr("Continue"); onClicked: { locationDisclosureID.close(); GuiController.RespondToLocationDisclosure(true) } }
+            }
+        }
+    }
+
     function toMainPage() {
         while (stackViewID.depth != 1) {
             stackViewID.pop()
@@ -297,6 +324,10 @@ Rectangle {
 
     Connections {
         target: GuiController
+
+        function onLocationDisclosureRequested() {
+            locationDisclosureID.open()
+        }
 
         function onShowErrorDialog(message) {
             errorDialogID.errorMessage = message

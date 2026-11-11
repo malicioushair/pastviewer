@@ -1027,4 +1027,27 @@
         <translation>Мои черновики туров</translation>
     </message>
 </context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="35"/>
+        <source>Location access</source>
+        <translation>Доступ к местоположению</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="44"/>
+        <source>PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.</source>
+        <translation>PastViewer использует ваше местоположение, чтобы показывать вас на карте и уведомлять о находящихся рядом исторических фотографиях, даже когда приложение закрыто или не используется. Для поиска фотографий поблизости используется область карты вокруг вашего местоположения.</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="48"/>
+        <source>Not now</source>
+        <translation>Не сейчас</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="49"/>
+        <source>Continue</source>
+        <translation>Продолжить</translation>
+    </message>
+</context>
 </TS>

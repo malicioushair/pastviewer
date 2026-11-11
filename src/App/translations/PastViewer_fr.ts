@@ -1027,4 +1027,27 @@
         <translation>Mes brouillons de tours</translation>
     </message>
 </context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="35"/>
+        <source>Location access</source>
+        <translation>Accès à la localisation</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="44"/>
+        <source>PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.</source>
+        <translation>PastViewer utilise votre position pour l’afficher sur la carte et vous prévenir lorsque vous êtes près de photos historiques, même lorsque l’application est fermée ou inutilisée. Pour rechercher des photos à proximité, l’application utilise la zone de carte autour de votre position.</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="48"/>
+        <source>Not now</source>
+        <translation>Pas maintenant</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="49"/>
+        <source>Continue</source>
+        <translation>Continuer</translation>
+    </message>
+</context>
 </TS>

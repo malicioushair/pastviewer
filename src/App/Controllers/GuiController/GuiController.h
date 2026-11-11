@@ -47,6 +47,7 @@ signals:
     void tipsPromptRequested();
     void mapModeChanged(MapMode mode);
     void isAdminChanged(bool value);
+    void locationDisclosureRequested();
 
 public:
     static std::unique_ptr<GuiController> Create();
@@ -64,6 +65,7 @@ public:
     Q_INVOKABLE void MarkTipsPromptShown();
     Q_INVOKABLE void DismissTipsPrompt();
     Q_INVOKABLE void RequestCameraPermission();
+    Q_INVOKABLE void RespondToLocationDisclosure(bool accepted);
     Q_INVOKABLE bool SaveScreenshotToGallery(const QString & filePath);
     Q_INVOKABLE QString SaveImage(const QQuickItemGrabResult * grabResult);
     Q_INVOKABLE bool ShareImage();
