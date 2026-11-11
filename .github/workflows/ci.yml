@@ -641,4 +641,5 @@ jobs:
           releaseFiles: dist/PastViewer.aab
           tracks: internal
           status: completed
+          changesNotSentForReview: true
           releaseName: ${{ github.ref_name }}
