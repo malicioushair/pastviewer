@@ -16,6 +16,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.Collections;
+
 public final class LocationForegroundService extends Service {
     private static final String CHANNEL_ID = "background_location";
     private static final int NOTIFICATION_ID = 0x504C4F43;
@@ -28,6 +30,12 @@ public final class LocationForegroundService extends Service {
         } else {
             context.stopService(intent);
         }
+        PastViewerApplication.capture(
+                "background_location_changed",
+                Collections.singletonMap("enabled", enabled));
+        PastViewerApplication.logInfo(
+                "Background location preference applied",
+                Collections.singletonMap("enabled", enabled));
     }
 
     @Override

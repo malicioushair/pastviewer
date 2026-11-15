@@ -1,3 +1,5 @@
+import java.util.Properties
+
 buildscript {
     repositories {
         google()
@@ -17,12 +19,22 @@ repositories {
 
 apply plugin: qtGradlePluginType
 
+// Load local PostHog configuration without committing it to source control.
+def posthogProperties = new Properties()
+def posthogEnvFile = rootProject.file('.env')
+if (posthogEnvFile.exists()) {
+    posthogEnvFile.withInputStream { posthogProperties.load(it) }
+}
+def posthogProjectToken = System.getenv('POSTHOG_PROJECT_TOKEN') ?: posthogProperties.getProperty('POSTHOG_PROJECT_TOKEN')
+def posthogHost = System.getenv('POSTHOG_HOST') ?: posthogProperties.getProperty('POSTHOG_HOST')
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     //noinspection GradleDependency
     implementation 'androidx.core:core:1.17.0'
     implementation 'com.android.billingclient:billing:9.1.0'
     implementation 'io.sentry:sentry-android:8.0.0'
+    implementation 'com.posthog:posthog-android:3.+'
 }
 
 android {
@@ -44,6 +56,10 @@ android {
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
     ndkVersion = androidNdkVersion
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     sourceSets {
         main {
@@ -87,5 +103,8 @@ android {
         minSdkVersion qtMinSdkVersion
         targetSdkVersion qtTargetSdkVersion
         ndk.abiFilters = qtTargetAbiList.split(",")
+
+        buildConfigField 'String', 'POSTHOG_PROJECT_TOKEN', posthogProjectToken ? "\"${posthogProjectToken}\"" : 'null'
+        buildConfigField 'String', 'POSTHOG_HOST', posthogHost ? "\"${posthogHost}\"" : 'null'
     }
 }

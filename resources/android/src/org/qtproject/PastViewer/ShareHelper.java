@@ -8,6 +8,7 @@ import android.net.Uri;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
+import java.util.Collections;
 
 public final class ShareHelper {
     private ShareHelper() {}
@@ -33,6 +34,10 @@ public final class ShareHelper {
             intent.setClipData(ClipData.newUri(activity.getContentResolver(), "PastViewer image", uri));
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             activity.startActivity(Intent.createChooser(intent, "Share image"));
+            PastViewerApplication.capture("image_share_started");
+            PastViewerApplication.logInfo(
+                    "Image share chooser opened",
+                    Collections.singletonMap("content_type", "image"));
         });
         return true;
     }

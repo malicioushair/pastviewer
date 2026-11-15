@@ -542,6 +542,13 @@ public final class GooglePlayBillingHelper {
             return;
         }
 
+        if (result == PurchaseResult.Succeeded.toInt()) {
+            PastViewerApplication.capture(
+                    "purchase_completed",
+                    Collections.singletonMap(
+                            "purchase_type",
+                            activePurchaseIsNonConsumable ? "tour" : "tip"));
+        }
         purchaseCallbackPending = false;
         activeProductId = null;
         activePurchaseIsNonConsumable = false;

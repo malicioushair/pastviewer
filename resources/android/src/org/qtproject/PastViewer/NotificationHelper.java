@@ -100,6 +100,10 @@ public final class NotificationHelper {
         int photoId = intent.getIntExtra(EXTRA_PHOTO_ID, -1);
         intent.removeExtra(EXTRA_PHOTO_ID);
         if (photoId >= 0) {
+            PastViewerApplication.capture("notification_opened");
+            PastViewerApplication.logInfo(
+                    "Photo proximity notification opened",
+                    java.util.Collections.singletonMap("notification_type", "photo_proximity"));
             notificationTapped(photoId);
         }
     }
