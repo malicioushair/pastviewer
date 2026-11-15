@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import "../GuiItems"
 import "colors.js" as Colors
 
-import PastViewer
+import GuiController
 import PurchaseController
 
 PromptDialog {

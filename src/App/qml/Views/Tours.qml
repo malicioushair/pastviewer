@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import "../GuiItems"
 import "Helpers"
 
-import PastViewer
+import GuiController
 import TourController
 
 BasePage {

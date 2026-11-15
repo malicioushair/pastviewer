@@ -7,7 +7,7 @@ import QtPositioning
 
 import "Helpers/colors.js" as Colors
 
-import PastViewer
+import GuiController
 
 ApplicationWindow {
     id: mainWindowID

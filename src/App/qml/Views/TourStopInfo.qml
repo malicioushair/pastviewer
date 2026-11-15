@@ -9,7 +9,7 @@ import "../Helpers/colors.js" as Colors
 import "Helpers"
 
 import TourController
-import PastViewer
+import GuiController
 
 BasePage {
     id: rootID

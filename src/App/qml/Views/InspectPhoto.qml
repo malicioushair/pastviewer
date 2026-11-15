@@ -7,7 +7,7 @@ import "../Helpers/colors.js" as Colors
 import "../Helpers"
 import "Helpers"
 
-import PastViewer
+import GuiController
 
 BasePage {
     id: photoDetailsPageID

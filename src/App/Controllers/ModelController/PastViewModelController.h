@@ -32,8 +32,6 @@ class PastVuModelController
     : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
 
 signals:
     void PositionPermissionGranted();

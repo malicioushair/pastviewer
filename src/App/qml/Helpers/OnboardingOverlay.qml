@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import "colors.js" as Colors
 import "../GuiItems"
 
-import PastViewer
+import GuiController
 
 Item {
     id: rootID

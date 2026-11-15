@@ -244,14 +244,11 @@ qt_add_qml_module(${PROJECT_NAME}
     QML_FILES
         ${REL_QML}
 )
+add_qml_singleton_tooling(I18nController)
+add_qml_singleton_tooling(PastVuModelController)
+add_qml_singleton_tooling(PastViewer::GuiController)
 add_qml_singleton_tooling(TourController)
 add_qml_singleton_tooling(PurchaseController)
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/Controllers/GuiController"
-    "${CMAKE_CURRENT_LIST_DIR}/Controllers/I18nController"
-    "${CMAKE_CURRENT_LIST_DIR}/Controllers/ModelController"
-)
 
 qt_add_translations(${PROJECT_NAME}
     TS_FILES

@@ -1,3 +1,5 @@
+import I18nController 1.0
+import PastVuModelController 1.0
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -6,7 +8,7 @@ import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
-import PastViewer
+import GuiController
 import PurchaseController
 
 BasePage {

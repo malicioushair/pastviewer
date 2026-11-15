@@ -9,7 +9,7 @@ import QtCore
 import "../GuiItems"
 import "Helpers"
 
-import PastViewer
+import GuiController
 import TourController
 
 BasePage {

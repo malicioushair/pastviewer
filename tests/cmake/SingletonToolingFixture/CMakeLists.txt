@@ -13,6 +13,7 @@ endforeach()
 set_property(TARGET ToolingFixture PROPERTY QML_SINGLETON_TOOLING_DEPENDENCIES
     "QtQml 2.0" "QtQml.Models 2.0")
 
+add_qml_singleton_tooling(PastViewer::GuiController)
 add_qml_singleton_tooling(TourController)
 add_qml_singleton_tooling(Test::OtherController
     TARGET OtherBackingTarget MODULE Example.Services QML_NAME Services VERSION 2.3

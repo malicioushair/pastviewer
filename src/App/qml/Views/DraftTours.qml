@@ -9,7 +9,7 @@ import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
-import PastViewer
+import GuiController
 import TourController
 
 BasePage {

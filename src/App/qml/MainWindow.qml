@@ -5,7 +5,7 @@ import QtLocation
 import QtPositioning
 import QtQuick.Shapes
 
-import PastViewer 1.0
+import GuiController 1.0
 import PurchaseController 1.0
 import TourController 1.0
 

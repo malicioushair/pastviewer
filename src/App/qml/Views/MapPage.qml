@@ -1,3 +1,4 @@
+import PastVuModelController 1.0
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -5,8 +6,8 @@ import QtLocation
 import QtPositioning
 import QtQuick.Shapes
 
-import PastViewer 1.0
-import TourController 1.0
+import GuiController
+import TourController
 
 import "../GuiItems"
 import "../Helpers"

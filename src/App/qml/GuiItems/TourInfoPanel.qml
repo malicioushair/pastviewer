@@ -5,7 +5,7 @@ import QtQuick.Effects
 import QtLocation
 import QtPositioning
 
-import PastViewer 1.0
+import GuiController
 import TourController 1.0
 
 import "../Helpers/colors.js" as Colors

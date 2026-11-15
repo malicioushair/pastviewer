@@ -1,8 +1,9 @@
+import PastVuModelController 1.0
 import QtQuick
 import QtLocation
 import QtPositioning
 
-import PastViewer 1.0
+import GuiController 1.0
 
 /**
  * MapAnimationHelper - QML component for animating map center and zoom

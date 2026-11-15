@@ -1,3 +1,4 @@
+import PastVuModelController 1.0
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -5,7 +6,7 @@ import QtQuick.Effects
 import QtLocation
 import QtPositioning
 
-import PastViewer 1.0
+import GuiController 1.0
 
 import "../Helpers/colors.js" as Colors
 import "../Helpers/utils.js" as Utils

@@ -1,22 +1,19 @@
 #pragma once
 
-#include <memory>
-
 #include <QObject>
 #include <QPermission>
-#include <QQmlEngine>
+#include <QQmlApplicationEngine>
 #include <QQuickItemGrabResult>
 #include <QVariantList>
 
 #include "App/Utils/NonCopyMovable.h"
 
 namespace PastViewer {
+class Analytics;
 class GuiController
     : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
     NON_COPY_MOVABLE(GuiController)
 
     Q_PROPERTY(bool isAdmin READ GetIsAdmin WRITE SetIsAdmin NOTIFY isAdminChanged)
@@ -50,8 +47,7 @@ signals:
     void locationDisclosureRequested();
 
 public:
-    static std::unique_ptr<GuiController> Create();
-    static GuiController * create(QQmlEngine * qmlEngine, QJSEngine * jsEngine);
+    explicit GuiController(QObject * parent = nullptr);
 
     ~GuiController();
 
@@ -74,10 +70,6 @@ public:
     Q_INVOKABLE bool IsOnboardingStepCompleted(const QString & key);
     Q_INVOKABLE void SetOnboardingStepCompleted(const QString & key);
     Q_INVOKABLE void ResetOnboarding();
-
-private:
-    // hiding the constructor from QML so it will have to use the static create(QQmlEngine * qmlEngine, QJSEngine * jsEngine)
-    GuiController();
 
 private:
     void RequestPermission(const QPermission & permission);
