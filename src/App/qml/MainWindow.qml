@@ -5,9 +5,10 @@ import QtLocation
 import QtPositioning
 import QtQuick.Shapes
 
-import GuiController 1.0
-import PurchaseController 1.0
-import TourController 1.0
+import GuiController
+import Analytics
+import PurchaseController
+import TourController
 
 import "ErrorMessageDialog"
 import "GuiItems"
@@ -23,11 +24,29 @@ Rectangle {
     property var editingDraftId: null
     property bool changelogPromptPending: false
     property bool tipsPromptPending: false
+    property bool locationDisclosurePending: false
+
+    AnalyticsConsentDialog {
+        id: analyticsConsentID
+        anchors.centerIn: Overlay.overlay
+        onClosed: {
+            if (mainWindowID.locationDisclosurePending) {
+                mainWindowID.locationDisclosurePending = false
+                locationDisclosureID.open()
+            } else if (mainWindowID.hasPendingPrompt()) {
+                mainWindowID.schedulePromptCheck()
+            }
+        }
+    }
 
     PromptDialog {
         id: locationDisclosureID
         anchors.centerIn: parent
         closePolicy: Popup.NoAutoClose
+        onClosed: {
+            if (mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
+        }
         contentItem: ColumnLayout {
             spacing: 16
             Text {
@@ -182,6 +201,8 @@ Rectangle {
                 || !currentItem
                 || Qt.application.state !== Qt.ApplicationActive
                 || errorDialogID.visible
+                || analyticsConsentID.visible
+                || locationDisclosureID.visible
                 || tipsPromptDialogID.visible
                 || tipJarDialogID.visible
                 || changelogPromptDialogID.visible)
@@ -326,7 +347,10 @@ Rectangle {
         target: GuiController
 
         function onLocationDisclosureRequested() {
-            locationDisclosureID.open()
+            if (analyticsConsentID.visible)
+                mainWindowID.locationDisclosurePending = true
+            else
+                locationDisclosureID.open()
         }
 
         function onShowErrorDialog(message) {
@@ -363,6 +387,8 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        if (Analytics.analyticsAvailable && !Analytics.consentDecided)
+            analyticsConsentID.open()
         if (GuiController.ShouldShowChangelog())
             mainWindowID.scheduleChangelogPrompt()
     }

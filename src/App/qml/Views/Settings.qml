@@ -54,6 +54,17 @@ BasePage {
             width: settingsScrollViewID.availableWidth
             spacing: 20
 
+            SettingWithHint {
+                visible: Analytics.analyticsAvailable
+                Layout.leftMargin: -7
+                description: qsTr("Share usage information and device details with PostHog to help improve PastViewer.")
+                StyledCheckBox {
+                    text: qsTr("Allow analytics")
+                    checked: Analytics.consentGranted
+                    onClicked: Analytics.consentGranted = checked
+                }
+            }
+
             ColumnLayout {
                 id: i18nBlockID
 

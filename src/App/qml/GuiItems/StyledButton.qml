@@ -8,6 +8,7 @@ Button {
     id: controlID
 
     property bool reversedColors: false
+    property bool transparent: false
     property string analyticsId: "" // empty if not tracked
 
     Connections {
@@ -22,7 +23,9 @@ Button {
     }
 
     background: Rectangle {
-    color: !controlID.enabled
+    color: controlID.transparent
+        ? "transparent"
+        : !controlID.enabled
         ? Colors.palette.disabledBtnBg
         : controlID.reversedColors
             ? !controlID.pressed
@@ -51,7 +54,8 @@ Button {
             pixelSize: 16
             bold: true
         }
-        color: controlID.enabled ? "white" : Colors.palette.disabledBtnText
+        color: !controlID.enabled ? Colors.palette.disabledBtnText
+              : controlID.transparent ? Colors.palette.text : "white"
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }

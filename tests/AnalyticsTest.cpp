@@ -98,8 +98,47 @@ TEST_F(AnalyticsTest, EmptyTokenDoesNotStoreIdentityOrSendRequest)
     EXPECT_FALSE(server.waitForNewConnection(50));
 }
 
+TEST_F(AnalyticsTest, ConsentControlsSendingAndPersists)
+{
+    {
+        PastViewer::Analytics analytics("test-project-token", host);
+        EXPECT_FALSE(analytics.ConsentDecided());
+        EXPECT_FALSE(analytics.ConsentGranted());
+        analytics.Track("app_opened");
+        EXPECT_FALSE(QSettings().contains("analytics/installationId"));
+        EXPECT_FALSE(server.waitForNewConnection(50));
+
+        analytics.SetConsentGranted(false);
+        EXPECT_TRUE(analytics.ConsentDecided());
+        EXPECT_FALSE(analytics.ConsentGranted());
+        analytics.Track("app_opened");
+        EXPECT_FALSE(QSettings().contains("analytics/installationId"));
+        EXPECT_FALSE(server.waitForNewConnection(50));
+    }
+
+    {
+        PastViewer::Analytics analytics("test-project-token", host);
+        EXPECT_TRUE(analytics.ConsentDecided());
+        EXPECT_FALSE(analytics.ConsentGranted());
+        analytics.SetConsentGranted(true);
+        analytics.Track("app_opened");
+        ASSERT_FALSE(ReceiveRequest().isEmpty());
+        EXPECT_TRUE(QSettings().contains("analytics/installationId"));
+    }
+
+    {
+        PastViewer::Analytics analytics("test-project-token", host);
+        EXPECT_TRUE(analytics.ConsentGranted());
+        analytics.SetConsentGranted(false);
+        analytics.Track("app_opened");
+        EXPECT_FALSE(server.waitForNewConnection(50));
+    }
+    EXPECT_FALSE(PastViewer::Analytics("test-project-token", host).ConsentGranted());
+}
+
 TEST_F(AnalyticsTest, SendsAnonymousEventAndReusesPersistedIdentity)
 {
+    QSettings().setValue("analytics/consentGranted", true);
     QString installationId;
     for (int launch = 0; launch < 2; ++launch)
     {
