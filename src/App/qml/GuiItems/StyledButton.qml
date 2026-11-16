@@ -1,12 +1,25 @@
 import QtQuick
 import QtQuick.Controls
 
+import Analytics
 import "../Helpers/colors.js" as Colors
 
 Button {
     id: controlID
 
     property bool reversedColors: false
+    property string analyticsId: "" // empty if not tracked
+
+    Connections {
+        target: controlID
+
+        function onClicked() {
+            if (controlID.analyticsId !== "")
+                Analytics.Track("button_clicked", {
+                    button: controlID.analyticsId
+                })
+        }
+    }
 
     background: Rectangle {
     color: !controlID.enabled
