@@ -6,7 +6,10 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QSettings>
+#include <QSysInfo>
 #include <QUuid>
+
+#include "platform/DeviceInfo.h"
 
 #include "glog/logging.h"
 
@@ -18,6 +21,7 @@ struct Analytics::Impl
     QUrl endpoint;
     QString installationId;
     QNetworkAccessManager network;
+    QString deviceModel;
 };
 
 Analytics::Analytics(const QString & token, const QUrl & host)
@@ -26,6 +30,7 @@ Analytics::Analytics(const QString & token, const QUrl & host)
     if (m_impl->token.isEmpty())
         return;
 
+    m_impl->deviceModel = Platform::DeviceModel();
     QSettings settings;
     m_impl->installationId = settings.value("analytics/installationId").toString();
     if (m_impl->installationId.isEmpty())
@@ -50,6 +55,10 @@ void Analytics::Track(const QString & event, QJsonObject properties) const
 
     properties.insert("distinct_id", m_impl->installationId);
     properties.insert("$process_person_profile", false);
+    properties.insert("$os", QSysInfo::productType());
+    properties.insert("$os_version", QSysInfo::productVersion());
+    if (!m_impl->deviceModel.isEmpty())
+        properties.insert("$device_model", m_impl->deviceModel);
     const QJsonObject payload {
         { "api_key",    m_impl->token },
         { "event",      event         },

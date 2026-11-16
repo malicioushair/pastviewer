@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QSettings>
+#include <QSysInfo>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTemporaryDir>
@@ -103,7 +104,7 @@ TEST_F(AnalyticsTest, SendsAnonymousEventAndReusesPersistedIdentity)
     for (int launch = 0; launch < 2; ++launch)
     {
         PastViewer::Analytics analytics("test-project-token", host);
-        analytics.Track("app_opened");
+        analytics.Track("app_opened", {{"$os", "incorrect"}, {"$os_version", "incorrect"}});
         const auto request = ReceiveRequest();
         ASSERT_FALSE(request.isEmpty());
         EXPECT_TRUE(request.startsWith("POST /i/v0/e/ HTTP/1.1\r\n"));
@@ -113,6 +114,11 @@ TEST_F(AnalyticsTest, SendsAnonymousEventAndReusesPersistedIdentity)
         EXPECT_EQ(payload.value("event").toString(), "app_opened");
         const auto properties = payload.value("properties").toObject();
         EXPECT_EQ(properties.value("$process_person_profile"), QJsonValue(false));
+        EXPECT_EQ(properties.value("$os").toString(), QSysInfo::productType());
+        EXPECT_EQ(properties.value("$os_version").toString(), QSysInfo::productVersion());
+#if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID)
+        EXPECT_FALSE(properties.value("$device_model").toString().isEmpty());
+#endif
         const auto id = properties.value("distinct_id").toString();
         EXPECT_FALSE(QUuid(id).isNull());
         EXPECT_EQ(id, QSettings().value("analytics/installationId").toString());

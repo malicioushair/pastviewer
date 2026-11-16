@@ -11,6 +11,7 @@ enable_testing()
 add_executable(PastViewerTests
     AnalyticsTest.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Analytics/Analytics.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Analytics/platform/mac/DeviceInfo.cpp
     DirectionUtilsTest.cpp
     FileHashTest.cpp
     MultiImageTourStopTest.cpp
