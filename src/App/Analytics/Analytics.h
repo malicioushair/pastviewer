@@ -16,7 +16,7 @@ public:
     Analytics(const QString & token, const QUrl & host);
     ~Analytics();
 
-    Q_INVOKABLE void Track(const QString & event, QJsonObject properties = {});
+    Q_INVOKABLE void Track(const QString & event, QJsonObject properties = {}) const;
 
 private:
     struct Impl;

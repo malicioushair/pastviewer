@@ -114,8 +114,8 @@ struct GuiController::Impl
     std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
     QString lastSavedImagePath {};
     TourController tourController { *pastVuModelController.GetPositionSource(), nullptr };
-    PurchaseController purchaseController {};
     Analytics analytics { ANALYTICS_TOKEN, QUrl(ANALYTICS_HOST) };
+    PurchaseController purchaseController { analytics };
     LocationRequest pendingLocationRequest { LocationRequest::None };
     bool isAdmin { false };
     bool locationDisclosureRejected { false };

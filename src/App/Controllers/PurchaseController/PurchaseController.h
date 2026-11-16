@@ -8,6 +8,7 @@
 #include "App/Tours/DisplayTours.h"
 
 namespace PastViewer {
+class Analytics;
 class TipPromptTracker;
 }
 
@@ -21,7 +22,7 @@ class PurchaseController
     Q_PROPERTY(bool purchaseInProgress READ PurchaseInProgress NOTIFY purchaseInProgressChanged)
 
 public:
-    explicit PurchaseController(QObject * parent = nullptr);
+    explicit PurchaseController(const PastViewer::Analytics & analytics, QObject * parent = nullptr);
     ~PurchaseController() override;
 
     void SetTipPromptTracker(PastViewer::TipPromptTracker * tracker);

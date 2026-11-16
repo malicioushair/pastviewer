@@ -43,7 +43,7 @@ Analytics::Analytics(const QString & token, const QUrl & host)
 
 Analytics::~Analytics() = default;
 
-void Analytics::Track(const QString & event, QJsonObject properties)
+void Analytics::Track(const QString & event, QJsonObject properties) const
 {
     if (m_impl->token.isEmpty() || event.isEmpty())
         return;
