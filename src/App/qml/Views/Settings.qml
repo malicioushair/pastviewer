@@ -8,10 +8,13 @@ import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
+import Analytics
 import GuiController
 import PurchaseController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "settings" })
+
     id: rootID
 
     title: qsTr("Settings")

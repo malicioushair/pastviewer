@@ -5,10 +5,13 @@ import QtQuick.Layouts
 import "../GuiItems"
 import "Helpers"
 
+import Analytics
 import GuiController
 import TourController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "tours" })
+
     id: toursPageID
 
     title: qsTr("Tours")

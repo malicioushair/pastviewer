@@ -7,9 +7,12 @@ import "../Helpers/colors.js" as Colors
 import "../Helpers"
 import "Helpers"
 
+import Analytics
 import GuiController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "inspect_photo" })
+
     id: photoDetailsPageID
 
     blocksTipsPrompt: photoDetailsOnboardingID.active

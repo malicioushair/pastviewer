@@ -9,10 +9,13 @@ import QtCore
 import "../GuiItems"
 import "Helpers"
 
+import Analytics
 import GuiController
 import TourController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "add_tour_stop_description" })
+
     id: rootID
 
     property geoCoordinate stopCoordinate

@@ -7,11 +7,14 @@ import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
+import Analytics
 import GuiController
 import TourController
 
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "tour_description" })
+
     id: rootID
 
     property bool placeOnMap: false

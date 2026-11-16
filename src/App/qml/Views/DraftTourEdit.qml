@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 
+import Analytics
 import TourController
 
 import "../GuiItems"
@@ -10,6 +11,8 @@ import "Helpers"
 import "../Helpers/colors.js" as Colors
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "draft_tour_edit" })
+
     id: rootID
 
     required property var record

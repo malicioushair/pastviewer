@@ -7,6 +7,7 @@ import "../Helpers"
 import "../Helpers/colors.js" as Colors
 import "Helpers"
 
+import Analytics
 import GuiController
 import PurchaseController
 import TourController
@@ -270,6 +271,7 @@ BasePage {
     }
 
     Component.onCompleted: {
+        Analytics.Track("view_opened", { view: "tour_info" })
         rootID.purchasePending = PurchaseController.IsTourPurchasePending(rootID.tour.id)
         PurchaseController.CheckTourOwned(rootID.tour)
     }

@@ -2,10 +2,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import Analytics
+
 import "../GuiItems"
 import "Helpers"
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "create_tour_choice" })
+
     id: rootID
 
     title: qsTr("Create tour")

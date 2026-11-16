@@ -8,10 +8,13 @@ import "../Helpers"
 import "../Helpers/colors.js" as Colors
 import "Helpers"
 
+import Analytics
 import TourController
 import GuiController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "tour_stop_info" })
+
     id: rootID
 
     required property var tourStop
