@@ -97,6 +97,7 @@ BasePage {
             }
 
             StyledButton {
+                analyticsId: "tour_stop_choose_images"
                 id: addImageButtonID
 
                 text: qsTr("Add images")
@@ -111,6 +112,7 @@ BasePage {
 
             RowLayout {
                 StyledButton {
+                    analyticsId: "tour_stop_upload_images"
                     id: uploadImageButtonID
 
                     text: qsTr("Upload Images")
@@ -148,6 +150,7 @@ BasePage {
             }
 
             StyledButton {
+                analyticsId: "tour_stop_choose_audio"
                 id: addAudioButtonID
 
                 text: qsTr("Add audio")
@@ -156,6 +159,7 @@ BasePage {
 
             RowLayout {
                 StyledButton {
+                    analyticsId: "tour_stop_upload_audio"
                     id: uploadAudioButtonID
 
                     text: qsTr("Upload Audio")
@@ -175,6 +179,7 @@ BasePage {
 
             RowLayout {
                 StyledButton {
+                    analyticsId: "tour_stop_create"
                     text: qsTr("Create")
                     onClicked: {
                         const images = addImageDialogID.selectedFiles
@@ -186,6 +191,7 @@ BasePage {
                     }
                 }
                 StyledButton {
+                    analyticsId: "tour_stop_cancel"
                     text: qsTr("Cancel")
                     onClicked: rootID.StackView.view.pop()
                 }

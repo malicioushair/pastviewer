@@ -126,6 +126,7 @@ BasePage {
         }
 
         StyledButton {
+            analyticsId: "tour_start"
             id: startTourButtonID
 
             Layout.fillWidth: true
@@ -199,6 +200,7 @@ BasePage {
             enabled: !PurchaseController.purchaseInProgress
 
             StyledButton {
+                analyticsId: "tour_unlock"
                 id: unlockTourButtonID
 
                 Layout.fillWidth: true
@@ -244,6 +246,7 @@ BasePage {
             }
 
             StyledButton {
+                analyticsId: "tour_restore_purchase"
                 id: restorePurchaseButtonID
 
                 Layout.fillWidth: true

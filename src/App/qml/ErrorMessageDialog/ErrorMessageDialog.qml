@@ -99,7 +99,7 @@ Dialog {
         alignment: Qt.AlignRight
         standardButtons: errorDialogID.standardButtons
         background: Item {}
-        delegate: StyledButton {}
+        delegate: StyledButton { analyticsId: "error_dialog_action" }
         onAccepted: errorDialogID.accept()
         onRejected: errorDialogID.reject()
     }

@@ -168,6 +168,7 @@ BasePage {
                 description: qsTr("By leaving a tip, you support PastViewer's continued development and keep it FREE")
 
                 StyledButton {
+                    analyticsId: "settings_support"
                     id: supportButtonID
 
                     text: qsTr("Support us 💰")
@@ -179,6 +180,7 @@ BasePage {
                 description: qsTr("Show the introductory tips on the map and photo screens again.")
 
                 StyledButton {
+                    analyticsId: "settings_reset_onboarding"
                     id: resetOnboardingID
 
                     text: qsTr("Reset onboarding")
@@ -190,6 +192,7 @@ BasePage {
                 description: qsTr("Load historical photos again for the current map view using your current filters.")
 
                 StyledButton {
+                    analyticsId: "settings_reload_map"
                     id: reloadButtonID
 
                     text: qsTr("Reload map items")
@@ -202,6 +205,7 @@ BasePage {
                 visible: GuiController.isAdmin && PastVuModelController.hasPositionSource
 
                 StyledButton {
+                    analyticsId: "settings_tours"
                     id: toursID
 
                     text: qsTr("Tours")

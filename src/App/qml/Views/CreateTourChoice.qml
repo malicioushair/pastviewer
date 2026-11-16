@@ -38,6 +38,7 @@ BasePage {
             spacing: 8
 
             StyledButton {
+                analyticsId: "tour_create_walk"
                 Layout.fillWidth: true
 
                 text: qsTr("Record by walking")
@@ -58,6 +59,7 @@ BasePage {
             spacing: 8
 
             StyledButton {
+                analyticsId: "tour_create_map"
                 Layout.fillWidth: true
 
                 text: qsTr("Place the path on the map")

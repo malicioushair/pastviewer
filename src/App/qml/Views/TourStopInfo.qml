@@ -266,6 +266,7 @@ BasePage {
             spacing: 8
 
             StyledButton {
+                analyticsId: "tour_stop_listen"
                 id: listenButtonID
 
                 Layout.preferredHeight: 50
@@ -358,6 +359,7 @@ BasePage {
             }
 
             StyledButton {
+                analyticsId: "tour_stop_next"
                 id: nextStopButtonID
 
                 Layout.preferredHeight: 50

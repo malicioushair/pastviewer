@@ -73,6 +73,7 @@ PromptDialog {
                 model: PurchaseController.tipProducts
 
                 StyledButton {
+                    analyticsId: "tip_purchase"
                     required property var modelData
 
                     Layout.fillWidth: true
@@ -87,6 +88,7 @@ PromptDialog {
         }
 
         StyledButton {
+            analyticsId: "tip_dismiss"
             Layout.alignment: Qt.AlignRight
 
             text: qsTranslate("TipsPromptDialog", "Not now")
