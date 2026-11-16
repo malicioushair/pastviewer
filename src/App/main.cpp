@@ -9,6 +9,7 @@
 #include <QScopeGuard>
 #include <QStandardPaths>
 
+#include "Analytics/Analytics.h"
 #include "Controllers/GuiController/GuiController.h"
 #include "SentryIntegration/SentryIntegration.h"
 

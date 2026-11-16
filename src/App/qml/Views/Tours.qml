@@ -5,10 +5,13 @@ import QtQuick.Layouts
 import "../GuiItems"
 import "Helpers"
 
+import Analytics
 import GuiController
 import TourController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "tours" })
+
     id: toursPageID
 
     title: qsTr("Tours")
@@ -39,6 +42,7 @@ BasePage {
                 description: qsTr("View the list of available tours in the vicinity")
 
                 StyledButton {
+                    analyticsId: "tours_browse"
                     text: qsTr("Browse tours")
                     onClicked: mainWindowID.openAvailableTours()
                 }
@@ -48,6 +52,7 @@ BasePage {
                 description: qsTr("Create your own tour")
 
                 StyledButton {
+                    analyticsId: "tours_create"
                     text: qsTr("Create tour")
                     onClicked: {
                         mainWindowID.openCreateTour()
@@ -59,6 +64,7 @@ BasePage {
                 description: qsTr("Browse your drafts")
 
                 StyledButton {
+                    analyticsId: "tours_drafts"
                     text: qsTr("My draft tours")
                     onClicked: mainWindowID.openDrafts()
                 }

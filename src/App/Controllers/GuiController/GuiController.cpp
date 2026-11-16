@@ -18,8 +18,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 
-#include "glog/logging.h"
-
+#include "App/Analytics/Analytics.h"
 #include "App/Controllers/GuiController/PhotoNotificationPresenter.h"
 #include "App/Controllers/GuiController/TipPromptTracker.h"
 #include "App/Controllers/GuiController/platform/Logic.h"
@@ -31,6 +30,8 @@
 #include "App/Tours/DisplayTours.h"
 #include "App/Utils/HoleItem.h"
 #include "App/Utils/PlatformUtils.h"
+
+#include "glog/logging.h"
 
 using namespace PastViewer;
 
@@ -97,7 +98,9 @@ struct GuiController::Impl
         Background,
     };
 
-    std::unique_ptr<I18nController> i18nController;
+    std::unique_ptr<QQmlApplicationEngine> engine { std::make_unique<QQmlApplicationEngine>() };
+
+    I18nController i18nController { *engine };
     PastVuModelController pastVuModelController;
     QSettings settings {};
     TipPromptTracker purchasePromptTracker {};
@@ -111,16 +114,14 @@ struct GuiController::Impl
     std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
     QString lastSavedImagePath {};
     TourController tourController { *pastVuModelController.GetPositionSource(), nullptr };
-    PurchaseController purchaseController {};
-    bool isAdmin { false };
+    Analytics analytics { ANALYTICS_TOKEN, QUrl(ANALYTICS_HOST) };
+    PurchaseController purchaseController { analytics };
     LocationRequest pendingLocationRequest { LocationRequest::None };
+    bool isAdmin { false };
     bool locationDisclosureRejected { false };
-
-    std::unique_ptr<QQmlApplicationEngine> engine { std::make_unique<QQmlApplicationEngine>() };
 
     Impl()
     {
-        i18nController = std::make_unique<I18nController>(*engine);
         if constexpr (Utils::IsAndroid())
             backgroundLocationPermission = [] {
                 QLocationPermission p;
@@ -146,13 +147,12 @@ GuiController::GuiController(QObject * parent)
     : QObject(parent)
     , m_impl(std::make_unique<Impl>())
 {
-    QJSEngine::setObjectOwnership(m_impl->i18nController.get(), QJSEngine::CppOwnership);
-    QJSEngine::setObjectOwnership(&m_impl->pastVuModelController, QJSEngine::CppOwnership);
-    qmlRegisterSingletonInstance("I18nController", 1, 0, "I18nController", m_impl->i18nController.get());
+    qmlRegisterSingletonInstance("I18nController", 1, 0, "I18nController", &m_impl->i18nController);
     qmlRegisterSingletonInstance("PastVuModelController", 1, 0, "PastVuModelController", &m_impl->pastVuModelController);
     qmlRegisterSingletonInstance("GuiController", 1, 0, "GuiController", this);
     qmlRegisterSingletonInstance("TourController", 1, 0, "TourController", &m_impl->tourController);
     qmlRegisterSingletonInstance("PurchaseController", 1, 0, "PurchaseController", &m_impl->purchaseController);
+    qmlRegisterSingletonInstance("Analytics", 1, 0, "Analytics", &m_impl->analytics);
     qmlRegisterType<HoleItem>("GuiController", 1, 0, "HoleItem");
     qmlRegisterUncreatableType<PositionSourceAdapter>("GuiController", 1, 0, "PositionSourceAdapter", "Cannot create PositionSourceAdapter from QML");
     qmlRegisterUncreatableType<Range>("GuiController", 1, 0, "range", "Range is a value type");
@@ -166,6 +166,9 @@ GuiController::GuiController(QObject * parent)
     m_impl->LoadQml();
 
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
+    QJSEngine::setObjectOwnership(&m_impl->i18nController, QJSEngine::CppOwnership);
+    QJSEngine::setObjectOwnership(&m_impl->pastVuModelController, QJSEngine::CppOwnership);
+    QJSEngine::setObjectOwnership(&m_impl->analytics, QJSEngine::CppOwnership);
     QJSEngine::setObjectOwnership(&m_impl->tourController, QJSEngine::CppOwnership);
     QJSEngine::setObjectOwnership(&m_impl->purchaseController, QJSEngine::CppOwnership);
 
@@ -174,6 +177,8 @@ GuiController::GuiController(QObject * parent)
         LOG(ERROR) << "Failed to load QML";
         throw std::runtime_error("Failed to load QML");
     }
+
+    m_impl->analytics.Track("app_opened");
 
     const auto updateBackgroundLocationTracking = [this] {
         bool enabled = false;

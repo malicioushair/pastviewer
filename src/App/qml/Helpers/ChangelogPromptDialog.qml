@@ -101,6 +101,7 @@ PromptDialog {
             }
 
             StyledButton {
+                analyticsId: "changelog_dismiss"
                 text: qsTr("Got it")
                 onClicked: rootID.accept()
             }

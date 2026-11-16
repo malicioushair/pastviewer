@@ -6,9 +6,12 @@ import "../GuiItems"
 import "Helpers"
 import "../Helpers/colors.js" as Colors
 
+import Analytics
 import TourController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "available_tours" })
+
     id: availableToursID
 
     title: qsTr("Available tours")

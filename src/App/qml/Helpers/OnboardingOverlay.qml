@@ -168,6 +168,7 @@ Item {
                 }
 
                 StyledButton {
+                    analyticsId: "onboarding_skip"
                     id: skipButtonID
 
                     visible: steps.length > 1
@@ -180,6 +181,7 @@ Item {
                 }
 
                 StyledButton {
+                    analyticsId: "onboarding_next"
                     id: nextButtonID
 
                     text: currentIndex < steps.length - 1 ? qsTr("Next") : qsTr("Got it")

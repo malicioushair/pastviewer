@@ -6,6 +6,7 @@ import QtLocation
 import QtPositioning
 import QtQuick.Shapes
 
+import Analytics
 import GuiController
 import TourController
 
@@ -16,6 +17,8 @@ import "../Helpers/colors.js" as Colors
 import "../Helpers/utils.js" as Utils
 
 Item {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "map_page" })
+
     id: mapPageID
 
     readonly property var positionSource: PastVuModelController.GetPositionSource()

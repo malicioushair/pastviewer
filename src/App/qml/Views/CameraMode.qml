@@ -9,9 +9,12 @@ import "../Helpers/utils.js" as Utils
 import "../Helpers"
 import "Helpers"
 
+import Analytics
 import GuiController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "camera_mode" })
+
     id: rootID
 
     objectName: "cameraModePage"
