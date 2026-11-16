@@ -9,6 +9,8 @@ enable_testing()
 
 # Create test executable
 add_executable(PastViewerTests
+    AnalyticsTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Analytics/Analytics.cpp
     DirectionUtilsTest.cpp
     FileHashTest.cpp
     MultiImageTourStopTest.cpp

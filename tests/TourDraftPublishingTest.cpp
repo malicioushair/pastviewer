@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "App/Models/TourDraftsModel/TourDraftsModel.h"
+#include "App/Controllers/ModelController/PositionSourceAdapter.h"
 
 namespace {
 class ControlledReply : public QNetworkReply

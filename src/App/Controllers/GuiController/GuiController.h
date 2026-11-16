@@ -10,6 +10,7 @@
 
 namespace PastViewer {
 class Analytics;
+
 class GuiController
     : public QObject
 {

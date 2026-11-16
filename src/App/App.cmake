@@ -33,6 +33,7 @@ endif()
 
 find_package(Qt6 6.12 COMPONENTS
     Core
+    Network
     Gui
     Quick
     QuickLayouts
@@ -120,6 +121,13 @@ if ("${ADMIN_TOKEN}" STREQUAL "")
 endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE ADMIN_TOKEN="${ADMIN_TOKEN}")
 
+set(ANALYTICS_TOKEN "" CACHE STRING "PostHog project token (empty disables analytics)")
+set(ANALYTICS_HOST "https://eu.i.posthog.com" CACHE STRING "PostHog ingestion host")
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    ANALYTICS_TOKEN="${ANALYTICS_TOKEN}"
+    ANALYTICS_HOST="${ANALYTICS_HOST}"
+)
+
 set(_pastviewer_apple_tip_product_ids_list "${TIP_PRODUCT_IDS}")
 string(REPLACE "\\;" ";" _pastviewer_apple_tip_product_ids_list "${_pastviewer_apple_tip_product_ids_list}")
 list(JOIN _pastviewer_apple_tip_product_ids_list "," _pastviewer_apple_tip_product_ids)
@@ -200,6 +208,7 @@ endif()
 
 qt6_import_qml_plugins(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    Qt6::Network
     Qt6::Quick
     Qt6::QuickLayouts
     Qt6::QuickControls2
@@ -245,6 +254,7 @@ qt_add_qml_module(${PROJECT_NAME}
         ${REL_QML}
 )
 add_qml_singleton_tooling(I18nController)
+add_qml_singleton_tooling(PastViewer::Analytics)
 add_qml_singleton_tooling(PastVuModelController)
 add_qml_singleton_tooling(PastViewer::GuiController)
 add_qml_singleton_tooling(TourController)
