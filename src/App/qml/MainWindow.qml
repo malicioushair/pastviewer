@@ -10,7 +10,7 @@ import Analytics
 import PurchaseController
 import TourController
 
-import "ErrorMessageDialog"
+import "Dialogs"
 import "GuiItems"
 import "Helpers"
 import "Views"

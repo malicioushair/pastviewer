@@ -4,8 +4,7 @@ import QtQuick.Layouts
 import Analytics 1.0
 
 import "../GuiItems"
-import "../Dialogs"
-import "colors.js" as Colors
+import "../Helpers/colors.js" as Colors
 
 PromptDialog {
     id: rootID
