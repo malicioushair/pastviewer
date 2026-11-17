@@ -1,6 +1,6 @@
 PRIVACY POLICY
 
-Last updated: October 20, 2025
+Last updated: November 17, 2026
 
 This Privacy Notice for Dmitry Vorobyev (Individual developer) (“we,” “us,” or “our”) describes how and why we might access, collect, store, use, and/or share (“process”) your personal information when you use our services (“Services”), including when you:
 • Download and use our mobile application (PastViewer), or any other application of ours that links to this Privacy Notice
@@ -51,9 +51,6 @@ TABLE OF CONTENTS
 
 12. HOW CAN YOU CONTACT US ABOUT THIS NOTICE?
 
-13. HOW CAN YOU REVIEW, UPDATE, OR DELETE THE DATA WE COLLECT?
-
-
 ⸻
 1. WHAT INFORMATION DO WE COLLECT?
 
@@ -65,6 +62,17 @@ We do not process sensitive information.
 
 Application Data.
 If you use our application(s), we may request access or permission to track location-based information from your mobile device, either continuously or while you are using the app, to provide certain location-based features. You can change our access or permissions in your device settings.
+
+Usage analytics.
+If you allow analytics, PastViewer sends usage events to PostHog to help us understand how the app is used and improve it. These events may include app launches, screens opened, button interactions, and whether a tour purchase succeeded or failed. They also include a randomly generated installation ID, the operating system and version, and the device model. The installation ID allows events from the same installation to be associated over time; it is not your name or an account ID, but the data should not be considered fully anonymous.
+
+PostHog receives the network requests sent by the app, which include the device's IP address as part of the connection. Depending on the service configuration, the IP address may be used to derive approximate location or other network information. You can decline analytics and can change your choice in the app's Settings.
+
+Map and tour data.
+To load historical photographs, the app sends the coordinates of the visible map area to PastVu. When the map is centered near your location, those coordinates may reveal the area where you are. Map tile providers also receive the requests needed to display the map. If you create or publish a tour, the information you provide may include route coordinates, descriptions, photographs, and audio.
+
+Diagnostics.
+The app uses Sentry for crash reporting and diagnostics. Diagnostic reports may include technical details about the app and device, error information, and network information. The information included depends on the error and the service configuration.
 
 Google API.
 Our use of information received from Google APIs adheres to the Google API Services User Data Policy (https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements (https://developers.google.com/terms/api-services-user-data-policy#limited-use).
@@ -94,6 +102,8 @@ We process your personal information only when we believe it is necessary and we
 EU/UK Users (GDPR/UK GDPR).
 Legal bases may include: consent (you can withdraw at any time), compliance with legal obligations, vital interests, contract performance, and legitimate interests.
 
+For optional product analytics described above, we rely on your consent. You may withdraw it in the app's Settings at any time.
+
 Canada.
 We may process your information with express or implied consent, and in some cases without consent as permitted by law (e.g., investigations, fraud prevention, legal proceedings, emergencies).
 
@@ -101,14 +111,18 @@ We may process your information with express or implied consent, and in some cas
 4. WHEN AND WITH WHOM DO WE SHARE YOUR PERSONAL INFORMATION?
 
 We may share information in specific situations and with specific third parties, for example:
+• Service providers. PostHog provides product analytics when you allow it; Sentry provides crash reporting and diagnostics. PastVu, map tile providers, the tour service, and app-store purchase providers receive information needed for the features you use.
+
 • Business Transfers. In connection with any merger, sale of assets, financing, or acquisition of all or a portion of our business.
 
-We may disclose de-identified information for internal research and development. We have not disclosed, sold, or shared personal information with third parties for a business or commercial purpose in the preceding twelve (12) months and will not sell or share such information in the future.
+We may use de-identified information for internal research and development. Service providers process information to provide the services described in this Notice.
 
 ⸻
 5. HOW LONG DO WE KEEP YOUR INFORMATION?
 
 In short: We keep your information for as long as necessary to fulfill the purposes outlined in this Notice unless otherwise required by law. When we have no ongoing legitimate business need to process your information, we delete or anonymize it. If deletion is not possible (e.g., backups), we securely store it and isolate it from further processing until deletion is possible.
+
+Analytics events are retained according to the retention period configured for our PostHog project and removed through its scheduled cleanup. The installation ID and analytics choice are stored on your device. Turning analytics off stops future events; it does not automatically delete events already sent. You can contact us using the details below to request access to or deletion of your information. Because PastViewer has no user accounts, locating analytics events associated with a particular person may require additional information and may not always be possible.
 
 ⸻
 6. HOW DO WE KEEP YOUR INFORMATION SAFE?
@@ -137,6 +151,8 @@ Depending on your location, you may have rights to:
 Withdrawing consent:
 Where processing is based on consent, you may withdraw consent at any time by contacting us (see Section 12). This does not affect processing prior to withdrawal or processing based on other legal grounds.
 
+For product analytics, you can also withdraw your consent by turning off "Allow analytics" in the app's Settings. This stops future analytics events but does not automatically delete events already sent.
+
 How to exercise your rights:
 • Submit a DSAR: https://app.termly.io/dsar/52cef21a-3962-47ec-935e-acedb1df1e21
 
@@ -154,11 +170,11 @@ Browsers and devices may include a Do-Not-Track (DNT) feature. No uniform DNT st
 
 If you are a resident of certain U.S. states, you may have additional rights, such as to know, access, correct, delete, obtain a copy, withdraw consent, and opt out of certain processing (e.g., targeted advertising, sale, or profiling producing legal or similarly significant effects).
 
-Categories of Personal Information We Collect (last 12 months)
+Categories of Personal Information We May Collect
 
 A. Identifiers
-Examples: Real name, alias, postal address, phone, IP, email, account name
-Collected: NO
+Examples: Random installation ID, IP address, contact details supplied when contacting support
+Collected: May be collected depending on your choices and use of the app
 
 B. Personal info (Cal. Customer Records)
 Examples: Name, contact info, education, employment, history, financial info
@@ -170,7 +186,7 @@ Collected: NO
 
 D. Commercial information
 Examples: Transactions, purchase history, financial/payment info
-Collected: NO
+Collected: Purchase outcomes may be collected when analytics is enabled; app-store purchase providers process payments
 
 E. Biometric information
 Examples: Fingerprints, voiceprints
@@ -178,7 +194,7 @@ Collected: NO
 
 F. Internet/network activity
 Examples: Browsing/search history, online behavior/interest data, interactions with websites/apps/ads
-Collected: NO
+Collected: App interactions may be collected when analytics is enabled
 
 G. Geolocation data
 Examples: Device location
@@ -204,7 +220,7 @@ L. Sensitive personal info
 Examples: (as defined by law)
 Collected: NO
 
-* Used only to provide location-based features; not stored, sold, or shared. Retained, if at all, only transiently/in-memory/on-device.
+* Location is used for location-based features. Map-area coordinates are sent to service providers as described above; route coordinates may also be included when a tour is published.
 
 We may also collect other personal information in contexts such as customer support, surveys/contests, and facilitating delivery of our Services and responding to inquiries.
 
