@@ -11,6 +11,7 @@
 
 #include "glog/logging.h"
 
+#include "App/Analytics/Analytics.h"
 #include "App/Controllers/GuiController/TipPromptTracker.h"
 #include "App/Controllers/PurchaseController/platform/Logic.h"
 
@@ -56,6 +57,7 @@ std::optional<QString> GetNativeOwnershipProductId(const PurchaseInfo & purchase
 
 struct PurchaseController::Impl
 {
+    const PastViewer::Analytics & analytics;
     PastViewer::TipPromptTracker * tipPromptTracker { nullptr };
     QVariantList tipProducts {};
     bool tipProductsLoading { false };
@@ -74,9 +76,9 @@ struct PurchaseController::Impl
     QHash<QString, quint64> tourOwnedRequestGeneration {};
 };
 
-PurchaseController::PurchaseController(QObject * parent)
+PurchaseController::PurchaseController(const PastViewer::Analytics & analytics, QObject * parent)
     : QObject(parent)
-    , m_impl(std::make_unique<Impl>())
+    , m_impl(std::make_unique<Impl>(analytics))
 {
     {
         const QPointer<PurchaseController> controller(this);
@@ -477,6 +479,7 @@ void PurchaseController::StartTourPurchase(const QString & tourId, const QString
                     LOG(INFO) << "Tour purchase succeeded: " << productId.toStdString();
                     guard->CompletePendingTourPurchase(productId);
                     emit guard->tourPurchaseSucceeded(tourId);
+                    guard->m_impl->analytics.Track("purchase_success");
                     return;
                 case PlatformDependentLogic::PurchaseResult::Cancelled:
                     clearPurchase();
@@ -487,6 +490,7 @@ void PurchaseController::StartTourPurchase(const QString & tourId, const QString
                     return;
                 case PlatformDependentLogic::PurchaseResult::Failed:
                     guard->FailTourPurchase(productId, tourId, error);
+                    guard->m_impl->analytics.Track("purchase_failure");
                     return;
             }
         },
@@ -495,13 +499,26 @@ void PurchaseController::StartTourPurchase(const QString & tourId, const QString
 
 void PurchaseController::CheckTourOwned(const DisplayTour & tour)
 {
+    QueryTourOwnership(tour, false);
+}
+
+void PurchaseController::RestoreTourPurchase(const DisplayTour & tour)
+{
+    if (PurchaseInProgress())
+        return;
+
+    QueryTourOwnership(tour, true);
+}
+
+void PurchaseController::QueryTourOwnership(const DisplayTour & tour, bool restore)
+{
     // A later check for the same tour supersedes a slower in-flight result.
     const auto requestGeneration = ++m_impl->tourOwnedRequestGeneration[tour.id];
     ++m_impl->ownershipChecksInFlight;
     emit purchaseInProgressChanged();
 
     const QPointer<PurchaseController> guard(this);
-    const auto publish = [guard, tourId = tour.id, requestGeneration](bool owned) {
+    const auto publish = [guard, tourId = tour.id, requestGeneration, restore](bool owned, const QString & error = {}) {
         if (!guard)
             return;
 
@@ -511,7 +528,15 @@ void PurchaseController::CheckTourOwned(const DisplayTour & tour)
 
         if (guard->m_impl->tourOwnedRequestGeneration.value(tourId) != requestGeneration)
             return;
+        if (!error.isEmpty())
+        {
+            emit guard->showErrorDialog(error);
+            return;
+        }
+
         emit guard->tourOwned(tourId, owned);
+        if (restore && !owned)
+            emit guard->showErrorDialog(tr("No purchase was found for this tour."));
     };
 
     if (!tour.purchaseInfo.paid)
@@ -532,6 +557,20 @@ void PurchaseController::CheckTourOwned(const DisplayTour & tour)
     if (productId->isEmpty())
     {
         publish(true);
+        return;
+    }
+
+    if (restore)
+    {
+        PlatformDependentLogic::SyncPurchases([productId = *productId, publish](const QString & error) {
+            if (!error.isEmpty())
+            {
+                publish(false, error);
+                return;
+            }
+
+            PlatformDependentLogic::CheckOwned(productId, publish);
+        });
         return;
     }
 #endif

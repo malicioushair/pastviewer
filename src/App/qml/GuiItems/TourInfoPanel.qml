@@ -5,7 +5,7 @@ import QtQuick.Effects
 import QtLocation
 import QtPositioning
 
-import PastViewer 1.0
+import GuiController
 import TourController 1.0
 
 import "../Helpers/colors.js" as Colors
@@ -107,6 +107,7 @@ Rectangle {
                             id: stopNavigationID
 
                             StyledButton {
+                                analyticsId: "tour_previous_stop"
                                 id: prevStopButtonID
 
                                 text: "<"
@@ -114,6 +115,7 @@ Rectangle {
                             }
 
                             StyledButton {
+                                analyticsId: "tour_next_stop"
                                 id: nextStopButtonID
 
                                 text: ">"
@@ -134,6 +136,7 @@ Rectangle {
                         }
 
                         StyledButton {
+                            analyticsId: "tour_open_stop"
                             id: imHereButtonID
 
                             text: qsTr("I'm here")
@@ -167,7 +170,7 @@ Rectangle {
                     InfoLabel {
                         id: distanceInfoID
 
-                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
                         Layout.fillHeight: true
 
                         infoText: qsTr("Distance")
@@ -177,7 +180,7 @@ Rectangle {
                     InfoLabel {
                         id: stopsID
 
-                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
                         Layout.fillHeight: true
 
                         infoText: qsTr("Stops")
@@ -194,6 +197,7 @@ Rectangle {
                 visible: rootID.mode == GuiController.TourInfoMode.Edit
 
                 StyledButton {
+                    analyticsId: "tour_record_toggle"
                     id: recID
 
                     property bool inProgress: false
@@ -225,6 +229,7 @@ Rectangle {
                 }
 
                 StyledButton {
+                    analyticsId: "tour_add_stop"
                     id: addStopID
 
                     Layout.fillWidth: true
@@ -246,6 +251,7 @@ Rectangle {
                 }
 
                 StyledButton {
+                    analyticsId: "tour_finish"
                     id: publishButtonID
 
                     text: qsTr("Finish")

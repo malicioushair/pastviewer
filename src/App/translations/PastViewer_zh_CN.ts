@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>附近历史照片提醒</translation>
+        <source>Walking tours</source>
+        <translation>步行游览</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>当您走近一张历史照片时接收通知。</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>浏览可用的游览路线，跟着地图步行探索。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>支持后台运行</translation>
+        <source>Smoother browsing</source>
+        <translation>浏览更流畅</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>PastViewer 在后台运行时也能继续探索，点按提醒即可打开对应的照片。</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>查看照片的加载状态，并在 iOS 或 Android 上使用返回手势。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>距离控制</translation>
+        <source>Stories at each stop</source>
+        <translation>每一站的故事</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>在“设置”中选择要靠多近才接收提醒。</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>浏览照片图集，并在有语音导览时收听。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>现在，PastViewer 可在您探索时帮助您发现历史。</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>跟随 PastViewer 的步行游览路线，探索当地历史。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>
@@ -547,6 +547,11 @@
         <source>The App Store could not complete this purchase.</source>
         <translation>App Store 无法完成此购买。</translation>
     </message>
+    <message>
+        <location filename="../Controllers/PurchaseController/PurchaseController.cpp" line="535"/>
+        <source>No purchase was found for this tour.</source>
+        <translation>未找到此路线的购买记录。</translation>
+    </message>
 </context>
 <context>
     <name>RecenterButton</name>
@@ -647,6 +652,18 @@
         <location filename="../qml/Views/Settings.qml" line="188"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>使用当前筛选条件重新加载当前地图视图的历史照片。</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>隐私政策</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>允许分析</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>与 PostHog 分享使用信息和设备详情，以帮助改进 PastViewer。</translation>
     </message>
 </context>
 <context>
@@ -862,6 +879,11 @@
         <source>Unlock tour</source>
         <translation>解锁导览</translation>
     </message>
+    <message>
+        <location filename="../qml/Views/TourInfo.qml" line="254"/>
+        <source>Restore purchase</source>
+        <translation>恢复购买</translation>
+    </message>
 </context>
 <context>
     <name>TourInfoPanel</name>
@@ -1015,6 +1037,67 @@
         <location filename="../qml/Views/Tours.qml" line="62"/>
         <source>My draft tours</source>
         <translation>我的导览草稿</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="35"/>
+        <source>Location access</source>
+        <translation>位置访问权限</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="44"/>
+        <source>PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.</source>
+        <translation>PastViewer 使用您的位置信息在地图上显示您的位置，并在您靠近历史照片时通知您，即使应用已关闭或未在使用时也是如此。搜索附近照片时会使用您所在位置周围的地图区域。</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="48"/>
+        <source>Not now</source>
+        <translation>暂不</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="49"/>
+        <source>Continue</source>
+        <translation>继续</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>帮助改进 PastViewer</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>分析仅包含了解应用使用情况并改进应用所需的匿名数据。您可以在偏好设置中更改选择。</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>隐私政策</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>不允许</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>允许分析</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>隐私政策</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>无法加载隐私政策。</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
     </message>
 </context>
 </TS>

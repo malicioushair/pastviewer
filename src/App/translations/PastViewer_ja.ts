@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>近くの写真をお知らせ</translation>
+        <source>Walking tours</source>
+        <translation>ウォーキングツアー</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>歴史的な写真の近くを通ると通知を受け取れます。</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>利用できるツアーを探し、地図に沿って歩きましょう。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>バックグラウンドで動作</translation>
+        <source>Smoother browsing</source>
+        <translation>よりスムーズな操作</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>PastViewer がバックグラウンドにあっても探索を続けられます。通知をタップすると該当する写真が開きます。</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>写真の読み込み状況を確認でき、iOS や Android の戻るジェスチャーも使えます。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>通知距離の設定</translation>
+        <source>Stories at each stop</source>
+        <translation>各スポットの物語</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>設定で、どのくらい近づいたときに通知するかを選べます。</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>写真ギャラリーを見たり、音声ガイドがある場合は聴いたりできます。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>PastViewer が、街を探索しながら歴史を発見するお手伝いをします。</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>PastViewer のウォーキングツアーで、その土地の歴史を巡りましょう。</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>
@@ -547,6 +547,11 @@
         <source>The App Store could not complete this purchase.</source>
         <translation>App Storeでこの購入を完了できませんでした。</translation>
     </message>
+    <message>
+        <location filename="../Controllers/PurchaseController/PurchaseController.cpp" line="535"/>
+        <source>No purchase was found for this tour.</source>
+        <translation>このツアーの購入が見つかりませんでした。</translation>
+    </message>
 </context>
 <context>
     <name>RecenterButton</name>
@@ -647,6 +652,18 @@
         <location filename="../qml/Views/Settings.qml" line="188"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>現在のフィルターを使って、現在の地図表示の歴史写真を再読み込みします。</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>プライバシーポリシー</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>分析を許可</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>PastViewerの改善のため、利用状況とデバイスの詳細をPostHogと共有します。</translation>
     </message>
 </context>
 <context>
@@ -862,6 +879,11 @@
         <source>Unlock tour</source>
         <translation>ツアーを解除</translation>
     </message>
+    <message>
+        <location filename="../qml/Views/TourInfo.qml" line="254"/>
+        <source>Restore purchase</source>
+        <translation>購入を復元</translation>
+    </message>
 </context>
 <context>
     <name>TourInfoPanel</name>
@@ -1015,6 +1037,67 @@
         <location filename="../qml/Views/Tours.qml" line="62"/>
         <source>My draft tours</source>
         <translation>下書きツアー</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="35"/>
+        <source>Location access</source>
+        <translation>位置情報へのアクセス</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="44"/>
+        <source>PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.</source>
+        <translation>PastViewerは位置情報を使用して地図上に現在地を表示し、歴史的な写真の近くにいるときに通知します。これはアプリを閉じているときや使用していないときも行われます。近くの写真を検索する際は、現在地周辺の地図の範囲を使用します。</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="48"/>
+        <source>Not now</source>
+        <translation>今はしない</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="49"/>
+        <source>Continue</source>
+        <translation>続ける</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>PastViewerの改善にご協力ください</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>分析には、アプリの利用状況を把握して改善するために必要な匿名データのみが含まれます。設定で選択を変更できます。</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>プライバシーポリシー</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>許可しない</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>分析を許可</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>プライバシーポリシー</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>プライバシーポリシーを読み込めませんでした。</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>閉じる</translation>
     </message>
 </context>
 </TS>

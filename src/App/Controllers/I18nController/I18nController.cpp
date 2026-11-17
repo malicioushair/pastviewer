@@ -64,11 +64,6 @@ QString I18nController::GetSystemLocale() const
     return {};
 }
 
-I18nController * I18nController::create(QQmlEngine * qmlEngine, QJSEngine *)
-{
-    return new I18nController(*qmlEngine);
-}
-
 I18nController::~I18nController() = default;
 
 void I18nController::SetCurrentLanguage(const QString & languageCode)

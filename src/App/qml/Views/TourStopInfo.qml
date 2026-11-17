@@ -8,10 +8,13 @@ import "../Helpers"
 import "../Helpers/colors.js" as Colors
 import "Helpers"
 
+import Analytics
 import TourController
-import PastViewer
+import GuiController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "tour_stop_info" })
+
     id: rootID
 
     required property var tourStop
@@ -266,6 +269,7 @@ BasePage {
             spacing: 8
 
             StyledButton {
+                analyticsId: "tour_stop_listen"
                 id: listenButtonID
 
                 Layout.preferredHeight: 50
@@ -358,6 +362,7 @@ BasePage {
             }
 
             StyledButton {
+                analyticsId: "tour_stop_next"
                 id: nextStopButtonID
 
                 Layout.preferredHeight: 50

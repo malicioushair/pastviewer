@@ -9,10 +9,13 @@ import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
-import PastViewer
+import Analytics
+import GuiController
 import TourController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "draft_tours" })
+
     id: toursPageID
 
     title: qsTr("Drafts")
@@ -55,6 +58,7 @@ BasePage {
                 spacing: 4
 
                 StyledButton {
+                    analyticsId: "draft_open"
                     id: draftTitleButtonID
 
                     Layout.fillWidth: true
@@ -79,6 +83,7 @@ BasePage {
                     Layout.fillWidth: true
 
                     StyledButton {
+                        analyticsId: "draft_backup"
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
 
@@ -94,6 +99,7 @@ BasePage {
                     }
 
                     StyledButton {
+                        analyticsId: "draft_publish"
                         id: publishButtonID
 
                         Layout.fillWidth: true
@@ -132,6 +138,7 @@ BasePage {
                     }
 
                     StyledButton {
+                        analyticsId: "draft_delete"
                         Layout.preferredHeight: 40
 
                         text: qsTr("del")

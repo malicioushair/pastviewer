@@ -7,11 +7,14 @@ import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
-import PastViewer
+import Analytics
+import GuiController
 import TourController
 
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "tour_description" })
+
     id: rootID
 
     property bool placeOnMap: false
@@ -109,6 +112,7 @@ BasePage {
         }
 
         StyledButton {
+            analyticsId: "tour_description_choose_image"
             id: addImageButtonID
 
             text: qsTr("Add title image")
@@ -125,6 +129,7 @@ BasePage {
 
         RowLayout {
             StyledButton {
+                analyticsId: "tour_description_upload_image"
                 id: uploadImageButtonID
 
                 text: qsTr("Upload image")
@@ -160,6 +165,7 @@ BasePage {
             Layout.alignment: Qt.AlignBottom
 
             StyledButton {
+                analyticsId: "tour_description_next"
                 text: qsTr("Next")
                 onClicked: {
                     const error = TourController.CreateNewTour(titleTextAreaID.text, descriptionTextAreaID.text, tourImageID.source, languageComboBoxID.currentValue)
@@ -177,6 +183,7 @@ BasePage {
                 }
             }
             StyledButton {
+                analyticsId: "tour_description_cancel"
                 text: qsTr("Cancel")
                 onClicked: rootID.StackView.view.pop()
             }

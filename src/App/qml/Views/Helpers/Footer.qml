@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import PastViewer
+import GuiController
 
 import "../../Helpers/colors.js" as Colors
 

@@ -5,11 +5,12 @@ import QtLocation
 import QtPositioning
 import QtQuick.Shapes
 
-import PastViewer 1.0
-import PurchaseController 1.0
-import TourController 1.0
+import GuiController
+import Analytics
+import PurchaseController
+import TourController
 
-import "ErrorMessageDialog"
+import "Dialogs"
 import "GuiItems"
 import "Helpers"
 import "Views"
@@ -23,6 +24,61 @@ Rectangle {
     property var editingDraftId: null
     property bool changelogPromptPending: false
     property bool tipsPromptPending: false
+    property bool locationDisclosurePending: false
+
+    PrivacyPolicyDialog {
+        id: privacyPolicyID
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+    }
+
+    function openPrivacyPolicy() {
+        privacyPolicyID.open()
+    }
+
+    AnalyticsConsentDialog {
+        id: analyticsConsentID
+        anchors.centerIn: Overlay.overlay
+        onClosed: {
+            if (mainWindowID.locationDisclosurePending) {
+                mainWindowID.locationDisclosurePending = false
+                locationDisclosureID.open()
+            } else if (mainWindowID.hasPendingPrompt()) {
+                mainWindowID.schedulePromptCheck()
+            }
+        }
+    }
+
+    PromptDialog {
+        id: locationDisclosureID
+        anchors.centerIn: parent
+        closePolicy: Popup.NoAutoClose
+        onClosed: {
+            if (mainWindowID.hasPendingPrompt())
+                mainWindowID.schedulePromptCheck()
+        }
+        contentItem: ColumnLayout {
+            spacing: 16
+            Text {
+                Layout.fillWidth: true
+                text: qsTr("Location access")
+                color: Colors.palette.text
+                font.pixelSize: 18
+                font.bold: true
+            }
+            Text {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Colors.palette.text
+                text: qsTr("PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.")
+            }
+            RowLayout {
+                Layout.alignment: Qt.AlignRight
+                Button { text: qsTr("Not now"); onClicked: { locationDisclosureID.close(); GuiController.RespondToLocationDisclosure(false) } }
+                Button { text: qsTr("Continue"); onClicked: { locationDisclosureID.close(); GuiController.RespondToLocationDisclosure(true) } }
+            }
+        }
+    }
 
     function toMainPage() {
         while (stackViewID.depth != 1) {
@@ -155,6 +211,8 @@ Rectangle {
                 || !currentItem
                 || Qt.application.state !== Qt.ApplicationActive
                 || errorDialogID.visible
+                || analyticsConsentID.visible
+                || locationDisclosureID.visible
                 || tipsPromptDialogID.visible
                 || tipJarDialogID.visible
                 || changelogPromptDialogID.visible)
@@ -298,6 +356,13 @@ Rectangle {
     Connections {
         target: GuiController
 
+        function onLocationDisclosureRequested() {
+            if (analyticsConsentID.visible)
+                mainWindowID.locationDisclosurePending = true
+            else
+                locationDisclosureID.open()
+        }
+
         function onShowErrorDialog(message) {
             errorDialogID.errorMessage = message
             errorDialogID.open()
@@ -332,6 +397,8 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        if (Analytics.analyticsAvailable && !Analytics.consentDecided)
+            analyticsConsentID.open()
         if (GuiController.ShouldShowChangelog())
             mainWindowID.scheduleChangelogPrompt()
     }

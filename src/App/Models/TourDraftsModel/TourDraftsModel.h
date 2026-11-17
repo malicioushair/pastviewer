@@ -4,7 +4,6 @@
 
 #include "App/Tours/Tours.h"
 #include "App/Utils/NonCopyMovable.h"
-#include "PositionSourceAdapter.h"
 
 #include <memory>
 #include <functional>

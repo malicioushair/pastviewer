@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 
+import Analytics
 import TourController
 
 import "../GuiItems"
@@ -10,6 +11,8 @@ import "Helpers"
 import "../Helpers/colors.js" as Colors
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "draft_tour_edit" })
+
     id: rootID
 
     required property var record
@@ -87,10 +90,12 @@ BasePage {
             }
             RowLayout {
                 StyledButton {
+                    analyticsId: "draft_edit_choose_images"
                     text: rootID.editingStop ? qsTr("Choose images") : qsTr("Choose cover")
                     onClicked: coverDialogID.open()
                 }
                 StyledButton {
+                    analyticsId: "draft_edit_remove_images"
                     text: qsTr("Remove images")
                     visible: rootID.editingStop
                              ? rootID.imageFiles.length > 0
@@ -113,10 +118,12 @@ BasePage {
             RowLayout {
                 visible: rootID.editingStop
                 StyledButton {
+                    analyticsId: "draft_edit_choose_audio"
                     text: qsTr("Choose audio")
                     onClicked: audioDialogID.open()
                 }
                 StyledButton {
+                    analyticsId: "draft_edit_remove_audio"
                     text: qsTr("Remove audio")
                     visible: rootID.audioFile.toString().length > 0
                     onClicked: rootID.audioFile = ""
@@ -132,6 +139,7 @@ BasePage {
             }
 
             StyledButton {
+                analyticsId: "draft_edit_route"
                 Layout.fillWidth: true
                 visible: !rootID.editingStop
                 text: qsTr("Save and edit route / stops")
@@ -142,6 +150,7 @@ BasePage {
             }
             RowLayout {
                 StyledButton {
+                    analyticsId: "draft_edit_save"
                     text: qsTr("Save")
                     onClicked: {
                         if (rootID.save())
@@ -149,6 +158,7 @@ BasePage {
                     }
                 }
                 StyledButton {
+                    analyticsId: "draft_edit_cancel"
                     text: qsTr("Cancel")
                     onClicked: rootID.goBack()
                 }

@@ -1,3 +1,4 @@
+import PastVuModelController 1.0
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -5,8 +6,9 @@ import QtLocation
 import QtPositioning
 import QtQuick.Shapes
 
-import PastViewer 1.0
-import TourController 1.0
+import Analytics
+import GuiController
+import TourController
 
 import "../GuiItems"
 import "../Helpers"
@@ -15,6 +17,8 @@ import "../Helpers/colors.js" as Colors
 import "../Helpers/utils.js" as Utils
 
 Item {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "map_page" })
+
     id: mapPageID
 
     readonly property var positionSource: PastVuModelController.GetPositionSource()
@@ -377,7 +381,9 @@ Item {
                     line.width: 4
                     line.color: Colors.palette.accent
                     autoFadeIn: false
-                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour && path.length >= 2
+                    visible: (mapPageID.mode === GuiController.MapMode.PlaceTour
+                              || mapPageID.mode === GuiController.MapMode.TourCreation)
+                             && path.length >= 2
                 }
 
                 MapItemView {
@@ -385,7 +391,7 @@ Item {
 
                     z: 1
                     model: TourController.placedStopMarkers
-                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour
+                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour || mapPageID.mode === GuiController.MapMode.TourCreation
                     delegate: MapQuickItem {
                         id: stopMarkerID
 

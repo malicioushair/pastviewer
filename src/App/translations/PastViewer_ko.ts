@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>주변 사진 알림</translation>
+        <source>Walking tours</source>
+        <translation>도보 투어</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>역사 사진 근처를 지나면 알림을 받을 수 있습니다.</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>이용 가능한 투어를 둘러보고 지도에서 경로를 따라가세요.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>백그라운드에서도 작동</translation>
+        <source>Smoother browsing</source>
+        <translation>더 편리한 탐색</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>PastViewer가 백그라운드에 있어도 계속 탐색하고, 알림을 탭해 해당 사진을 열 수 있습니다.</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>사진이 로딩 중인지 확인하고 iOS 또는 Android에서 뒤로 가기 제스처를 사용하세요.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>알림 거리 설정</translation>
+        <source>Stories at each stop</source>
+        <translation>장소마다 만나는 이야기</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>설정에서 얼마나 가까이 갔을 때 알림을 받을지 선택하세요.</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>사진 갤러리를 둘러보고, 음성 해설이 제공되는 곳에서는 해설을 들을 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>이제 PastViewer가 주변을 탐색하며 역사를 발견하도록 도와드립니다.</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>PastViewer의 도보 투어로 지역의 역사를 만나 보세요.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>
@@ -547,6 +547,11 @@
         <source>The App Store could not complete this purchase.</source>
         <translation>App Store에서 이 구매를 완료하지 못했습니다.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/PurchaseController/PurchaseController.cpp" line="535"/>
+        <source>No purchase was found for this tour.</source>
+        <translation>이 투어의 구매 내역을 찾을 수 없습니다.</translation>
+    </message>
 </context>
 <context>
     <name>RecenterButton</name>
@@ -647,6 +652,18 @@
         <location filename="../qml/Views/Settings.qml" line="188"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>현재 필터를 사용하여 현재 지도 보기의 역사 사진을 다시 불러옵니다.</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>개인정보 처리방침</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>분석 허용</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>PastViewer 개선을 위해 사용 정보와 기기 세부정보를 PostHog와 공유합니다.</translation>
     </message>
 </context>
 <context>
@@ -862,6 +879,11 @@
         <source>Unlock tour</source>
         <translation>투어 잠금 해제</translation>
     </message>
+    <message>
+        <location filename="../qml/Views/TourInfo.qml" line="254"/>
+        <source>Restore purchase</source>
+        <translation>구매 복원</translation>
+    </message>
 </context>
 <context>
     <name>TourInfoPanel</name>
@@ -1015,6 +1037,67 @@
         <location filename="../qml/Views/Tours.qml" line="62"/>
         <source>My draft tours</source>
         <translation>내 투어 초안</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="35"/>
+        <source>Location access</source>
+        <translation>위치 액세스</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="44"/>
+        <source>PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.</source>
+        <translation>PastViewer는 위치를 사용하여 지도에 현재 위치를 표시하고 역사적인 사진 근처에 있을 때 알림을 보냅니다. 이는 앱이 닫혀 있거나 사용 중이 아닐 때도 적용됩니다. 주변 사진을 검색할 때는 현재 위치 주변의 지도 영역을 사용합니다.</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="48"/>
+        <source>Not now</source>
+        <translation>나중에</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="49"/>
+        <source>Continue</source>
+        <translation>계속</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>PastViewer 개선에 도움을 주세요</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>분석에는 앱 사용 방식을 이해하고 개선하는 데 필요한 익명 데이터만 포함됩니다. 환경설정에서 선택을 변경할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>개인정보 처리방침</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>허용 안 함</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>분석 허용</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>개인정보 처리방침</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>개인정보 처리방침을 불러올 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>닫기</translation>
     </message>
 </context>
 </TS>

@@ -9,6 +9,7 @@
 #include <QScopeGuard>
 #include <QStandardPaths>
 
+#include "Analytics/Analytics.h"
 #include "Controllers/GuiController/GuiController.h"
 #include "SentryIntegration/SentryIntegration.h"
 
@@ -66,9 +67,7 @@ int RunApplication(int argc, char * argv[])
     QQuickStyle::setStyle("Basic");
 
     QGuiApplication app(argc, argv);
-
-    const auto guiController = GuiController::Create();
-
+    GuiController guiController;
     LOG(INFO) << "Starting PastViewer application";
     return QGuiApplication::exec();
 }

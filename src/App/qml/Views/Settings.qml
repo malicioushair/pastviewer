@@ -1,3 +1,5 @@
+import I18nController 1.0
+import PastVuModelController 1.0
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -6,10 +8,13 @@ import "../Helpers/colors.js" as Colors
 import "../GuiItems"
 import "Helpers"
 
-import PastViewer
+import Analytics
+import GuiController
 import PurchaseController
 
 BasePage {
+    Component.onCompleted: Analytics.Track("view_opened", { view: "settings" })
+
     id: rootID
 
     title: qsTr("Settings")
@@ -48,6 +53,17 @@ BasePage {
         ColumnLayout {
             width: settingsScrollViewID.availableWidth
             spacing: 20
+
+            SettingWithHint {
+                visible: Analytics.analyticsAvailable
+                Layout.leftMargin: -7
+                description: qsTr("Share usage information and device details with PostHog to help improve PastViewer.")
+                StyledCheckBox {
+                    text: qsTr("Allow analytics")
+                    checked: Analytics.consentGranted
+                    onClicked: Analytics.consentGranted = checked
+                }
+            }
 
             ColumnLayout {
                 id: i18nBlockID
@@ -166,6 +182,7 @@ BasePage {
                 description: qsTr("By leaving a tip, you support PastViewer's continued development and keep it FREE")
 
                 StyledButton {
+                    analyticsId: "settings_support"
                     id: supportButtonID
 
                     text: qsTr("Support us 💰")
@@ -177,6 +194,7 @@ BasePage {
                 description: qsTr("Show the introductory tips on the map and photo screens again.")
 
                 StyledButton {
+                    analyticsId: "settings_reset_onboarding"
                     id: resetOnboardingID
 
                     text: qsTr("Reset onboarding")
@@ -188,6 +206,7 @@ BasePage {
                 description: qsTr("Load historical photos again for the current map view using your current filters.")
 
                 StyledButton {
+                    analyticsId: "settings_reload_map"
                     id: reloadButtonID
 
                     text: qsTr("Reload map items")
@@ -200,11 +219,19 @@ BasePage {
                 visible: GuiController.isAdmin && PastVuModelController.hasPositionSource
 
                 StyledButton {
+                    analyticsId: "settings_tours"
                     id: toursID
 
                     text: qsTr("Tours")
                     onClicked: mainWindowID.openTours()
                 }
+            }
+
+            Text {
+                textFormat: Text.RichText
+                linkColor: Colors.palette.accent
+                text: '<a href="https://github.com/malicioushair/pastviewer/blob/master/resources/legalTexts/PrivacyPolicy.txt">' + qsTr("Privacy policy") + '</a>'
+                onLinkActivated: mainWindowID.openPrivacyPolicy()
             }
         }
     }
