@@ -653,6 +653,18 @@
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>現在のフィルターを使って、現在の地図表示の歴史写真を再読み込みします。</translation>
     </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>プライバシーポリシー</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>分析を許可</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>PastViewerの改善のため、利用状況とデバイスの詳細をPostHogと共有します。</translation>
+    </message>
 </context>
 <context>
     <name>StyledRangeSlider</name>
@@ -1048,6 +1060,44 @@
         <location filename="../qml/MainWindow.qml" line="49"/>
         <source>Continue</source>
         <translation>続ける</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>PastViewerの改善にご協力ください</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>分析には、アプリの利用状況を把握して改善するために必要な匿名データのみが含まれます。設定で選択を変更できます。</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>プライバシーポリシー</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>許可しない</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>分析を許可</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>プライバシーポリシー</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>プライバシーポリシーを読み込めませんでした。</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>閉じる</translation>
     </message>
 </context>
 </TS>

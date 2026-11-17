@@ -653,6 +653,18 @@
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>使用当前筛选条件重新加载当前地图视图的历史照片。</translation>
     </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>隐私政策</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>允许分析</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>与 PostHog 分享使用信息和设备详情，以帮助改进 PastViewer。</translation>
+    </message>
 </context>
 <context>
     <name>StyledRangeSlider</name>
@@ -1048,6 +1060,44 @@
         <location filename="../qml/MainWindow.qml" line="49"/>
         <source>Continue</source>
         <translation>继续</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>帮助改进 PastViewer</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>分析仅包含了解应用使用情况并改进应用所需的匿名数据。您可以在偏好设置中更改选择。</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>隐私政策</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>不允许</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>允许分析</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>隐私政策</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>无法加载隐私政策。</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
     </message>
 </context>
 </TS>

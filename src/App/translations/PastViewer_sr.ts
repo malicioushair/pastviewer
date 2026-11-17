@@ -653,6 +653,18 @@
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Поново учитај историјске фотографије за тренутни приказ мапе користећи тренутне филтере.</translation>
     </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Политика приватности</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>Дозволи аналитику</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>Делите податке о коришћењу и уређају са PostHog-ом ради побољшања апликације PastViewer.</translation>
+    </message>
 </context>
 <context>
     <name>StyledRangeSlider</name>
@@ -1048,6 +1060,44 @@
         <location filename="../qml/MainWindow.qml" line="49"/>
         <source>Continue</source>
         <translation>Настави</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>Помозите да побољшамо PastViewer</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>Аналитика обухвата само неопходне анонимне податке који нам помажу да разумемо како се апликација користи и да је побољшамо. Избор можете променити у подешавањима.</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Политика приватности</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>Не дозволи</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>Дозволи аналитику</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Политика приватности</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>Није могуће учитати политику приватности.</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Затвори</translation>
     </message>
 </context>
 </TS>

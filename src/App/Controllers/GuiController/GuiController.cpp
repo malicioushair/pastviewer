@@ -288,9 +288,13 @@ QString GuiController::GetAppVersion()
     return AppVersion();
 }
 
-QString GuiController::GetPrivacyPolicy() const
+QString GuiController::GetPrivacyPolicy(const QString & languageCode) const
 {
-    QFile file(":/legal/PrivacyPolicy.txt");
+    const auto translatedPath = QStringLiteral(":/legal/PrivacyPolicy_%1.txt").arg(languageCode);
+    const auto path = QFile::exists(translatedPath)
+                        ? translatedPath
+                        : ":/legal/PrivacyPolicy.txt";
+    QFile file(path);
     if (!file.open(QIODevice::ReadOnly))
     {
         LOG(WARNING) << "Failed to load the privacy policy";

@@ -1,7 +1,9 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import GuiController 1.0
+
+import GuiController
+import I18nController
 
 import "../GuiItems"
 import "../Helpers/colors.js" as Colors
@@ -43,7 +45,7 @@ Dialog {
                 id: policyText
                 objectName: "privacyPolicyText"
                 text: {
-                    const policy = GuiController.GetPrivacyPolicy()
+                    const policy = GuiController.GetPrivacyPolicy(I18nController.currentLanguage)
                     return policy.length > 0 ? policy : qsTr("Unable to load the privacy policy.")
                 }
                 readOnly: true

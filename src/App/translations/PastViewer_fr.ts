@@ -653,6 +653,18 @@
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Recharger les photos historiques pour la vue actuelle de la carte avec vos filtres actuels.</translation>
     </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Politique de confidentialité</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>Autoriser les analyses</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>Partager les informations d’utilisation et les détails de l’appareil avec PostHog pour améliorer PastViewer.</translation>
+    </message>
 </context>
 <context>
     <name>StyledRangeSlider</name>
@@ -1048,6 +1060,44 @@
         <location filename="../qml/MainWindow.qml" line="49"/>
         <source>Continue</source>
         <translation>Continuer</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>Aidez à améliorer PastViewer</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>Les analyses comprennent uniquement les données anonymes nécessaires pour comprendre comment l’application est utilisée et l’améliorer. Vous pouvez modifier votre choix dans les préférences.</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Politique de confidentialité</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>Ne pas autoriser</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>Autoriser les analyses</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Politique de confidentialité</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>Impossible de charger la politique de confidentialité.</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
     </message>
 </context>
 </TS>

@@ -242,10 +242,11 @@ file(GLOB_RECURSE ABS_QML CONFIGURE_DEPENDS
 
 AbsToRelPath(REL_QML "${CMAKE_CURRENT_SOURCE_DIR}" ${ABS_QML})
 
+file(GLOB _pastviewer_legal_texts CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/resources/legalTexts/PrivacyPolicy*.txt")
 qt_add_resources(${PROJECT_NAME} "legal_texts"
     PREFIX "/legal"
     BASE "${CMAKE_SOURCE_DIR}/resources/legalTexts"
-    FILES "${CMAKE_SOURCE_DIR}/resources/legalTexts/PrivacyPolicy.txt"
+    FILES ${_pastviewer_legal_texts}
 )
 
 qt_add_qml_module(${PROJECT_NAME}

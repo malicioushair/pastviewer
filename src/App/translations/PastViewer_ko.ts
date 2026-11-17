@@ -653,6 +653,18 @@
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>현재 필터를 사용하여 현재 지도 보기의 역사 사진을 다시 불러옵니다.</translation>
     </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>개인정보 처리방침</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>분석 허용</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>PastViewer 개선을 위해 사용 정보와 기기 세부정보를 PostHog와 공유합니다.</translation>
+    </message>
 </context>
 <context>
     <name>StyledRangeSlider</name>
@@ -1048,6 +1060,44 @@
         <location filename="../qml/MainWindow.qml" line="49"/>
         <source>Continue</source>
         <translation>계속</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>PastViewer 개선에 도움을 주세요</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>분석에는 앱 사용 방식을 이해하고 개선하는 데 필요한 익명 데이터만 포함됩니다. 환경설정에서 선택을 변경할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>개인정보 처리방침</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>허용 안 함</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>분석 허용</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>개인정보 처리방침</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>개인정보 처리방침을 불러올 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>닫기</translation>
     </message>
 </context>
 </TS>
