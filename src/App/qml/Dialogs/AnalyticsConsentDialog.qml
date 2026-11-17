@@ -10,12 +10,6 @@ PromptDialog {
     id: rootID
     closePolicy: Popup.NoAutoClose
 
-    PrivacyPolicyDialog {
-        id: privacyPolicyID
-        parent: Overlay.overlay
-        anchors.centerIn: parent
-    }
-
     contentItem: ColumnLayout {
         spacing: 16
         Text {
@@ -36,7 +30,7 @@ PromptDialog {
             textFormat: Text.RichText
             linkColor: Colors.palette.accent
             text: '<a href="https://github.com/malicioushair/pastviewer/blob/master/resources/legalTexts/PrivacyPolicy.txt">' + qsTr("Privacy policy") + '</a>'
-            onLinkActivated: privacyPolicyID.open()
+            onLinkActivated: mainWindowID.openPrivacyPolicy
         }
         RowLayout {
             Layout.fillWidth: true

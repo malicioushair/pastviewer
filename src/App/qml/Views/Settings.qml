@@ -226,6 +226,13 @@ BasePage {
                     onClicked: mainWindowID.openTours()
                 }
             }
+
+            Text {
+                textFormat: Text.RichText
+                linkColor: Colors.palette.accent
+                text: '<a href="https://github.com/malicioushair/pastviewer/blob/master/resources/legalTexts/PrivacyPolicy.txt">' + qsTr("Privacy policy") + '</a>'
+                onLinkActivated: mainWindowID.openPrivacyPolicy()
+            }
         }
     }
 }

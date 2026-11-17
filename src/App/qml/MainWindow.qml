@@ -26,6 +26,16 @@ Rectangle {
     property bool tipsPromptPending: false
     property bool locationDisclosurePending: false
 
+    PrivacyPolicyDialog {
+        id: privacyPolicyID
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+    }
+
+    function openPrivacyPolicy() {
+        privacyPolicyID.open()
+    }
+
     AnalyticsConsentDialog {
         id: analyticsConsentID
         anchors.centerIn: Overlay.overlay
