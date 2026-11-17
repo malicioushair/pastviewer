@@ -55,6 +55,7 @@ public:
     Q_INVOKABLE bool IsDebug();
     Q_INVOKABLE void BumpHotReloadToken();
     Q_INVOKABLE QString GetAppVersion();
+    Q_INVOKABLE QString GetPrivacyPolicy() const;
     Q_INVOKABLE bool ShouldShowChangelog() const;
     Q_INVOKABLE void MarkChangelogShown();
     Q_INVOKABLE bool ShouldShowTipsPrompt();

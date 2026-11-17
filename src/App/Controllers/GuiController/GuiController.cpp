@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
+#include <QFile>
 #include <QGuiApplication>
 #include <QLocationPermission>
 #include <QMediaDevices>
@@ -279,18 +280,23 @@ void GuiController::BumpHotReloadToken()
 
 bool GuiController::IsDebug()
 {
-    return
-#ifndef NDEBUG
-        true
-#else
-        false
-#endif
-        ;
+    return Utils::IsDebug();
 }
 
 QString GuiController::GetAppVersion()
 {
     return AppVersion();
+}
+
+QString GuiController::GetPrivacyPolicy() const
+{
+    QFile file(":/legal/PrivacyPolicy.txt");
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        LOG(WARNING) << "Failed to load the privacy policy";
+        return {};
+    }
+    return QString::fromUtf8(file.readAll());
 }
 
 bool GuiController::ShouldShowChangelog() const

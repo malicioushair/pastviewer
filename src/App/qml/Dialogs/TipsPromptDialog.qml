@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import "../GuiItems"
-import "colors.js" as Colors
+import "../Helpers/colors.js" as Colors
 
 import GuiController
 

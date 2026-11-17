@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import TourController 1.0
 
 import "../Helpers"
+import "../Dialogs"
 import "../Helpers/colors.js" as Colors
 
 Rectangle {

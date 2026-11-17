@@ -9,11 +9,17 @@
 #include <QSysInfo>
 #include <QUuid>
 
+#include "App/Utils/PlatformUtils.h"
+
 #include "platform/DeviceInfo.h"
 
 #include "glog/logging.h"
 
 namespace PastViewer {
+
+namespace {
+constexpr auto CONSENT_KEY = "analytics/consentGranted";
+}
 
 struct Analytics::Impl
 {
@@ -27,31 +33,62 @@ struct Analytics::Impl
 Analytics::Analytics(const QString & token, const QUrl & host)
     : m_impl(std::make_unique<Impl>(token.trimmed(), host.resolved(QUrl("/i/v0/e/"))))
 {
-    if (m_impl->token.isEmpty())
-        return;
-
-    m_impl->deviceModel = Platform::DeviceModel();
-    QSettings settings;
-    m_impl->installationId = settings.value("analytics/installationId").toString();
-    if (m_impl->installationId.isEmpty())
-    {
-        m_impl->installationId = QUuid::createUuid().toString(QUuid::WithoutBraces);
-        settings.setValue("analytics/installationId", m_impl->installationId);
-        settings.sync();
-        if (settings.status() != QSettings::NoError)
-        {
-            LOG(WARNING) << "Analytics disabled: installation ID could not be saved";
-            m_impl->token.clear();
-        }
-    }
 }
 
 Analytics::~Analytics() = default;
 
+bool Analytics::ConsentGranted() const
+{
+    return QSettings().value(CONSENT_KEY, false).toBool();
+}
+
+bool Analytics::ConsentDecided() const
+{
+    return QSettings().contains(CONSENT_KEY);
+}
+
+bool Analytics::AnalyticsAvailable() const
+{
+    return !m_impl->token.isEmpty();
+}
+
+void Analytics::SetConsentGranted(bool consentGranted)
+{
+    QSettings settings;
+    settings.setValue(CONSENT_KEY, consentGranted);
+    settings.sync();
+    if (settings.status() != QSettings::NoError)
+        LOG(WARNING) << "Failed to save analytics consent";
+    emit consentChanged();
+}
+
 void Analytics::Track(const QString & event, QJsonObject properties) const
 {
-    if (m_impl->token.isEmpty() || event.isEmpty())
+    if (false
+        || Utils::IsDebug()
+        || m_impl->token.isEmpty()
+        || event.isEmpty()
+        || !ConsentGranted())
         return;
+
+    if (m_impl->installationId.isEmpty())
+    {
+        QSettings settings;
+        m_impl->installationId = settings.value("analytics/installationId").toString();
+        if (m_impl->installationId.isEmpty())
+        {
+            const auto id = QUuid::createUuid().toString(QUuid::WithoutBraces);
+            settings.setValue("analytics/installationId", id);
+            settings.sync();
+            if (settings.status() != QSettings::NoError)
+            {
+                LOG(WARNING) << "Analytics disabled: installation ID could not be saved";
+                return;
+            }
+            m_impl->installationId = id;
+        }
+        m_impl->deviceModel = Platform::DeviceModel();
+    }
 
     properties.insert("distinct_id", m_impl->installationId);
     properties.insert("$process_person_profile", false);

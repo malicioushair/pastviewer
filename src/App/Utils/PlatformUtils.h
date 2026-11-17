@@ -21,4 +21,15 @@ constexpr bool IsAndroid()
 #endif
         ;
 }
+
+constexpr bool IsDebug()
+{
+    return
+#ifndef NDEBUG
+        true
+#else
+        false
+#endif
+        ;
+}
 }
