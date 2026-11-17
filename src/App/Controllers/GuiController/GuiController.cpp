@@ -280,13 +280,7 @@ void GuiController::BumpHotReloadToken()
 
 bool GuiController::IsDebug()
 {
-    return
-#ifndef NDEBUG
-        true
-#else
-        false
-#endif
-        ;
+    return Utils::IsDebug();
 }
 
 QString GuiController::GetAppVersion()

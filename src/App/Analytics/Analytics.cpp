@@ -9,6 +9,8 @@
 #include <QSysInfo>
 #include <QUuid>
 
+#include "App/Utils/PlatformUtils.h"
+
 #include "platform/DeviceInfo.h"
 
 #include "glog/logging.h"
@@ -63,6 +65,7 @@ void Analytics::SetConsentGranted(bool consentGranted)
 void Analytics::Track(const QString & event, QJsonObject properties) const
 {
     if (false
+        || Utils::IsDebug()
         || m_impl->token.isEmpty()
         || event.isEmpty()
         || !ConsentGranted())
