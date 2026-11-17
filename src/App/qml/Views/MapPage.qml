@@ -381,7 +381,9 @@ Item {
                     line.width: 4
                     line.color: Colors.palette.accent
                     autoFadeIn: false
-                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour && path.length >= 2
+                    visible: (mapPageID.mode === GuiController.MapMode.PlaceTour
+                              || mapPageID.mode === GuiController.MapMode.TourCreation)
+                             && path.length >= 2
                 }
 
                 MapItemView {
@@ -389,7 +391,7 @@ Item {
 
                     z: 1
                     model: TourController.placedStopMarkers
-                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour
+                    visible: mapPageID.mode === GuiController.MapMode.PlaceTour || mapPageID.mode === GuiController.MapMode.TourCreation
                     delegate: MapQuickItem {
                         id: stopMarkerID
 
