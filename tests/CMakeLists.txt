@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 
 # Find required packages
 find_package(GTest REQUIRED)
-find_package(Qt6 COMPONENTS Core Gui Location Network Positioning REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Location Network Positioning Sensors REQUIRED)
 
 # Enable testing
 enable_testing()
@@ -62,6 +62,7 @@ target_link_libraries(PastViewerTests PRIVATE
     Qt6::Location
     Qt6::Network
     Qt6::Positioning
+    Qt6::Sensors
     glog::glog
 )
 

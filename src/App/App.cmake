@@ -41,6 +41,7 @@ find_package(Qt6 6.12 COMPONENTS
     Location
     Positioning
     PositioningQuick
+    Sensors
     Multimedia
     LinguistTools
 REQUIRED)
@@ -215,6 +216,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Location
     Qt6::Positioning
     Qt6::PositioningQuick
+    Qt6::Sensors
     Qt6::Multimedia
     glog::glog
 )
