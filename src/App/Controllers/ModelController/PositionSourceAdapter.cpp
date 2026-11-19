@@ -4,8 +4,11 @@
 #include <limits>
 
 #include <QCompass>
+#include <QElapsedTimer>
 #include <QGuiApplication>
 #include <QTimer>
+
+#include "PositionPathFilter.h"
 
 namespace {
 
@@ -22,6 +25,9 @@ struct PositionSourceAdapter::Impl
 
     const QGeoPositionInfoSource * const source;
     QGeoPositionInfo position;
+    PositionPathFilter positionFilter;
+    QElapsedTimer positionClock;
+    QTimer positionTimer;
     QGeoCoordinate lastValidCoordinate;
     QGeoCoordinate previousCoordinate;
     double bearing { std::numeric_limits<double>::quiet_NaN() };
@@ -36,6 +42,9 @@ PositionSourceAdapter::PositionSourceAdapter(const QGeoPositionInfoSource * cons
     : QObject(parent)
     , m_impl(std::make_unique<Impl>(source))
 {
+    m_impl->positionClock.start();
+    m_impl->positionTimer.setInterval(200);
+    connect(&m_impl->positionTimer, &QTimer::timeout, this, &PositionSourceAdapter::DrainPositionBuffer);
     if (source)
         connect(m_impl->source, &QGeoPositionInfoSource::positionUpdated, this, &PositionSourceAdapter::OnPositionUpdated);
 
@@ -100,6 +109,28 @@ bool PositionSourceAdapter::IsSourceAvailable() const
 
 void PositionSourceAdapter::OnPositionUpdated(const QGeoPositionInfo & info)
 {
+    if (!info.coordinate().isValid())
+    {
+        m_impl->positionAvailable = false;
+        emit PositionAvailableChanged();
+        return;
+    }
+    m_impl->positionFilter.Push(info, m_impl->positionClock.elapsed());
+    DrainPositionBuffer();
+    if (m_impl->positionFilter.HasPending() && !m_impl->positionTimer.isActive())
+        m_impl->positionTimer.start();
+}
+
+void PositionSourceAdapter::DrainPositionBuffer()
+{
+    while (auto position = m_impl->positionFilter.Take(m_impl->positionClock.elapsed()))
+        AcceptPosition(*position);
+    if (!m_impl->positionFilter.HasPending())
+        m_impl->positionTimer.stop();
+}
+
+void PositionSourceAdapter::AcceptPosition(const QGeoPositionInfo & info)
+{
     const auto currentCoord = info.coordinate();
 
     if (currentCoord.isValid())
@@ -129,6 +160,7 @@ void PositionSourceAdapter::OnPositionUpdated(const QGeoPositionInfo & info)
             m_impl->movementBearing = info.attribute(QGeoPositionInfo::Direction);
         UpdateBearing();
         emit PositionChanged();
+        emit PositionAccepted(info);
     }
     else
     {

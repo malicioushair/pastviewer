@@ -17,6 +17,7 @@ class PositionSourceAdapter
 
 signals:
     void PositionChanged();
+    void PositionAccepted(const QGeoPositionInfo & info);
     void BearingChanged();
     void PositionAvailableChanged();
 
@@ -32,6 +33,8 @@ public:
 
 private slots:
     void OnPositionUpdated(const QGeoPositionInfo & info);
+    void DrainPositionBuffer();
+    void AcceptPosition(const QGeoPositionInfo & info);
     void UpdateBearing();
 
 private:

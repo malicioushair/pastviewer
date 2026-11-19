@@ -13,6 +13,7 @@ add_executable(PastViewerTests
     ${CMAKE_SOURCE_DIR}/src/App/Analytics/Analytics.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Analytics/platform/mac/DeviceInfo.cpp
     DirectionUtilsTest.cpp
+    PositionPathFilterTest.cpp
     FileHashTest.cpp
     MultiImageTourStopTest.cpp
     TourDraftPublishingTest.cpp
@@ -31,6 +32,7 @@ add_executable(PastViewerTests
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/PurchaseController/PurchaseController.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/TourController/TourController.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PositionSourceAdapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PositionPathFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/AvailableToursModel/AvailableToursModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/TourDraftsModel/TourDraftsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/TourStopsModel/TourStopsModel.cpp

@@ -37,7 +37,7 @@ struct PastVuModelController::Impl
         , source(QGeoPositionInfoSource::createDefaultSource(nullptr))
         , baseModel(std::make_unique<BaseModel>(source.get()))
         , screenObjectsModel(std::make_unique<ScreenObjectsModel>(baseModel.get()))
-        , nearestObjectsModel(std::make_unique<NearestObjectsModel>(screenObjectsModel.get(), source.get()))
+        , nearestObjectsModel(std::make_unique<NearestObjectsModel>(screenObjectsModel.get(), nullptr))
         , clusterModelScreen(std::make_unique<ClusterModel>(screenObjectsModel.get()))
         , clusterModelNearest(std::make_unique<ClusterModel>(nearestObjectsModel.get()))
     {
@@ -103,7 +103,9 @@ PastVuModelController::PastVuModelController(QObject * parent)
     connect(m_impl->baseModel.get(), &BaseModel::ItemsLoaded, this, retryPendingPhotoSelection);
     connect(m_impl->screenObjectsModel.get(), &QAbstractItemModel::modelReset, this, retryPendingPhotoSelection);
     connect(m_impl->nearestObjectsModel.get(), &QAbstractItemModel::modelReset, this, retryPendingPhotoSelection);
-    connect(m_impl->source.get(), &QGeoPositionInfoSource::positionUpdated, this, [this](const QGeoPositionInfo & info) {
+    connect(m_impl->positionSourceAdapter.get(), &PositionSourceAdapter::PositionAccepted,
+        m_impl->nearestObjectsModel.get(), &NearestObjectsModel::OnPositionUpdated);
+    connect(m_impl->positionSourceAdapter.get(), &PositionSourceAdapter::PositionAccepted, this, [this](const QGeoPositionInfo & info) {
         m_impl->currentCoordinate = info.coordinate();
         EvaluatePhotoProximity();
     });
