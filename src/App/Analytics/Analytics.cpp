@@ -28,6 +28,7 @@ struct Analytics::Impl
     QString installationId;
     QNetworkAccessManager network;
     QString deviceModel;
+    bool runningInTestEnv { false };
 };
 
 Analytics::Analytics(const QString & token, const QUrl & host)
@@ -62,10 +63,15 @@ void Analytics::SetConsentGranted(bool consentGranted)
     emit consentChanged();
 }
 
+void Analytics::SetTestEnv(bool value)
+{
+    m_impl->runningInTestEnv = value;
+}
+
 void Analytics::Track(const QString & event, QJsonObject properties) const
 {
     if (false
-        || Utils::IsDebug()
+        || !m_impl->runningInTestEnv && Utils::IsDebug()
         || m_impl->token.isEmpty()
         || event.isEmpty()
         || !ConsentGranted())

@@ -118,6 +118,7 @@ TEST_F(AnalyticsTest, ConsentControlsSendingAndPersists)
 
     {
         PastViewer::Analytics analytics("test-project-token", host);
+        analytics.SetTestEnv(true);
         EXPECT_TRUE(analytics.ConsentDecided());
         EXPECT_FALSE(analytics.ConsentGranted());
         analytics.SetConsentGranted(true);
@@ -143,6 +144,7 @@ TEST_F(AnalyticsTest, SendsAnonymousEventAndReusesPersistedIdentity)
     for (int launch = 0; launch < 2; ++launch)
     {
         PastViewer::Analytics analytics("test-project-token", host);
+        analytics.SetTestEnv(true);
         analytics.Track("app_opened", {{"$os", "incorrect"}, {"$os_version", "incorrect"}});
         const auto request = ReceiveRequest();
         ASSERT_FALSE(request.isEmpty());

@@ -1,6 +1,5 @@
 #include <memory>
 #include <optional>
-#include <type_traits>
 
 #include <QCoreApplication>
 #include <QEventLoop>
@@ -9,6 +8,7 @@
 
 #include <gtest/gtest.h>
 
+#include "App/Analytics/Analytics.h"
 #include "App/Tours/DisplayTours.h"
 
 #if __has_include("App/Controllers/PurchaseController/PurchaseController.h")
@@ -162,20 +162,6 @@ WaitForTourOwnedObservingPurchaseInProgress(Controller & controller, const Displ
     }
 }
 
-template <typename Controller>
-std::unique_ptr<Controller> MakePurchaseController()
-{
-    if constexpr (std::is_constructible_v<Controller>)
-        return std::make_unique<Controller>();
-    else if constexpr (std::is_constructible_v<Controller, QObject *>)
-        return std::make_unique<Controller>(nullptr);
-    else
-    {
-        ADD_FAILURE() << "PurchaseController must be constructible for unit tests";
-        return nullptr;
-    }
-}
-
 // Template so discarded if-constexpr branches stay dependent on Controller and
 // compile before purchaseInProgress replaces tipPurchaseInProgress.
 template <typename Controller>
@@ -223,15 +209,17 @@ protected:
 #if PASTVIEWER_HAS_PURCHASE_CONTROLLER
     void SetUp() override
     {
-        controller = MakePurchaseController<PurchaseController>();
-        ASSERT_NE(controller, nullptr);
+        analytics = std::make_unique<PastViewer::Analytics>(QString {}, QUrl {});
+        controller = std::make_unique<PurchaseController>(*analytics);
     }
 
     void TearDown() override
     {
         controller.reset();
+        analytics.reset();
     }
 
+    std::unique_ptr<PastViewer::Analytics> analytics;
     std::unique_ptr<PurchaseController> controller;
 #endif
 };

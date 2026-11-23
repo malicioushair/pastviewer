@@ -24,6 +24,8 @@ public:
     bool AnalyticsAvailable() const;
     void SetConsentGranted(bool consentGranted);
 
+    void SetTestEnv(bool value);
+
     Q_INVOKABLE void Track(const QString & event, QJsonObject properties = {}) const;
 
 signals:
