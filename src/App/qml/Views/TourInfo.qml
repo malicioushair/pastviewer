@@ -197,7 +197,7 @@ BasePage {
             id: purchaseActionsID
 
             Layout.fillWidth: true
-            visible: !rootID.isOwned
+            visible: !GuiController.IsDebug() && !rootID.isOwned
             enabled: !PurchaseController.purchaseInProgress
 
             StyledButton {
