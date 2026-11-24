@@ -53,7 +53,6 @@ public:
     ~GuiController();
 
     Q_INVOKABLE bool IsDebug();
-    Q_INVOKABLE void BumpHotReloadToken();
     Q_INVOKABLE QString GetAppVersion();
     Q_INVOKABLE QString GetPrivacyPolicy(const QString & languageCode) const;
     Q_INVOKABLE bool ShouldShowChangelog() const;

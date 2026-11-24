@@ -10,14 +10,12 @@
 #include <QMediaDevices>
 #include <QPermissions>
 #include <QPointer>
-#include <QQmlAbstractUrlInterceptor>
 #include <QQmlContext>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStringLiteral>
 #include <QTimer>
 #include <QUrl>
-#include <QUrlQuery>
 
 #include "App/Analytics/Analytics.h"
 #include "App/Controllers/GuiController/PhotoNotificationPresenter.h"
@@ -47,47 +45,6 @@ QString AppVersion()
     return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
 }
 
-class HotReloadUrlInterceptor
-    : public QQmlAbstractUrlInterceptor
-{
-public:
-    explicit HotReloadUrlInterceptor(std::string token = {})
-        : m_token(std::move(token))
-    {
-    }
-
-    void SetToken(const std::string & token)
-    {
-        m_token = token;
-    }
-
-    QUrl intercept(const QUrl & url, DataType type) override
-    {
-        if (true
-            && type != QQmlAbstractUrlInterceptor::QmlFile
-            && type != QQmlAbstractUrlInterceptor::JavaScriptFile
-            && type != QQmlAbstractUrlInterceptor::QmldirFile)
-            return url;
-
-        if (m_token.empty())
-            return url;
-
-        const auto scheme = url.scheme();
-        if (scheme != QStringLiteral("file") && scheme != QStringLiteral("qrc"))
-            return url;
-
-        QUrl result(url);
-        QUrlQuery query(result);
-        query.removeAllQueryItems("r");
-        query.addQueryItem("r", QString::fromStdString(m_token));
-        result.setQuery(query);
-
-        return result;
-    }
-
-private:
-    std::string m_token;
-};
 }
 
 struct GuiController::Impl
@@ -112,7 +69,6 @@ struct GuiController::Impl
     }() };
     QLocationPermission backgroundLocationPermission {};
     QCameraPermission cameraPermission {};
-    std::unique_ptr<HotReloadUrlInterceptor> interceptor { std::make_unique<HotReloadUrlInterceptor>() };
     QString lastSavedImagePath {};
     TourController tourController { *pastVuModelController.GetPositionSource(), nullptr };
     Analytics analytics { ANALYTICS_TOKEN, QUrl(ANALYTICS_HOST) };
@@ -163,7 +119,6 @@ GuiController::GuiController(QObject * parent)
     qRegisterMetaType<QGeoCoordinate>();
     qRegisterMetaType<QGeoPositionInfo>();
     m_impl->engine->addImportPath("qrc:/qt/qml");
-    m_impl->engine->addUrlInterceptor(m_impl->interceptor.get());
     m_impl->LoadQml();
 
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
@@ -270,12 +225,6 @@ void GuiController::RespondToLocationDisclosure(bool accepted)
         RequestPermission(m_impl->locationPermission);
     else if (request == Impl::LocationRequest::Background)
         RequestPermission(m_impl->backgroundLocationPermission);
-}
-
-void GuiController::BumpHotReloadToken()
-{
-    m_impl->interceptor->SetToken(QString::number(QDateTime::currentSecsSinceEpoch()).toStdString());
-    m_impl->engine->clearComponentCache();
 }
 
 bool GuiController::IsDebug()
