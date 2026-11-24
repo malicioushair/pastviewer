@@ -5,6 +5,7 @@ import QtCore
 
 import "../Helpers/colors.js" as Colors
 import "../Helpers"
+import "../GuiItems"
 import "Helpers"
 
 import Analytics
