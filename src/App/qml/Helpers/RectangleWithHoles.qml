@@ -1,6 +1,6 @@
 import QtQuick
 
-import PastViewer 1.0
+import GuiController 1.0
 
 import "colors.js" as Colors
 

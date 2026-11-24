@@ -12,11 +12,13 @@ class PositionSourceAdapter
 {
     Q_OBJECT
     Q_PROPERTY(QGeoCoordinate coordinate READ Coordinate NOTIFY PositionChanged)
-    Q_PROPERTY(double bearing READ Bearing NOTIFY PositionChanged)
+    Q_PROPERTY(double bearing READ Bearing NOTIFY BearingChanged)
     Q_PROPERTY(bool positionAvailable READ IsPositionAvailable NOTIFY PositionAvailableChanged)
 
 signals:
     void PositionChanged();
+    void PositionAccepted(const QGeoPositionInfo & info);
+    void BearingChanged();
     void PositionAvailableChanged();
 
 public:
@@ -31,6 +33,9 @@ public:
 
 private slots:
     void OnPositionUpdated(const QGeoPositionInfo & info);
+    void DrainPositionBuffer();
+    void AcceptPosition(const QGeoPositionInfo & info);
+    void UpdateBearing();
 
 private:
     struct Impl;

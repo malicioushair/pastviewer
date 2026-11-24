@@ -4,9 +4,11 @@ import QtQuick.Layouts
 
 import "../GuiItems"
 import "../Helpers"
+import "../Helpers/colors.js" as Colors
 import "Helpers"
 
-import PastViewer
+import Analytics
+import GuiController
 import PurchaseController
 import TourController
 
@@ -49,7 +51,7 @@ BasePage {
 
         highlightSteps: [
             { target: tourInfoPanelID.controlsItem, stepIndex: 1 },
-            { target: unlockTourButtonID.visible ? unlockTourButtonID : startTourButtonID, stepIndex: 2 },
+            { target: purchaseActionsID.visible ? unlockTourButtonID : startTourButtonID, stepIndex: 2 },
         ]
 
         steps: [
@@ -63,7 +65,7 @@ BasePage {
             },
             {
                 "title": qsTr("Start exploring"),
-                "body": unlockTourButtonID.visible
+                "body": purchaseActionsID.visible
                     ? qsTr("Tap Unlock tour to purchase this tour.")
                     : qsTr("Tap Start tour to open the map with this tour's route and stops.")
             }
@@ -125,13 +127,14 @@ BasePage {
         }
 
         StyledButton {
+            analyticsId: "tour_start"
             id: startTourButtonID
 
             Layout.fillWidth: true
             Layout.preferredHeight: 50
 
             text: qsTr("Start tour")
-            visible: !unlockTourButtonID.visible
+            visible: !purchaseActionsID.visible
             onClicked: {
                 if (!TourController.IsTourValid(rootID.tour))
                     return
@@ -190,51 +193,85 @@ BasePage {
             horizontalAlignment: Text.AlignHCenter
         }
 
-        StyledButton {
-            id: unlockTourButtonID
+        RowLayout {
+            id: purchaseActionsID
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 50
+            visible: !GuiController.IsDebug() && !rootID.isOwned
+            enabled: !PurchaseController.purchaseInProgress
 
-            visible: !rootID.isOwned
-            enabled: !rootID.purchasePending && !PurchaseController.purchaseInProgress
-            reversedColors: true
-            text: qsTr("Unlock tour")
-            contentItem: Item {
-                implicitWidth: unlockTourLabelID.implicitWidth
-                implicitHeight: Math.max(unlockTourLabelID.implicitHeight, unlockTourBusyID.implicitHeight)
+            StyledButton {
+                analyticsId: "tour_unlock"
+                id: unlockTourButtonID
 
-                Text {
-                    id: unlockTourLabelID
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                Layout.preferredHeight: 50
 
-                    anchors.centerIn: parent
-                    text: unlockTourButtonID.text
-                    font {
-                        pixelSize: 16
-                        bold: true
+                enabled: !rootID.purchasePending
+                text: qsTr("Unlock tour")
+                contentItem: Item {
+                    implicitWidth: unlockTourLabelID.implicitWidth
+                    implicitHeight: Math.max(unlockTourLabelID.implicitHeight, unlockTourBusyID.implicitHeight)
+
+                    Text {
+                        id: unlockTourLabelID
+
+                        anchors.fill: parent
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.Wrap
+                        text: unlockTourButtonID.text
+                        font {
+                            pixelSize: 16
+                            bold: true
+                        }
+                        color: "white"
+                        visible: !PurchaseController.purchaseInProgress
                     }
-                    color: "white"
-                    visible: !PurchaseController.purchaseInProgress
+
+                    StyledBusyIndicator {
+                        id: unlockTourBusyID
+
+                        anchors.centerIn: parent
+                        implicitHeight: 28
+                        width: 28
+                        height: 28
+                        visible: PurchaseController.purchaseInProgress
+                        running: visible
+                    }
                 }
-
-                StyledBusyIndicator {
-                    id: unlockTourBusyID
-
-                    anchors.centerIn: parent
-                    implicitHeight: 28
-                    width: 28
-                    height: 28
-                    visible: PurchaseController.purchaseInProgress
-                    running: visible
+                onClicked: {
+                    PurchaseController.RequestTourPurchaseFlow(rootID.tour)
                 }
             }
-            onClicked: {
-                PurchaseController.RequestTourPurchaseFlow(rootID.tour)
+
+            StyledButton {
+                analyticsId: "tour_restore_purchase"
+                id: restorePurchaseButtonID
+
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                Layout.preferredHeight: 50
+
+                text: qsTr("Restore purchase")
+                reversedColors: true
+                contentItem: Text {
+                    text: restorePurchaseButtonID.text
+                    font: unlockTourLabelID.font
+                    color: restorePurchaseButtonID.enabled ? "white" : Colors.palette.disabledBtnText
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.Wrap
+                }
+
+                onClicked: PurchaseController.RestoreTourPurchase(rootID.tour)
             }
         }
     }
 
     Component.onCompleted: {
+        Analytics.Track("view_opened", { view: "tour_info" })
         rootID.purchasePending = PurchaseController.IsTourPurchasePending(rootID.tour.id)
         PurchaseController.CheckTourOwned(rootID.tour)
     }

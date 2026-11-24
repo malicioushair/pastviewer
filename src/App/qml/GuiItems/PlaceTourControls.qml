@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import TourController 1.0
 
 import "../Helpers"
+import "../Dialogs"
 import "../Helpers/colors.js" as Colors
 
 Rectangle {
@@ -71,6 +72,7 @@ Rectangle {
         }
 
         StyledButton {
+            analyticsId: "place_tour_add_point"
             Layout.fillWidth: true
 
             text: qsTr("Add point")
@@ -78,6 +80,7 @@ Rectangle {
         }
 
         StyledButton {
+            analyticsId: "place_tour_remove_point"
             Layout.fillWidth: true
 
             text: qsTr("Remove last point")
@@ -91,6 +94,7 @@ Rectangle {
             spacing: 8
 
             StyledButton {
+                analyticsId: "place_tour_add_stop"
                 Layout.fillWidth: true
 
                 text: qsTr("Add stop")
@@ -98,6 +102,7 @@ Rectangle {
             }
 
             StyledButton {
+                analyticsId: "place_tour_finish"
                 Layout.fillWidth: true
 
                 text: qsTr("Finish")
@@ -128,11 +133,13 @@ Rectangle {
                 spacing: 8
 
                 StyledButton {
+                    analyticsId: "place_tour_remove_cancel"
                     text: qsTr("Cancel")
                     onClicked: removeLastPointDialogID.close()
                 }
 
                 StyledButton {
+                    analyticsId: "place_tour_remove_confirm"
                     text: qsTr("Delete")
                     onClicked: {
                         TourController.RemoveLastPoint()

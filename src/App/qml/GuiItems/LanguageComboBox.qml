@@ -1,9 +1,10 @@
+import I18nController 1.0
 import QtQuick
 import QtQuick.Controls
 
 import "../Helpers/colors.js" as Colors
 
-import PastViewer
+import GuiController
 
 ComboBox {
     id: controlID

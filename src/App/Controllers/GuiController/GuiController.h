@@ -1,22 +1,20 @@
 #pragma once
 
-#include <memory>
-
 #include <QObject>
 #include <QPermission>
-#include <QQmlEngine>
+#include <QQmlApplicationEngine>
 #include <QQuickItemGrabResult>
 #include <QVariantList>
 
 #include "App/Utils/NonCopyMovable.h"
 
 namespace PastViewer {
+class Analytics;
+
 class GuiController
     : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
     NON_COPY_MOVABLE(GuiController)
 
     Q_PROPERTY(bool isAdmin READ GetIsAdmin WRITE SetIsAdmin NOTIFY isAdminChanged)
@@ -47,16 +45,17 @@ signals:
     void tipsPromptRequested();
     void mapModeChanged(MapMode mode);
     void isAdminChanged(bool value);
+    void locationDisclosureRequested();
 
 public:
-    static std::unique_ptr<GuiController> Create();
-    static GuiController * create(QQmlEngine * qmlEngine, QJSEngine * jsEngine);
+    explicit GuiController(QObject * parent = nullptr);
 
     ~GuiController();
 
     Q_INVOKABLE bool IsDebug();
     Q_INVOKABLE void BumpHotReloadToken();
     Q_INVOKABLE QString GetAppVersion();
+    Q_INVOKABLE QString GetPrivacyPolicy(const QString & languageCode) const;
     Q_INVOKABLE bool ShouldShowChangelog() const;
     Q_INVOKABLE void MarkChangelogShown();
     Q_INVOKABLE bool ShouldShowTipsPrompt();
@@ -64,6 +63,7 @@ public:
     Q_INVOKABLE void MarkTipsPromptShown();
     Q_INVOKABLE void DismissTipsPrompt();
     Q_INVOKABLE void RequestCameraPermission();
+    Q_INVOKABLE void RespondToLocationDisclosure(bool accepted);
     Q_INVOKABLE bool SaveScreenshotToGallery(const QString & filePath);
     Q_INVOKABLE QString SaveImage(const QQuickItemGrabResult * grabResult);
     Q_INVOKABLE bool ShareImage();
@@ -72,10 +72,6 @@ public:
     Q_INVOKABLE bool IsOnboardingStepCompleted(const QString & key);
     Q_INVOKABLE void SetOnboardingStepCompleted(const QString & key);
     Q_INVOKABLE void ResetOnboarding();
-
-private:
-    // hiding the constructor from QML so it will have to use the static create(QQmlEngine * qmlEngine, QJSEngine * jsEngine)
-    GuiController();
 
 private:
     void RequestPermission(const QPermission & permission);

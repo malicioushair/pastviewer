@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 
 import "../GuiItems"
-import "colors.js" as Colors
+import "../Helpers/colors.js" as Colors
 
-import PastViewer
+import GuiController
 
 PromptDialog {
     id: rootID
@@ -64,6 +64,7 @@ PromptDialog {
             }
 
             StyledButton {
+                analyticsId: "tips_prompt_accept"
                 text: qsTr("Leave a tip")
                 onClicked: {
                     rootID.outcomeRecorded = true
@@ -72,6 +73,7 @@ PromptDialog {
             }
 
             StyledButton {
+                analyticsId: "tips_prompt_dismiss"
                 text: qsTr("Not now")
                 onClicked: rootID.dismissPrompt()
             }

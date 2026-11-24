@@ -2,14 +2,18 @@ cmake_minimum_required(VERSION 3.28)
 
 # Find required packages
 find_package(GTest REQUIRED)
-find_package(Qt6 COMPONENTS Core Gui Location Network Positioning REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Location Network Positioning Sensors REQUIRED)
 
 # Enable testing
 enable_testing()
 
 # Create test executable
 add_executable(PastViewerTests
+    AnalyticsTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Analytics/Analytics.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Analytics/platform/mac/DeviceInfo.cpp
     DirectionUtilsTest.cpp
+    PositionPathFilterTest.cpp
     FileHashTest.cpp
     MultiImageTourStopTest.cpp
     TourDraftPublishingTest.cpp
@@ -28,6 +32,7 @@ add_executable(PastViewerTests
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/PurchaseController/PurchaseController.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/TourController/TourController.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PositionSourceAdapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/App/Controllers/ModelController/PositionPathFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/AvailableToursModel/AvailableToursModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/TourDraftsModel/TourDraftsModel.cpp
     ${CMAKE_SOURCE_DIR}/src/App/Models/TourStopsModel/TourStopsModel.cpp
@@ -59,6 +64,7 @@ target_link_libraries(PastViewerTests PRIVATE
     Qt6::Location
     Qt6::Network
     Qt6::Positioning
+    Qt6::Sensors
     glog::glog
 )
 

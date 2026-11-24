@@ -33,6 +33,7 @@ endif()
 
 find_package(Qt6 6.12 COMPONENTS
     Core
+    Network
     Gui
     Quick
     QuickLayouts
@@ -40,6 +41,7 @@ find_package(Qt6 6.12 COMPONENTS
     Location
     Positioning
     PositioningQuick
+    Sensors
     Multimedia
     LinguistTools
 REQUIRED)
@@ -119,6 +121,13 @@ if ("${ADMIN_TOKEN}" STREQUAL "")
     message(WARNING "ADMIN_TOKEN is empty; admin tour and asset uploads will be unavailable")
 endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE ADMIN_TOKEN="${ADMIN_TOKEN}")
+
+set(ANALYTICS_TOKEN "" CACHE STRING "PostHog project token (empty disables analytics)")
+set(ANALYTICS_HOST "https://eu.i.posthog.com" CACHE STRING "PostHog ingestion host")
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    ANALYTICS_TOKEN="${ANALYTICS_TOKEN}"
+    ANALYTICS_HOST="${ANALYTICS_HOST}"
+)
 
 set(_pastviewer_apple_tip_product_ids_list "${TIP_PRODUCT_IDS}")
 string(REPLACE "\\;" ";" _pastviewer_apple_tip_product_ids_list "${_pastviewer_apple_tip_product_ids_list}")
@@ -200,12 +209,14 @@ endif()
 
 qt6_import_qml_plugins(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    Qt6::Network
     Qt6::Quick
     Qt6::QuickLayouts
     Qt6::QuickControls2
     Qt6::Location
     Qt6::Positioning
     Qt6::PositioningQuick
+    Qt6::Sensors
     Qt6::Multimedia
     glog::glog
 )
@@ -233,6 +244,13 @@ file(GLOB_RECURSE ABS_QML CONFIGURE_DEPENDS
 
 AbsToRelPath(REL_QML "${CMAKE_CURRENT_SOURCE_DIR}" ${ABS_QML})
 
+file(GLOB _pastviewer_legal_texts CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/resources/legalTexts/PrivacyPolicy*.txt")
+qt_add_resources(${PROJECT_NAME} "legal_texts"
+    PREFIX "/legal"
+    BASE "${CMAKE_SOURCE_DIR}/resources/legalTexts"
+    FILES ${_pastviewer_legal_texts}
+)
+
 qt_add_qml_module(${PROJECT_NAME}
     URI ${PROJECT_NAME}
     VERSION 1.0
@@ -244,14 +262,12 @@ qt_add_qml_module(${PROJECT_NAME}
     QML_FILES
         ${REL_QML}
 )
+add_qml_singleton_tooling(I18nController)
+add_qml_singleton_tooling(PastViewer::Analytics)
+add_qml_singleton_tooling(PastVuModelController)
+add_qml_singleton_tooling(PastViewer::GuiController)
 add_qml_singleton_tooling(TourController)
 add_qml_singleton_tooling(PurchaseController)
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/Controllers/GuiController"
-    "${CMAKE_CURRENT_LIST_DIR}/Controllers/I18nController"
-    "${CMAKE_CURRENT_LIST_DIR}/Controllers/ModelController"
-)
 
 qt_add_translations(${PROJECT_NAME}
     TS_FILES

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import "colors.js" as Colors
+import "../Helpers/colors.js" as Colors
 
 Dialog {
     modal: true

@@ -26,10 +26,10 @@
 #include <QStandardPaths>
 #include <QTimer>
 
+#include "App/Controllers/ModelController/PositionSourceAdapter.h"
 #include "App/Tours/Tours.h"
 #include "App/Utils/JsonHelpers.h"
 
-#include "PositionSourceAdapter.h"
 #include "glog/logging.h"
 
 namespace {

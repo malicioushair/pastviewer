@@ -85,33 +85,33 @@
     <name>ChangelogPromptDialog</name>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="14"/>
-        <source>Nearby photo alerts</source>
-        <translation>Avvisi per le foto nelle vicinanze</translation>
+        <source>Walking tours</source>
+        <translation>Itinerari a piedi</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="15"/>
-        <source>Get a notification when you walk close to a historical photo.</source>
-        <translation>Ricevi una notifica quando passi vicino a una foto storica.</translation>
+        <source>Browse available tours and follow routes on the map.</source>
+        <translation>Scopri gli itinerari disponibili e segui i percorsi sulla mappa.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="22"/>
-        <source>Works in the background</source>
-        <translation>Funziona in background</translation>
+        <source>Smoother browsing</source>
+        <translation>Navigazione più fluida</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="23"/>
-        <source>Keep discovering while PastViewer is in the background, then tap an alert to open the matching photo.</source>
-        <translation>Continua a esplorare mentre PastViewer è in background, quindi tocca un avviso per aprire la foto corrispondente.</translation>
+        <source>See when photos are loading and use the back gesture on iOS or Android.</source>
+        <translation>Vedi quando le foto sono in caricamento e usa il gesto Indietro su iOS o Android.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="18"/>
-        <source>Distance control</source>
-        <translation>Controllo della distanza</translation>
+        <source>Stories at each stop</source>
+        <translation>Storie a ogni tappa</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="19"/>
-        <source>Choose how close you need to be in Settings.</source>
-        <translation>Scegli nelle Impostazioni a quale distanza ricevere gli avvisi.</translation>
+        <source>Explore photo galleries and listen to audio narration where available.</source>
+        <translation>Esplora le gallerie fotografiche e ascolta le narrazioni audio, dove disponibili.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="33"/>
@@ -120,8 +120,8 @@
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="43"/>
-        <source>PastViewer can now help you discover history while you explore.</source>
-        <translation>PastViewer ora ti aiuta a scoprire la storia mentre esplori.</translation>
+        <source>Explore local history with walking tours in PastViewer.</source>
+        <translation>Scopri la storia locale con gli itinerari a piedi di PastViewer.</translation>
     </message>
     <message>
         <location filename="../qml/Helpers/ChangelogPromptDialog.qml" line="104"/>
@@ -547,6 +547,11 @@
         <source>The App Store could not complete this purchase.</source>
         <translation>L’App Store non è riuscito a completare questo acquisto.</translation>
     </message>
+    <message>
+        <location filename="../Controllers/PurchaseController/PurchaseController.cpp" line="535"/>
+        <source>No purchase was found for this tour.</source>
+        <translation>Non è stato trovato alcun acquisto per questo tour.</translation>
+    </message>
 </context>
 <context>
     <name>RecenterButton</name>
@@ -647,6 +652,18 @@
         <location filename="../qml/Views/Settings.qml" line="188"/>
         <source>Load historical photos again for the current map view using your current filters.</source>
         <translation>Carica di nuovo le foto storiche per la vista corrente della mappa usando i filtri attuali.</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Informativa sulla privacy</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>Consenti analisi</translation>
+    </message>
+    <message>
+        <source>Share usage information and device details with PostHog to help improve PastViewer.</source>
+        <translation>Condividi informazioni sull’utilizzo e dettagli del dispositivo con PostHog per migliorare PastViewer.</translation>
     </message>
 </context>
 <context>
@@ -862,6 +879,11 @@
         <source>Unlock tour</source>
         <translation>Sblocca tour</translation>
     </message>
+    <message>
+        <location filename="../qml/Views/TourInfo.qml" line="254"/>
+        <source>Restore purchase</source>
+        <translation>Ripristina acquisto</translation>
+    </message>
 </context>
 <context>
     <name>TourInfoPanel</name>
@@ -1015,6 +1037,67 @@
         <location filename="../qml/Views/Tours.qml" line="62"/>
         <source>My draft tours</source>
         <translation>Le mie bozze di tour</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="35"/>
+        <source>Location access</source>
+        <translation>Accesso alla posizione</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="44"/>
+        <source>PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.</source>
+        <translation>PastViewer usa la tua posizione per mostrarti sulla mappa e avvisarti quando sei vicino a foto storiche, anche quando l’app è chiusa o non è in uso. Per cercare foto nelle vicinanze viene usata l’area della mappa intorno alla tua posizione.</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="48"/>
+        <source>Not now</source>
+        <translation>Non ora</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="49"/>
+        <source>Continue</source>
+        <translation>Continua</translation>
+    </message>
+</context>
+<context>
+    <name>AnalyticsConsentDialog</name>
+    <message>
+        <source>Help improve PastViewer</source>
+        <translation>Aiuta a migliorare PastViewer</translation>
+    </message>
+    <message>
+        <source>Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.</source>
+        <translation>Le analisi includono solo i dati anonimi necessari per capire come viene usata l’app e migliorarla. Puoi modificare la tua scelta nelle preferenze.</translation>
+    </message>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Informativa sulla privacy</translation>
+    </message>
+    <message>
+        <source>Don't allow</source>
+        <translation>Non consentire</translation>
+    </message>
+    <message>
+        <source>Allow analytics</source>
+        <translation>Consenti analisi</translation>
+    </message>
+</context>
+<context>
+    <name>PrivacyPolicyDialog</name>
+    <message>
+        <source>Privacy policy</source>
+        <translation>Informativa sulla privacy</translation>
+    </message>
+    <message>
+        <source>Unable to load the privacy policy.</source>
+        <translation>Impossibile caricare l’informativa sulla privacy.</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Chiudi</translation>
     </message>
 </context>
 </TS>
