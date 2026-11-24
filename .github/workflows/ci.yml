@@ -58,7 +58,7 @@ jobs:
           host: mac
           target: desktop
           arch: clang_64
-          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools qtsensors
           cache: true
 
       - name: Configure Conan profile
@@ -136,7 +136,7 @@ jobs:
           host: mac
           target: desktop
           arch: clang_64
-          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools qtsensors
           cache: true
 
       - name: Configure Conan profile
@@ -274,7 +274,7 @@ jobs:
           target: android
           arch: android_arm64_v8a
           dir: ${{ runner.temp }}
-          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools qtsensors
           cache: true
 
       - name: Configure Conan profile
@@ -449,7 +449,7 @@ jobs:
           target: desktop
           arch: clang_64
           dir: ${{ env.QT_BASE }}
-          modules: qtmultimedia qtlocation qtpositioning qtshadertools
+          modules: qtmultimedia qtlocation qtpositioning qtshadertools qtsensors
           cache: true
 
       # Qt 6.12 split iOS Device and simulator kits into separate repositories.

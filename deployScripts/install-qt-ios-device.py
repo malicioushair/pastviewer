@@ -27,7 +27,7 @@ def main():
     catalog = f"qt6_{version_digits}"
     repo = f"https://download.qt.io/online/qtsdkrepository/mac_x64/ios/{catalog}/{catalog}_device"
     package_prefix = f"qt.qt6.{version_digits}"
-    modules = ("qtlocation", "qtmultimedia", "qtpositioning", "qtshadertools")
+    modules = ("qtlocation", "qtmultimedia", "qtpositioning", "qtshadertools", "qtsensors")
     package_names = [f"{package_prefix}.qtforios.device"]
     package_names += [f"{package_prefix}.addons.{module}.ios_device" for module in modules]
     args.output.mkdir(parents=True, exist_ok=True)
