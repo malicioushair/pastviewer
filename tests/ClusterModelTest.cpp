@@ -32,6 +32,7 @@ public:
         QGeoCoordinate coord;
         int year;
         int zoomLevel;
+        bool selected { false };
     };
 
     explicit MockSourceModel(QObject * parent = nullptr)
@@ -67,6 +68,8 @@ public:
                 return item.year;
             case BaseModel::ZoomLevel:
                 return item.zoomLevel;
+            case BaseModel::Selected:
+                return item.selected;
             default:
                 return {};
         }
@@ -113,6 +116,12 @@ public:
     {
         m_items.at(row).coord = coordinate;
         emit dataChanged(index(row), index(row), { BaseModel::Coordinate });
+    }
+
+    void selectItem(int row, bool selected)
+    {
+        m_items.at(row).selected = selected;
+        emit dataChanged(index(row), index(row), { BaseModel::Selected });
     }
 
     void replaceItems(std::vector<MockItem> items)
@@ -227,6 +236,23 @@ TEST_F(ClusterModelTest, IndividualNodeData)
     EXPECT_EQ(clusterModel->data(index, ClusterModel::ClusterCount).toInt(), 1);
     EXPECT_FALSE(clusterModel->data(index, ClusterModel::CidsInCluster).isValid());
     EXPECT_EQ(clusterModel->data(index, BaseModel::Cid).toInt(), 1);
+}
+
+TEST_F(ClusterModelTest, SelectionUpdatesIndividualAndClusterMarkers)
+{
+    mockModel->addItem(1, QGeoCoordinate(55.7558, 37.6173));
+    mockModel->addItem(2, QGeoCoordinate(55.7558, 37.6173));
+    ASSERT_TRUE(clusterModel->data(clusterModel->index(0), ClusterModel::IsCluster).toBool());
+    mockModel->selectItem(1, true);
+    EXPECT_TRUE(clusterModel->data(clusterModel->index(0), BaseModel::Selected).toBool());
+    mockModel->selectItem(1, false);
+    EXPECT_FALSE(clusterModel->data(clusterModel->index(0), BaseModel::Selected).toBool());
+
+    mockModel->removeItem(0);
+    mockModel->selectItem(0, true);
+    EXPECT_TRUE(clusterModel->data(clusterModel->index(0), BaseModel::Selected).toBool());
+    mockModel->selectItem(0, false);
+    EXPECT_FALSE(clusterModel->data(clusterModel->index(0), BaseModel::Selected).toBool());
 }
 
 // Test ClusterModel with viewport change

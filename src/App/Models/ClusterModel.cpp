@@ -406,8 +406,6 @@ QVariant ClusterModel::data(const QModelIndex & index, int role) const
 
             return cids;
         }
-        case BaseModel::Selected:
-            return false;
         default:
             break;
     }
@@ -429,13 +427,19 @@ QVariant ClusterModel::data(const QModelIndex & index, int role) const
     {
         const auto & clusterNode = std::get<ClusterNode>(node);
 
-        // For clusters, return centroid coordinate and aggregate data from first member
-        if (role == BaseModel::Coordinate)
-            return QVariant::fromValue(clusterNode.centroid);
-
-        // For other roles, use data from the first member
-        if (!clusterNode.indicesIntoSourceModel.isEmpty() && clusterNode.indicesIntoSourceModel.front().isValid())
-            return m_impl->sourceModel->data(clusterNode.indicesIntoSourceModel.front(), role);
+        switch (role)
+        {
+            case BaseModel::Selected:
+                return std::ranges::any_of(clusterNode.indicesIntoSourceModel, [this](const QPersistentModelIndex & sourceIndex) {
+                    return sourceIndex.isValid() && m_impl->sourceModel->data(sourceIndex, BaseModel::Selected).toBool();
+                });
+            case BaseModel::Coordinate:
+                return QVariant::fromValue(clusterNode.centroid);
+            default:
+                // For other roles, use data from the first member
+                if (!clusterNode.indicesIntoSourceModel.isEmpty() && clusterNode.indicesIntoSourceModel.front().isValid())
+                    return m_impl->sourceModel->data(clusterNode.indicesIntoSourceModel.front(), role);
+        }
     }
 
     return {};
