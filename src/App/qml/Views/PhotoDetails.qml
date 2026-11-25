@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtCore
 
-import "../Helpers/colors.js" as Colors
+import Colors
 import "../Helpers"
 import "../GuiItems"
 import "Helpers"
@@ -188,8 +188,8 @@ BasePage {
 
             background: Rectangle {
                 radius: 10
-                color: cameraCtaID.pressed ? Colors.palette.accentAlt : Colors.palette.accent
-                border.color: Colors.palette.border
+                color: cameraCtaID.pressed ? Colors.accentAlt : Colors.accent
+                border.color: Colors.border
                 border.width: 2
                 Behavior on color {
                     ColorAnimation {

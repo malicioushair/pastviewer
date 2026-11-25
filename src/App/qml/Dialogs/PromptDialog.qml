@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Dialog {
     modal: true
@@ -12,8 +12,8 @@ Dialog {
 
     background: Rectangle {
         radius: 16
-        color: Colors.palette.toolbar
-        border.color: Colors.palette.border
+        color: Colors.toolbar
+        border.color: Colors.border
         border.width: 1
     }
 }

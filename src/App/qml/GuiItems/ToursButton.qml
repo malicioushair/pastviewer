@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -16,7 +16,7 @@ Rectangle {
     width: 40
     height: 40
     radius: 10
-    color: Colors.palette.accent
+    color: Colors.accent
 
     Canvas {
         id: mapIconID
@@ -29,8 +29,8 @@ Rectangle {
         onPaint: {
             const ctx = getContext("2d")
             ctx.clearRect(0, 0, width, height)
-            ctx.strokeStyle = Colors.palette.bg
-            ctx.fillStyle = Colors.palette.bg
+            ctx.strokeStyle = Colors.bg
+            ctx.fillStyle = Colors.bg
             ctx.lineWidth = 1.5
             ctx.lineJoin = "round"
             ctx.lineCap = "round"
@@ -60,7 +60,7 @@ Rectangle {
             ctx.bezierCurveTo(21, 11, 19.5, 12.5, 18.5, 14)
             ctx.closePath()
             ctx.fill()
-            ctx.fillStyle = Colors.palette.accent
+            ctx.fillStyle = Colors.accent
             ctx.beginPath()
             ctx.arc(18.5, 9.5, 1, 0, 2 * Math.PI)
             ctx.fill()

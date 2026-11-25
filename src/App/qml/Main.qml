@@ -16,7 +16,7 @@ import "GuiItems"
 import "Helpers"
 import "Views"
 
-import "Helpers/colors.js" as Colors
+import Colors
 
 ApplicationWindow {
     id: mainWindowID
@@ -30,7 +30,7 @@ ApplicationWindow {
         : Qt.Window
     visibility: Window.AutomaticVisibility
     visible: true
-    color: Colors.palette.bg
+    color: Colors.bg
     title: "Past Viewer"
 
     onClosing: (close) => {
@@ -80,14 +80,14 @@ ApplicationWindow {
             Text {
                 Layout.fillWidth: true
                 text: qsTranslate("MainWindow", "Location access")
-                color: Colors.palette.text
+                color: Colors.text
                 font.pixelSize: 18
                 font.bold: true
             }
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                color: Colors.palette.text
+                color: Colors.text
                 text: qsTranslate("MainWindow", "PastViewer uses your location to show your position on the map and notify you when you are near historical photos, even when the app is closed or not in use. Nearby photo searches use the map area around your location to retrieve photos.")
             }
             RowLayout {

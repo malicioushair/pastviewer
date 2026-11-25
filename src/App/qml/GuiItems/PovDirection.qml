@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -20,8 +20,8 @@ Rectangle {
     height: size
 
     radius: width / 2
-    color: selected ? Colors.palette.selected : "white"
-    border.color: Colors.palette.border
+    color: selected ? Colors.selected : "white"
+    border.color: Colors.border
 
     TapHandler {
         gesturePolicy: TapHandler.ReleaseWithinBounds | TapHandler.WithinBounds

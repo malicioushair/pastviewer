@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "colors.js" as Colors
+import Colors
 import "../GuiItems"
 
 import GuiController
@@ -55,15 +55,15 @@ Item {
         Rectangle {
             visible: !rootID._showHighlight
             anchors.fill: parent
-            color: Colors.palette.overlayDim
+            color: Colors.overlayDim
         }
 
         RectangleWithHoles {
             visible: rootID._showHighlight
             anchors.fill: parent
             holes: rootID._showHighlight ? [rootID._holeRect] : []
-            overlayColor: Colors.palette.overlayDim
-            highlightBorderColor: Colors.palette.accent
+            overlayColor: Colors.overlayDim
+            highlightBorderColor: Colors.accent
             highlightBorderWidth: 2
             holeRadius: 8
         }
@@ -76,8 +76,8 @@ Item {
         implicitHeight: contentLayout.implicitHeight + 24
 
         radius: 16
-        color: Colors.palette.toolbar
-        border.color: Colors.palette.border
+        color: Colors.toolbar
+        border.color: Colors.border
         border.width: 1
 
         anchors {
@@ -132,7 +132,7 @@ Item {
 
                 text: steps.length > 0 ? steps[Math.min(currentIndex, steps.length - 1)].title : ""
                 wrapMode: Text.WordWrap
-                color: Colors.palette.text
+                color: Colors.text
                 font.pixelSize: 18
                 font.bold: true
             }
@@ -144,7 +144,7 @@ Item {
 
                 text: steps.length > 0 ? steps[Math.min(currentIndex, steps.length - 1)].body : ""
                 wrapMode: Text.WordWrap
-                color: Colors.palette.text
+                color: Colors.text
                 font.pixelSize: 14
             }
 
@@ -159,7 +159,7 @@ Item {
                     text: steps.length > 1
                           ? qsTr("%1 / %2").arg(currentIndex + 1).arg(steps.length)
                           : ""
-                    color: Colors.palette.text
+                    color: Colors.text
                     font.pixelSize: 12
                 }
 

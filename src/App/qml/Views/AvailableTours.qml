@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 import "../GuiItems"
 import "Helpers"
-import "../Helpers/colors.js" as Colors
+import Colors
 
 import Analytics
 import TourController
@@ -60,7 +60,7 @@ BasePage {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
 
-                    color: Colors.palette.toolbar
+                    color: Colors.toolbar
                     Label {
                         anchors.centerIn: parent
                         text: model.Title
@@ -75,7 +75,7 @@ BasePage {
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: 40
 
-                    color: Colors.palette.toolbar
+                    color: Colors.toolbar
                     Label {
                         anchors.centerIn: parent
                         text: qsTr(model.Lang)

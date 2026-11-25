@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 
 import Analytics
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Button {
     id: controlID
@@ -26,18 +26,18 @@ Button {
     color: controlID.transparent
         ? "transparent"
         : !controlID.enabled
-        ? Colors.palette.disabledBtnBg
+        ? Colors.disabledBtnBg
         : controlID.reversedColors
             ? !controlID.pressed
-                ? Colors.palette.accentAlt
-                : Colors.palette.accent
+                ? Colors.accentAlt
+                : Colors.accent
             : controlID.pressed
-                ? Colors.palette.accentAlt
-                : Colors.palette.accent
+                ? Colors.accentAlt
+                : Colors.accent
 
         radius: 8
         border {
-            color: controlID.enabled ? Colors.palette.border : Colors.palette.disabledBtnBorder
+            color: controlID.enabled ? Colors.border : Colors.disabledBtnBorder
             width: 2
         }
 
@@ -54,8 +54,8 @@ Button {
             pixelSize: 16
             bold: true
         }
-        color: !controlID.enabled ? Colors.palette.disabledBtnText
-              : controlID.transparent ? Colors.palette.text : "white"
+        color: !controlID.enabled ? Colors.disabledBtnText
+              : controlID.transparent ? Colors.text : "white"
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -13,9 +13,9 @@ Rectangle {
     signal tapped()
 
     radius: width/2
-    color: Colors.palette.seeThroughBlack
+    color: Colors.seeThroughBlack
     border {
-        color: Colors.palette.border
+        color: Colors.border
         width: 1
     }
 

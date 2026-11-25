@@ -5,7 +5,7 @@ import QtMultimedia
 
 import "../GuiItems"
 import "../Helpers"
-import "../Helpers/colors.js" as Colors
+import Colors
 import "Helpers"
 
 import Analytics
@@ -185,7 +185,7 @@ BasePage {
 
                 background: Rectangle {
                     radius: 8
-                    color: Colors.palette.seeThroughBlack
+                    color: Colors.seeThroughBlack
                 }
             }
         }
@@ -205,7 +205,7 @@ BasePage {
                 implicitHeight: 8
                 radius: 4
                 color: index === stopImagesViewID.currentIndex
-                    ? Colors.palette.accent : Colors.palette.toolbar
+                    ? Colors.accent : Colors.toolbar
             }
         }
 
@@ -248,7 +248,7 @@ BasePage {
                     implicitWidth: 4
                     implicitHeight: 24
                     radius: width / 2
-                    color: Colors.palette.text
+                    color: Colors.text
                     opacity: descriptionScrollBarID.pressed ? 0.6 : 0.25
                 }
                 background: Item {}
@@ -298,8 +298,8 @@ BasePage {
 
                 background: Rectangle {
                     radius: width / 2
-                    color: playPauseButtonID.pressed ? Colors.palette.accentAlt : Colors.palette.accent
-                    border.color: Colors.palette.border
+                    color: playPauseButtonID.pressed ? Colors.accentAlt : Colors.accent
+                    border.color: Colors.border
                     border.width: 2
 
                     Behavior on color {

@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import Analytics 1.0
 
 import "../GuiItems"
-import "../Helpers/colors.js" as Colors
+import Colors
 
 PromptDialog {
     id: rootID
@@ -16,7 +16,7 @@ PromptDialog {
             Layout.fillWidth: true
             text: qsTr("Help improve PastViewer")
             wrapMode: Text.WordWrap
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 18
             font.bold: true
         }
@@ -24,11 +24,11 @@ PromptDialog {
             Layout.fillWidth: true
             text: qsTr("Analytics includes only the necessary anonymous data that helps us understand the way the app is used and make it better. You can change your choice in Preferences.")
             wrapMode: Text.WordWrap
-            color: Colors.palette.text
+            color: Colors.text
         }
         Text {
             textFormat: Text.RichText
-            linkColor: Colors.palette.accent
+            linkColor: Colors.accent
             text: '<a href="https://github.com/malicioushair/pastviewer/blob/master/resources/legalTexts/PrivacyPolicy.txt">' + qsTr("Privacy policy") + '</a>'
             onLinkActivated: mainWindowID.openPrivacyPolicy
         }

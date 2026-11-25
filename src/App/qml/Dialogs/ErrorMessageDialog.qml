@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import "../GuiItems"
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Dialog {
     id: errorDialogID
@@ -19,9 +19,9 @@ Dialog {
     standardButtons: Dialog.Ok
 
     background: Rectangle {
-        color: Colors.palette.bg
+        color: Colors.bg
         radius: 8
-        border.color: Colors.palette.border
+        border.color: Colors.border
         border.width: 2
     }
 
@@ -32,7 +32,7 @@ Dialog {
             Layout.fillWidth: true
 
             implicitHeight: headingID.implicitHeight + 36
-            color: Colors.palette.toolbar
+            color: Colors.toolbar
             radius: 6
 
             Rectangle {
@@ -59,7 +59,7 @@ Dialog {
                 Rectangle {
                     Layout.preferredWidth: 34
                     Layout.preferredHeight: 34
-                    color: Colors.palette.error
+                    color: Colors.error
                     radius: 17
 
                     Text {
@@ -74,7 +74,7 @@ Dialog {
                     Layout.fillWidth: true
 
                     text: qsTr("Error")
-                    color: Colors.palette.text
+                    color: Colors.text
                     font.pixelSize: 22
                     font.bold: true
                     wrapMode: Text.WordWrap
@@ -87,7 +87,7 @@ Dialog {
             Layout.margins: 24
 
             text: errorDialogID.errorMessage
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 16
             wrapMode: Text.WordWrap
         }

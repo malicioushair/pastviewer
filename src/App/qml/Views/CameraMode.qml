@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import QtMultimedia
 import QtCore
 
-import "../Helpers/colors.js" as Colors
+import Colors
 import "../Helpers/utils.js" as Utils
 import "../Helpers"
 import "Helpers"
@@ -179,9 +179,9 @@ BasePage {
         visible: rootID.thumbnailAnimationVisible
         z: 999
         clip: true
-        color: Colors.palette.toolbar
+        color: Colors.toolbar
         border {
-            color: Colors.palette.border
+            color: Colors.border
             width: visible ? 1 : 0
         }
 
@@ -270,9 +270,9 @@ BasePage {
         radius: 10
         visible: rootID.thumbnailVisible && !rootID.controlsHidden
         clip: true
-        color: Colors.palette.toolbar
+        color: Colors.toolbar
         border {
-            color: Colors.palette.border
+            color: Colors.border
             width: 1
         }
 
@@ -307,10 +307,10 @@ BasePage {
             width: 28
             height: 28
             radius: width / 4
-            color: Colors.palette.toolbar
+            color: Colors.toolbar
             opacity: 0.92
             border {
-                color: Colors.palette.border
+                color: Colors.border
                 width: 1
             }
 

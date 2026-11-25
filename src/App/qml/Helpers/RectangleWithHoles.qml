@@ -2,7 +2,7 @@ import QtQuick
 
 import GuiController 1.0
 
-import "colors.js" as Colors
+import Colors
 
 // Note: only one hole is supported by now
 Item {
@@ -10,7 +10,7 @@ Item {
 
     property var holes: []
     property int holeRadius: 8
-    property color overlayColor: Colors.palette.overlayDim
+    property color overlayColor: Colors.overlayDim
 
     property color highlightBorderColor: "white"
     property int highlightBorderWidth: 2

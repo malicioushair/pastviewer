@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -12,11 +12,11 @@ Rectangle {
     implicitWidth: contentLayoutID.implicitWidth
     implicitHeight: contentLayoutID.implicitHeight
 
-    color: Colors.palette.selected
+    color: Colors.selected
     radius: 10
 
     border {
-        color: Colors.palette.border
+        color: Colors.border
     }
 
     ColumnLayout {

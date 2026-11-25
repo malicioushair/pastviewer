@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -12,12 +12,12 @@ Rectangle {
     property string accessibleName: ""
     property bool singleLine: false
 
-    color: Colors.palette.textEdit
+    color: Colors.textEdit
     radius: 8
     border.width: singleLine ? (singleLineInputID.activeFocus ? 2 : 1) : 0
-    border.color: !enabled ? Colors.palette.disabledBtnBorder
-                          : singleLineInputID.activeFocus ? Colors.palette.accentAlt
-                                                         : Colors.palette.border
+    border.color: !enabled ? Colors.disabledBtnBorder
+                          : singleLineInputID.activeFocus ? Colors.accentAlt
+                                                         : Colors.border
 
     TextMetrics {
         id: singleLineMetricsID
@@ -38,8 +38,8 @@ Rectangle {
         text: textAreaID.text
         padding: 6
         font.pixelSize: 16
-        color: enabled ? Colors.palette.text : Colors.palette.disabledBtnText
-        selectionColor: Colors.palette.accentAlt
+        color: enabled ? Colors.text : Colors.disabledBtnText
+        selectionColor: Colors.accentAlt
         selectedTextColor: "white"
         verticalAlignment: TextInput.AlignVCenter
         background: null
@@ -92,7 +92,7 @@ Rectangle {
                 implicitWidth: 4
                 implicitHeight: 24
                 radius: width / 2
-                color: Colors.palette.text
+                color: Colors.text
                 opacity: verticalScrollBarID.pressed ? 0.6
                          : verticalScrollBarID.hovered ? 0.45 : 0.25
             }

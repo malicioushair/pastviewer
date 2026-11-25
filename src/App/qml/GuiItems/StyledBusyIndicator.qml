@@ -2,7 +2,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 BusyIndicator {
     id: control
@@ -38,14 +38,14 @@ BusyIndicator {
 
             // Background ring
             ctx.lineWidth = lineWidth
-            ctx.strokeStyle = Colors.palette.toolbar
+            ctx.strokeStyle = Colors.toolbar
             ctx.beginPath()
             ctx.arc(cx, cy, radius, 0, 2 * Math.PI)
             ctx.stroke()
 
             // Animated arc
             if (endAngle > startAngle) {
-                ctx.strokeStyle = Colors.palette.accent
+                ctx.strokeStyle = Colors.accent
                 ctx.lineCap = "round"
                 ctx.beginPath()
                 ctx.arc(

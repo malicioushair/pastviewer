@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -17,8 +17,8 @@ Rectangle {
     height: size
 
     radius: width / 2
-    color: selected ? Colors.palette.selected : Colors.palette.accent
-    border.color: Colors.palette.border
+    color: selected ? Colors.selected : Colors.accent
+    border.color: Colors.border
     border.width: 2
 
     TapHandler {

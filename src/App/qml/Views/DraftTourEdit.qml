@@ -8,7 +8,7 @@ import TourController
 
 import "../GuiItems"
 import "Helpers"
-import "../Helpers/colors.js" as Colors
+import Colors
 
 BasePage {
     Component.onCompleted: Analytics.Track("view_opened", { view: "draft_tour_edit" })
@@ -59,8 +59,8 @@ BasePage {
                 id: titleFieldID
                 Layout.fillWidth: true
                 text: rootID.record.title
-                color: Colors.palette.text
-                background: Rectangle { color: Colors.palette.textEdit; radius: 8 }
+                color: Colors.text
+                background: Rectangle { color: Colors.textEdit; radius: 8 }
             }
 
             Label { text: qsTr("Description") }
@@ -70,8 +70,8 @@ BasePage {
                 Layout.minimumHeight: 120
                 text: rootID.record.description
                 wrapMode: TextEdit.Wrap
-                color: Colors.palette.text
-                background: Rectangle { color: Colors.palette.textEdit; radius: 8 }
+                color: Colors.text
+                background: Rectangle { color: Colors.textEdit; radius: 8 }
             }
 
             Image {
@@ -134,7 +134,7 @@ BasePage {
                 Layout.fillWidth: true
                 visible: rootID.errorMessage.length > 0
                 text: rootID.errorMessage
-                color: Colors.palette.accent
+                color: Colors.accent
                 wrapMode: Text.Wrap
             }
 

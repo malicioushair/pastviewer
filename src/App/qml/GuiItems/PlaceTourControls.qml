@@ -6,7 +6,7 @@ import TourController 1.0
 
 import "../Helpers"
 import "../Dialogs"
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -20,8 +20,8 @@ Rectangle {
     implicitHeight: panelLayoutID.implicitHeight + 24
 
     radius: 16
-    color: Colors.palette.bg
-    border.color: Colors.palette.border
+    color: Colors.bg
+    border.color: Colors.border
     border.width: 1
 
     ColumnLayout {
@@ -39,7 +39,7 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
 
             text: rootID.editingDraft ? qsTr("Edit route") : qsTr("Place the path")
-            color: Colors.palette.text
+            color: Colors.text
             font.bold: true
             font.pixelSize: 18
         }
@@ -49,7 +49,7 @@ Rectangle {
             visible: rootID.editingDraft
             text: qsTr("Tap a numbered stop to edit it. Map changes are saved automatically.")
             wrapMode: Text.Wrap
-            color: Colors.palette.text
+            color: Colors.text
         }
 
         RowLayout {
@@ -124,7 +124,7 @@ Rectangle {
 
                 text: qsTr("Are you sure you want to delete the last turnpoint? Removing it may also remove a stop at the same location.")
                 wrapMode: Text.WordWrap
-                color: Colors.palette.text
+                color: Colors.text
                 font.pixelSize: 16
             }
 

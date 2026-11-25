@@ -4,7 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "../Helpers/colors.js" as Colors
+import Colors
 import "../GuiItems"
 import "Helpers"
 
@@ -74,7 +74,7 @@ BasePage {
 
                 Label {
                     text: qsTr("Language")
-                    color: Colors.palette.text
+                    color: Colors.text
                     font {
                         bold: true
                         pixelSize: 14
@@ -134,7 +134,7 @@ BasePage {
 
                 Text {
                     text: qsTr("Notification distance: %1 m").arg(proximityDistanceSliderID.value)
-                    color: Colors.palette.text
+                    color: Colors.text
                     font.family: "monospace"
                 }
 
@@ -229,7 +229,7 @@ BasePage {
 
             Text {
                 textFormat: Text.RichText
-                linkColor: Colors.palette.accent
+                linkColor: Colors.accent
                 text: '<a href="https://github.com/malicioushair/pastviewer/blob/master/resources/legalTexts/PrivacyPolicy.txt">' + qsTr("Privacy policy") + '</a>'
                 onLinkActivated: mainWindowID.openPrivacyPolicy()
             }

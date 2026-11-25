@@ -8,7 +8,7 @@ import QtPositioning
 
 import GuiController 1.0
 
-import "../Helpers/colors.js" as Colors
+import Colors
 import "../Helpers/utils.js" as Utils
 
 Rectangle {
@@ -17,7 +17,7 @@ Rectangle {
     property Map map: null
 
     radius: 16
-    color: Colors.palette.bg
+    color: Colors.bg
 
     Connections {
         target: PastVuModelController
@@ -62,8 +62,8 @@ Rectangle {
 
         radius: 10
 
-        color: Colors.palette.accentAlt
-        border.color: Colors.palette.border
+        color: Colors.accentAlt
+        border.color: Colors.border
 
         Text {
             id: imagesNearbyTextID
@@ -168,9 +168,9 @@ Rectangle {
                     radius: 10
                     border {
                         width: Selected ? 3 : 0
-                        color: Selected ? Colors.palette.accent : "transparent"
+                        color: Selected ? Colors.accent : "transparent"
                     }
-                    color: Selected ? Colors.palette.shadowSoft : Colors.palette.bg
+                    color: Selected ? Colors.shadowSoft : Colors.bg
                     antialiasing: true
                 }
 

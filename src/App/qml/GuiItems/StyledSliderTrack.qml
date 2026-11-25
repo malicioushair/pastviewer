@@ -1,6 +1,6 @@
 import QtQuick
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -15,13 +15,13 @@ Rectangle {
     implicitHeight: 8
     height: implicitHeight
     radius: 4
-    color: Colors.palette.sliderAlt
+    color: Colors.sliderAlt
 
     Rectangle {
         x: rootID.fillFrom * parent.width
         width: Math.max(0, rootID.fillTo - rootID.fillFrom) * parent.width
         height: parent.height
         radius: parent.radius
-        color: Colors.palette.slider
+        color: Colors.slider
     }
 }

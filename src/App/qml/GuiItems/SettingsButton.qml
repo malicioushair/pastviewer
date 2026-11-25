@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Rectangle {
     id: rootID
@@ -17,7 +17,7 @@ Rectangle {
     height: 40
     radius: 10
 
-    color: Colors.palette.accentAlt
+    color: Colors.accentAlt
 
     ColumnLayout{
         id: burgerMenu
@@ -30,7 +30,7 @@ Rectangle {
                 width: 25
                 height: 2
 
-                color: Colors.palette.toolbar
+                color: Colors.toolbar
             }
         }
     }

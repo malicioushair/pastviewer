@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 CheckBox {
     id: controlID
@@ -12,9 +12,9 @@ CheckBox {
         x: controlID.leftPadding
         y: (controlID.height - height) / 2
         radius: 5
-        color: controlID.checked ? Colors.palette.accent : Colors.palette.bg
+        color: controlID.checked ? Colors.accent : Colors.bg
         border {
-            color: controlID.checked ? Colors.palette.accent : Colors.palette.border
+            color: controlID.checked ? Colors.accent : Colors.border
             width: 2
         }
 
@@ -23,7 +23,7 @@ CheckBox {
             width: 8
             height: 8
             radius: 4
-            color: Colors.palette.bg
+            color: Colors.bg
             visible: controlID.checked
         }
     }
@@ -31,7 +31,7 @@ CheckBox {
     contentItem: Text {
         text: controlID.text
         font.pixelSize: 16
-        color: Colors.palette.text
+        color: Colors.text
         leftPadding: controlID.indicator.width + controlID.spacing
         verticalAlignment: Text.AlignVCenter
     }

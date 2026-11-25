@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 AbstractButton {
     id: controlID
@@ -13,9 +13,9 @@ AbstractButton {
 
     background: Rectangle {
         radius: width / 2
-        color: controlID.pressed ? Colors.palette.accentAlt : Colors.palette.toolbar
+        color: controlID.pressed ? Colors.accentAlt : Colors.toolbar
         border {
-            color: Colors.palette.border
+            color: Colors.border
             width: 1
         }
     }
@@ -26,7 +26,7 @@ AbstractButton {
             pixelSize: 13
             bold: true
         }
-        color: Colors.palette.text
+        color: Colors.text
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }
@@ -50,9 +50,9 @@ AbstractButton {
 
         background: Rectangle {
             radius: 12
-            color: Colors.palette.toolbar
+            color: Colors.toolbar
             border {
-                color: Colors.palette.border
+                color: Colors.border
                 width: 1
             }
         }
@@ -61,7 +61,7 @@ AbstractButton {
             text: controlID.description
             wrapMode: Text.WordWrap
             width: descriptionPopupID.availableWidth
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 14
         }
     }

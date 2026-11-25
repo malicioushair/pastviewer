@@ -6,7 +6,7 @@ import GuiController
 import I18nController
 
 import "../GuiItems"
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Dialog {
     id: rootID
@@ -17,9 +17,9 @@ Dialog {
     padding: 20
 
     background: Rectangle {
-        color: Colors.palette.toolbar
+        color: Colors.toolbar
         radius: 16
-        border.color: Colors.palette.border
+        border.color: Colors.border
         border.width: 1
     }
 
@@ -29,7 +29,7 @@ Dialog {
         Text {
             Layout.fillWidth: true
             text: qsTr("Privacy policy")
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 18
             font.bold: true
         }
@@ -52,7 +52,7 @@ Dialog {
                 selectByMouse: true
                 textFormat: TextEdit.PlainText
                 wrapMode: TextEdit.Wrap
-                color: Colors.palette.text
+                color: Colors.text
                 background: null
             }
         }

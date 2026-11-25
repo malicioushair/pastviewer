@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Shapes
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Item {
     id: compassID
@@ -18,7 +18,7 @@ Item {
 
         anchors.fill: parent
         radius: width/2
-        color: Colors.palette.seeThroughBlack
+        color: Colors.seeThroughBlack
         border {
             color: "white"
             width: 1
@@ -48,7 +48,7 @@ Item {
                 id: northID
 
                 strokeWidth: 0
-                fillColor: Colors.palette.northNeedle
+                fillColor: Colors.northNeedle
                 startX: needleID.x + needleID.width / 2
                 startY: needleID.y
                 PathLine {
@@ -75,7 +75,7 @@ Item {
                 id: southID
 
                 strokeWidth: 0
-                fillColor: Colors.palette.southNeedle
+                fillColor: Colors.southNeedle
                 startX: needleID.x + needleID.width / 2
                 startY: needleID.y + needleID.height
                 PathLine {

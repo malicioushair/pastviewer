@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Item {
     id: rootID
@@ -16,7 +16,7 @@ Item {
     Rectangle {
         anchors.fill: imagesViewID
         radius: 8
-        color: Colors.palette.textEdit
+        color: Colors.textEdit
     }
 
     ListView {
@@ -64,7 +64,7 @@ Item {
                 width: parent.width - 24
                 visible: previewID.status === Image.Error
                 text: qsTr("Could not load image")
-                color: Colors.palette.error
+                color: Colors.error
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
             }
@@ -82,7 +82,7 @@ Item {
         padding: 5
         background: Rectangle {
             radius: 6
-            color: Colors.palette.seeThroughBlack
+            color: Colors.seeThroughBlack
         }
     }
 
@@ -98,7 +98,7 @@ Item {
             implicitWidth: 6
             implicitHeight: 6
             radius: 3
-            color: index === rootID.currentIndex ? Colors.palette.accent : Colors.palette.toolbar
+            color: index === rootID.currentIndex ? Colors.accent : Colors.toolbar
         }
     }
 }

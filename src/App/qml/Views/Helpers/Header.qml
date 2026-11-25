@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "../../Helpers/colors.js" as Colors
+import Colors
 
 ToolBar {
     id: rootID
@@ -13,7 +13,7 @@ ToolBar {
 
     background: Rectangle {
         implicitHeight: 50
-        color: Colors.palette.toolbar
+        color: Colors.toolbar
     }
     RowLayout {
         anchors.fill: parent
@@ -26,7 +26,7 @@ ToolBar {
             font.pointSize: 20
             onClicked: rootID.parent.StackView.view.pop()
             background: Rectangle {
-                color: Colors.palette.accent
+                color: Colors.accent
             }
         }
         Label {
@@ -34,7 +34,7 @@ ToolBar {
 
             Layout.fillWidth: true
             text: rootID.parent.title
-            color: Colors.palette.text
+            color: Colors.text
             wrapMode: Text.Wrap
         }
 

@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtCore
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 import "../GuiItems"
 import "Helpers"
@@ -70,7 +70,7 @@ BasePage {
 
                     contentItem: Label {
                         text: draftTitleButtonID.text
-                        color: draftTitleButtonID.enabled ? "white" : Colors.palette.disabledBtnText
+                        color: draftTitleButtonID.enabled ? "white" : Colors.disabledBtnText
                         font.pixelSize: 16
                         font.bold: true
                         elide: Text.ElideRight
@@ -130,7 +130,7 @@ BasePage {
                                 text: publishButtonID.text
                                 font.pixelSize: 16
                                 font.bold: true
-                                color: publishButtonID.enabled ? "white" : Colors.palette.disabledBtnText
+                                color: publishButtonID.enabled ? "white" : Colors.disabledBtnText
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }

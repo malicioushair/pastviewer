@@ -3,14 +3,14 @@ import QtLocation
 
 import TourController
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 MapPolyline {
     id: rootID
 
     path: TourController.currentTour.tourPath
     line.width: 4
-    line.color: Colors.palette.accent
+    line.color: Colors.accent
 
     visible: path.length >= 2
 }

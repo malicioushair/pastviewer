@@ -4,13 +4,13 @@ import QtQuick.Layouts
 
 import GuiController
 
-import "../../Helpers/colors.js" as Colors
+import Colors
 
 ToolBar {
     id: rootID
 
     required property string text
-    property color backgroundColor: Colors.palette.toolbar
+    property color backgroundColor: Colors.toolbar
 
     background: Rectangle {
         color: rootID.backgroundColor
@@ -19,7 +19,7 @@ ToolBar {
     Connections {
         target: GuiController
         function onIsAdminChanged(value) {
-            rootID.backgroundColor = value ? Colors.palette.accentAlt : Colors.palette.toolbar
+            rootID.backgroundColor = value ? Colors.accentAlt : Colors.toolbar
         }
     }
 
@@ -28,7 +28,7 @@ ToolBar {
         Label {
             Layout.leftMargin: 10
             text: rootID.text
-            color: Colors.palette.text
+            color: Colors.text
             font {
                 bold: true
                 pixelSize: 16

@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 import "../GuiItems"
 import "../Helpers"
-import "../Helpers/colors.js" as Colors
+import Colors
 import "Helpers"
 
 import Analytics
@@ -259,7 +259,7 @@ BasePage {
                 contentItem: Text {
                     text: restorePurchaseButtonID.text
                     font: unlockTourLabelID.font
-                    color: restorePurchaseButtonID.enabled ? "white" : Colors.palette.disabledBtnText
+                    color: restorePurchaseButtonID.enabled ? "white" : Colors.disabledBtnText
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.Wrap

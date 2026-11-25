@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import "../GuiItems"
-import "../Helpers/colors.js" as Colors
+import Colors
 
 PromptDialog {
     id: rootID
@@ -32,7 +32,7 @@ PromptDialog {
 
             text: qsTr("What's new in PastViewer %1").arg(rootID.version)
             wrapMode: Text.WordWrap
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 18
             font.bold: true
         }
@@ -42,7 +42,7 @@ PromptDialog {
 
             text: qsTr("Explore local history with walking tours in PastViewer.")
             wrapMode: Text.WordWrap
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 14
         }
 
@@ -64,7 +64,7 @@ PromptDialog {
                     implicitWidth: 8
                     implicitHeight: 8
                     radius: 4
-                    color: Colors.palette.accent
+                    color: Colors.accent
                 }
 
                 ColumnLayout {
@@ -76,7 +76,7 @@ PromptDialog {
 
                         text: changeItemID.modelData.title
                         wrapMode: Text.WordWrap
-                        color: Colors.palette.text
+                        color: Colors.text
                         font.pixelSize: 14
                         font.bold: true
                     }
@@ -86,7 +86,7 @@ PromptDialog {
 
                         text: changeItemID.modelData.body
                         wrapMode: Text.WordWrap
-                        color: Colors.palette.text
+                        color: Colors.text
                         font.pixelSize: 14
                     }
                 }

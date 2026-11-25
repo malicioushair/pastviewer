@@ -13,7 +13,7 @@ import TourController
 import "../GuiItems"
 import "../Helpers"
 
-import "../Helpers/colors.js" as Colors
+import Colors
 import "../Helpers/utils.js" as Utils
 
 Item {
@@ -215,8 +215,8 @@ Item {
             visible: !positionSource.positionAvailable
 
             radius: 8
-            color: Colors.palette.bg
-            border.color: Colors.palette.accent
+            color: Colors.bg
+            border.color: Colors.accent
             border.width: 1
 
             RowLayout {
@@ -226,21 +226,21 @@ Item {
                 Text {
                     text: "⚠"
                     font.pixelSize: 16
-                    color: Colors.palette.accent
+                    color: Colors.accent
                 }
 
                 Text {
                     id: warningTextID
 
                     text: qsTr("Current position is not available")
-                    color: Colors.palette.text
+                    color: Colors.text
                     font.pixelSize: 14
                 }
 
                 Text {
                     text: "⚠"
                     font.pixelSize: 16
-                    color: Colors.palette.accent
+                    color: Colors.accent
                 }
             }
         }
@@ -379,7 +379,7 @@ Item {
                 MapPolyline {
                     path: TourController.tourPath
                     line.width: 4
-                    line.color: Colors.palette.accent
+                    line.color: Colors.accent
                     autoFadeIn: false
                     visible: (mapPageID.mode === GuiController.MapMode.PlaceTour
                               || mapPageID.mode === GuiController.MapMode.TourCreation)
@@ -408,7 +408,7 @@ Item {
                             radius: width
                             color: "white"
                             border {
-                                color: Colors.palette.accentAlt
+                                color: Colors.accentAlt
                                 width: 1
                             }
                             Label {
@@ -437,7 +437,7 @@ Item {
                         width: 18
                         height: 18
                         radius: 9
-                        color: Colors.palette.accent
+                        color: Colors.accent
                         border.color: "white"
                         border.width: 2
                     }
@@ -469,9 +469,9 @@ Item {
                             implicitWidth: 20
                             implicitHeight: width
                             radius: width
-                            color: model.Selected ? Colors.palette.selected : "white"
+                            color: model.Selected ? Colors.selected : "white"
                             border {
-                                color: Colors.palette.accentAlt
+                                color: Colors.accentAlt
                                 width: 1
                             }
                             Label {

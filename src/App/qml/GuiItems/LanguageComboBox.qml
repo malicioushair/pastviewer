@@ -2,7 +2,7 @@ import I18nController 1.0
 import QtQuick
 import QtQuick.Controls
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 import GuiController
 
@@ -25,9 +25,9 @@ ComboBox {
     }
 
     background: Rectangle {
-        color: Colors.palette.bg
+        color: Colors.bg
         border {
-            color: Colors.palette.border
+            color: Colors.border
             width: 1
         }
         radius: 8
@@ -35,7 +35,7 @@ ComboBox {
 
     contentItem: Text {
         text: controlID.displayText
-        color: Colors.palette.text
+        color: Colors.text
         font.pixelSize: 14
         leftPadding: 12
         verticalAlignment: Text.AlignVCenter
@@ -57,9 +57,9 @@ ComboBox {
         }
 
         background: Rectangle {
-            color: Colors.palette.bg
+            color: Colors.bg
             border {
-                color: Colors.palette.border
+                color: Colors.border
                 width: 1
             }
             radius: 8
@@ -71,13 +71,13 @@ ComboBox {
         text: model.NameRole
 
         background: Rectangle {
-            color: parent.hovered ? Colors.palette.accentAlt : Colors.palette.bg
+            color: parent.hovered ? Colors.accentAlt : Colors.bg
             radius: 4
         }
 
         contentItem: Text {
             text: model.NameRole
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 14
             leftPadding: 12
             verticalAlignment: Text.AlignVCenter

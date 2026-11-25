@@ -8,7 +8,7 @@ import QtPositioning
 import GuiController
 import TourController 1.0
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 import TourController
 
@@ -28,7 +28,7 @@ Rectangle {
     Layout.preferredHeight: 210
 
     radius: 16
-    color: Colors.palette.bg
+    color: Colors.bg
 
     ColumnLayout {
         anchors.fill: parent

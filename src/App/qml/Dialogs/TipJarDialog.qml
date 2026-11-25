@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import "../GuiItems"
-import "../Helpers/colors.js" as Colors
+import Colors
 
 import GuiController
 import PurchaseController
@@ -41,7 +41,7 @@ PromptDialog {
 
             text: qsTranslate("TipsPromptDialog", "Enjoying PastViewer?")
             wrapMode: Text.WordWrap
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 18
             font.bold: true
         }
@@ -51,7 +51,7 @@ PromptDialog {
 
             text: qsTranslate("TipsPromptDialog", "If PastViewer helped you rediscover a place, you can leave a one-time tip to support its continued development. The app remains fully available either way.")
             wrapMode: Text.WordWrap
-            color: Colors.palette.text
+            color: Colors.text
             font.pixelSize: 14
         }
 

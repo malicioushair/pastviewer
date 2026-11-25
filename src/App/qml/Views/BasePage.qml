@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Page {
     id: rootID
@@ -15,7 +15,7 @@ Page {
     }
 
     background: Rectangle {
-        color: Colors.palette.bg
+        color: Colors.bg
     }
 
     Keys.onBackPressed: (event) => {

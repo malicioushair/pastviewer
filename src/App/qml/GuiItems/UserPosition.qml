@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 
-import "../Helpers/colors.js" as Colors
+import Colors
 
 Item {
     id: rootID
@@ -17,7 +17,7 @@ Item {
         width: parent.width
         height: parent.height
         radius: width
-        color: Colors.palette.userPosition
+        color: Colors.userPosition
     }
 
     Item {
@@ -40,7 +40,7 @@ Item {
             height: parent.height
 
             ShapePath {
-                fillColor: Colors.palette.userPosition
+                fillColor: Colors.userPosition
                 PathPolyline {
                     path: [
                         Qt.point(arrowHeadID.width / 2, 0),

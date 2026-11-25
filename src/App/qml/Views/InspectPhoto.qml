@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtCore
 
-import "../Helpers/colors.js" as Colors
+import Colors
 import "../Helpers"
 import "Helpers"
 

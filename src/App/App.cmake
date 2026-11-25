@@ -251,12 +251,28 @@ qt_add_resources(${PROJECT_NAME} "legal_texts"
     FILES ${_pastviewer_legal_texts}
 )
 
+list(REMOVE_ITEM REL_QML "src/App/qml/Helpers/Colors.qml")
+set_source_files_properties(src/App/qml/Helpers/Colors.qml PROPERTIES
+    QT_QML_SINGLETON_TYPE TRUE
+    QT_RESOURCE_ALIAS Colors.qml
+)
+qt_add_library(PastViewerColors STATIC)
+qt_add_qml_module(PastViewerColors
+    URI Colors
+    VERSION 1.0
+    RESOURCE_PREFIX /qt/qml
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Colors"
+    NO_PLUGIN
+    QML_FILES src/App/qml/Helpers/Colors.qml
+)
+target_link_libraries(PastViewerColors PRIVATE Qt6::Quick)
+target_link_libraries(${PROJECT_NAME} PRIVATE PastViewerColors)
+
 qt_add_qml_module(${PROJECT_NAME}
     URI ${PROJECT_NAME}
     VERSION 1.0
     RESOURCE_PREFIX "/qt/qml"
     RESOURCES
-        "src/App/qml/Helpers/colors.js"
         "src/App/qml/Helpers/utils.js"
         "src/App/qml/resources/share.png"
     QML_FILES
