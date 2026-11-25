@@ -23,4 +23,5 @@ QtObject {
     readonly property color disabledBtnBg: "#D8CFC0"
     readonly property color disabledBtnText: "#817B71"
     readonly property color disabledBtnBorder: "#B7B2A7"
+    readonly property color tourLanguage: "#E8D5B8"
 }
