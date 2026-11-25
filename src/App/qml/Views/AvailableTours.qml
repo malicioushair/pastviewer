@@ -1,12 +1,14 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 
 import "../GuiItems"
 import "Helpers"
-import Colors
 
 import Analytics
+import Colors
+import PurchaseController
 import TourController
 
 BasePage {
@@ -34,52 +36,142 @@ BasePage {
             model: TourController.GetAvailableToursModel()
             spacing: 10
 
-            delegate: RowLayout {
+            delegate: Rectangle {
+                id: tourRowID
+
+                readonly property var tour: model.TourObj
+                property bool purchased: false
+                property bool purchaseSucceeded: false
+
                 width: ListView.view.width
-                height: 40
+                height: 60
+                radius: 8
+                color: Colors.toolbar
 
-                Rectangle {
-                    Layout.preferredHeight: 40
-                    Layout.preferredWidth: 40
+                Component.onCompleted: {
+                    if (tour.purchaseInfo.paid === true)
+                        PurchaseController.CheckTourOwned(tour)
+                }
 
-                    color: "transparent"
-                    Image {
-                        id: imageID
+                Connections {
+                    target: PurchaseController
 
-                        anchors.fill: parent
-                        source: model.ImageUrl
-                        asynchronous: true
+                    function onTourOwned(tourId, owned) {
+                        if (true
+                            && tourRowID.tour.id === tourId
+                            && tourRowID.tour.purchaseInfo.paid === true
+                            && (owned || !tourRowID.purchaseSucceeded))
+                            tourRowID.purchased = owned
                     }
-                    StyledBusyIndicator {
-                        anchors.fill: parent
-                        running: imageID.status === Image.Loading
+
+                    function onTourPurchaseSucceeded(tourId) {
+                        if (true
+                            && tourRowID.tour.id === tourId
+                            && tourRowID.tour.purchaseInfo.paid === true) {
+                            tourRowID.purchaseSucceeded = true
+                            tourRowID.purchased = true
+                        }
                     }
                 }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 40
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 5
+                    spacing: 8
 
-                    color: Colors.toolbar
-                    Label {
-                        anchors.centerIn: parent
-                        text: model.Title
+                    Item {
+                        Layout.preferredHeight: 40
+                        Layout.preferredWidth: 40
+
+                        Image {
+                            id: imageID
+
+                            anchors.fill: parent
+
+                            source: model.ImageUrl
+                            asynchronous: true
+                            fillMode: Image.PreserveAspectCrop
+                            visible: false
+                        }
+
+                        Rectangle {
+                            id: maskID
+
+                            anchors.fill: parent
+
+                            radius: 8
+                            layer.enabled: true
+                            visible: false
+                        }
+
+                        MultiEffect {
+                            anchors.fill: parent
+
+                            source: imageID
+                            maskEnabled: true
+                            maskSource: maskID
+                            maskThresholdMin: 0.5
+                            maskSpreadAtMin: 1.0
+                        }
+                        StyledBusyIndicator {
+                            anchors.fill: parent
+                            running: imageID.status === Image.Loading
+                        }
                     }
-                    TapHandler {
-                        grabPermissions: PointerHandler.TakeOverForbidden
-                        onTapped: mainWindowID.openTourInfoView(model.TourObj)
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+
+                        spacing: 2
+
+                        Label {
+                            Layout.fillWidth: true
+
+                            text: model.Title
+                            color: Colors.text
+                            elide: Text.ElideRight
+                            font.bold: true
+                        }
+
+                        Rectangle {
+                            implicitWidth: purchasedLabelID.implicitWidth + 14
+                            implicitHeight: purchasedLabelID.implicitHeight + 4
+                            radius: height / 2
+
+                            color: "#526c35"
+                            visible: true //tourRowID.purchased
+
+                            Label {
+                                id: purchasedLabelID
+                                anchors.centerIn: parent
+
+                                text: "✓ " + qsTr("available")
+                                color: "white"
+                                font.pixelSize: 11
+                                font.bold: true
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.preferredHeight: 30
+                        Layout.preferredWidth: 30
+
+                        radius: 8
+                        color: Colors.tourLanguage
+
+                        Label {
+                            anchors.centerIn: parent
+
+                            text: model.Lang
+                            color: Colors.text
+                        }
                     }
                 }
 
-                Rectangle {
-                    Layout.preferredWidth: 40
-                    Layout.preferredHeight: 40
-
-                    color: Colors.toolbar
-                    Label {
-                        anchors.centerIn: parent
-                        text: qsTr(model.Lang)
-                    }
+                TapHandler {
+                    grabPermissions: PointerHandler.TakeOverForbidden
+                    onTapped: mainWindowID.openTourInfoView(tourRowID.tour)
                 }
             }
         }
